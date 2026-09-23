@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Проєкт: від команди до запуску</title>
+<style>
+  :root {
+    --ink: #1E2761; --ink-soft: #384080; --surface: #F3F6FC; --card: #FFFFFF;
+    --gold: #C9962C; --gold-soft: #F3E4C6; --muted: #5B6685; --line: #DDE4F5;
+    --red: #B3492F; --green: #2E7D6B;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; min-height: 100%; background: var(--surface);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+  }
+  .serif { font-family: Cambria, Georgia, "Times New Roman", serif; }
+  #app { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 32px 18px; }
+  .stage-wrap { width: 100%; max-width: 760px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 36px 34px; box-shadow: 0 18px 40px -24px rgba(30,39,97,0.35); }
+  @media (max-width: 480px) { .card { padding: 24px 18px; } }
+
+  .kicker { font-size: 13px; color: var(--muted); margin: 0 0 10px; }
+  h1.title { font-size: 26px; line-height: 1.25; margin: 0 0 14px; font-weight: 700; }
+  p.lead { font-size: 15px; line-height: 1.6; color: var(--muted); margin: 0 0 22px; }
+  label.field-label { display: block; font-size: 13px; color: var(--ink-soft); margin-bottom: 6px; font-weight: 600; }
+  input.text-input, textarea.text-area {
+    width: 100%; padding: 12px 14px; border-radius: 10px; border: 1.5px solid var(--line);
+    font-size: 14px; color: var(--ink); background: var(--surface); margin-bottom: 20px; font-family: inherit;
+  }
+  textarea.text-area { min-height: 90px; resize: vertical; }
+  input.text-input:focus, textarea.text-area:focus { outline: none; border-color: var(--gold); }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 13px 24px; border-radius: 10px; border: none; font-size: 14.5px; font-weight: 600;
+    cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .btn-primary { background: var(--ink); color: #fff; width: 100%; }
+  .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 10px 20px -12px rgba(30,39,97,0.6); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-secondary { background: var(--surface); color: var(--ink); border: 1.5px solid var(--line); }
+  .note-box { margin: 0 0 20px; padding: 12px 14px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+  .progress-track { height: 5px; background: var(--line); border-radius: 4px; overflow: hidden; margin-bottom: 22px; }
+  .progress-fill { height: 100%; background: var(--gold); border-radius: 4px; transition: width 0.4s ease; }
+
+  .brief-box { background: var(--ink); color: #fff; border-radius: 14px; padding: 18px 20px; margin-bottom: 22px; }
+  .brief-box .b-label { font-size: 11px; color: var(--gold-soft); font-weight: 700; margin-bottom: 6px; letter-spacing: 0.3px; }
+  .brief-box p { font-size: 13.5px; line-height: 1.55; color: #DCE1F5; margin: 0; }
+
+  .counter-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding: 10px 14px; border-radius: 10px; background: var(--surface); border: 1.5px solid var(--line); }
+  .counter-bar.full { border-color: var(--green); background: #DCEFE9; }
+  .counter-bar .c-text { font-size: 13px; font-weight: 700; }
+  .candidate-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  @media (max-width: 560px) { .candidate-grid { grid-template-columns: 1fr; } }
+  .candidate-card { border: 1.5px solid var(--line); border-radius: 14px; padding: 14px; cursor: pointer; background: #fff; transition: all 0.15s ease; position: relative; }
+  .candidate-card:hover { border-color: var(--gold); }
+  .candidate-card.selected { border-color: var(--gold); background: var(--gold-soft); }
+  .candidate-card.disabled { opacity: 0.4; cursor: not-allowed; }
+  .cand-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .disc-badge { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; color: #fff; flex-shrink: 0; }
+  .disc-badge.D { background: var(--red); } .disc-badge.I { background: var(--gold); } .disc-badge.S { background: var(--green); } .disc-badge.C { background: var(--ink); }
+  .cand-name { font-weight: 700; font-size: 14px; } .cand-role { font-size: 11px; color: var(--muted); }
+  .cand-trait { font-size: 11.5px; line-height: 1.4; margin-bottom: 4px; } .cand-trait b { color: var(--ink-soft); }
+  .check-mark { position: absolute; top: 10px; right: 10px; width: 20px; height: 20px; border-radius: 50%; background: var(--gold); color: #fff; display: none; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; }
+  .candidate-card.selected .check-mark { display: flex; }
+
+  .person-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px,1fr)); gap: 8px; margin-bottom: 20px; }
+  .person-chip { display: flex; flex-direction: column; align-items: center; gap: 6px; border: 1.5px solid var(--line); border-radius: 12px; padding: 12px 8px; cursor: pointer; background: #fff; transition: all .15s ease; text-align: center; }
+  .person-chip:hover { border-color: var(--gold); }
+  .person-chip.selected { border-color: var(--gold); background: var(--gold-soft); }
+  .person-chip .p-name { font-size: 12px; font-weight: 700; }
+
+  .autonomy-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+  .autonomy-btn { text-align: left; padding: 12px 14px; border-radius: 10px; border: 1.5px solid var(--line); background: #fff; cursor: pointer; font-size: 13px; line-height: 1.4; transition: all .15s ease; }
+  .autonomy-btn:hover { border-color: var(--gold); }
+  .autonomy-btn.selected { border-color: var(--gold); background: var(--gold-soft); }
+  .autonomy-btn b { display: block; font-size: 11px; color: var(--gold); margin-bottom: 2px; }
+
+  .roster-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .roster-chip { display: flex; align-items: center; gap: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 5px 12px 5px 5px; font-size: 12.5px; font-weight: 600; }
+  .roster-chip .disc-badge { width: 22px; height: 22px; font-size: 11px; }
+  .needs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+  @media (max-width: 480px) { .needs-grid { grid-template-columns: 1fr; } }
+  .need-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 8px; font-size: 12px; }
+  .need-item.covered { background: #DCEFE9; color: #1F5245; } .need-item.missing { background: #F6DCD4; color: #7A2E1A; }
+  .disc-diversity-row { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
+  .disc-pill { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+  .disc-pill.present { background: var(--gold-soft); color: #7A5A16; } .disc-pill.absent { background: var(--surface); color: var(--muted); border: 1px dashed var(--line); }
+  .flag-list { list-style: none; padding: 0; margin: 0 0 18px; }
+  .flag-list li { font-size: 12.5px; padding: 8px 10px; border-radius: 8px; background: #F6DCD4; color: #7A2E1A; margin-bottom: 6px; }
+  .flag-list li.positive { background: #DCEFE9; color: #1F5245; }
+
+  .scene-icon-wrap { display: flex; justify-content: center; margin-bottom: 14px; }
+  .scene-icon-wrap svg { width: 84px; height: 84px; }
+  .scene-text { font-size: 15.5px; line-height: 1.55; margin: 0 0 20px; text-align: center; }
+
+  .consequence-box { background: var(--ink); color: #fff; border-radius: 14px; padding: 18px 20px; margin-bottom: 20px; }
+  .consequence-box .cq-label { font-size: 11px; color: var(--gold-soft); font-weight: 700; margin-bottom: 8px; letter-spacing: 0.3px; }
+  .consequence-box p { font-size: 13.5px; line-height: 1.55; color: #DCE1F5; margin: 0 0 10px; }
+  .score-chip { display: inline-block; font-size: 11.5px; padding: 3px 10px; border-radius: 20px; font-weight: 700; background: var(--gold); color: var(--ink); }
+
+  table.summary-table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-bottom: 20px; }
+  table.summary-table th { text-align: left; font-size: 11px; color: var(--muted); font-weight: 600; padding: 7px 6px; border-bottom: 2px solid var(--line); }
+  table.summary-table td { padding: 8px 6px; border-bottom: 1px solid var(--line); }
+
+  .ending-tier { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11.5px; font-weight: 700; margin-bottom: 14px; }
+  .tier-good { background: #DCEFE9; color: #1F5245; } .tier-mixed { background: var(--gold-soft); color: #7A5A16; } .tier-bad { background: #F6DCD4; color: #7A2E1A; }
+
+  .score-breakdown { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+  .score-box { flex: 1; min-width: 120px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; text-align: center; }
+  .score-box .sb-value { font-size: 20px; font-weight: 800; color: var(--ink); }
+  .score-box .sb-label { font-size: 10.5px; color: var(--muted); font-weight: 700; margin-top: 2px; }
+
+  .save-note { font-size: 12.5px; color: var(--muted); margin-top: 14px; text-align: center; }
+  .result-actions { display: flex; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
+  .result-actions .btn { flex: 1; min-width: 140px; }
+  .teacher-link { display: block; text-align: center; margin-top: 20px; font-size: 12.5px; color: var(--muted); text-decoration: underline; cursor: pointer; background: none; border: none; }
+  textarea.copy-textarea { width: 100%; min-height: 110px; padding: 10px 12px; border-radius: 10px; border: 1.5px solid var(--line); font-size: 11.5px; color: var(--muted); background: var(--surface); resize: vertical; }
+
+  .teacher-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+  table.results-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.results-table th { text-align: left; font-size: 10.5px; color: var(--muted); font-weight: 600; padding: 7px 6px; border-bottom: 2px solid var(--line); }
+  table.results-table td { padding: 8px 6px; border-bottom: 1px solid var(--line); }
+  .tag { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; background: var(--gold-soft); color: #7A5A16; }
+  .empty-note { text-align: center; color: var(--muted); font-size: 13.5px; padding: 30px 0; }
+  .icon-btn { background: none; border: 1.5px solid var(--line); border-radius: 8px; padding: 7px 13px; font-size: 12.5px; color: var(--ink); cursor: pointer; }
+  .icon-btn:hover { border-color: var(--gold); }
+  .table-scroll { overflow-x: auto; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+(function () {
+  var ICONS = {
+    idea: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="48" fill="#F3F6FC"/><circle cx="50" cy="42" r="18" fill="#C9962C"/><rect x="44" y="58" width="12" height="10" fill="#1E2761"/><rect x="44" y="70" width="12" height="4" rx="2" fill="#1E2761"/><path d="M50 20 V26 M28 30 L32 34 M72 30 L68 34" stroke="#1E2761" stroke-width="3" stroke-linecap="round"/></svg>',
+    conference: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="48" fill="#F3F6FC"/><rect x="38" y="56" width="24" height="20" fill="#1E2761"/><circle cx="50" cy="40" r="12" fill="#384080"/><rect x="46" y="52" width="8" height="10" fill="#C9962C"/><rect x="20" y="70" width="8" height="10" fill="#DDE4F5"/><rect x="72" y="70" width="8" height="10" fill="#DDE4F5"/></svg>',
+    legal: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="48" fill="#F3F6FC"/><rect x="48" y="24" width="4" height="42" fill="#1E2761"/><path d="M50 24 L28 34 M50 24 L72 34" stroke="#1E2761" stroke-width="3" stroke-linecap="round"/><circle cx="28" cy="34" r="10" fill="none" stroke="#C9962C" stroke-width="3"/><circle cx="72" cy="34" r="10" fill="none" stroke="#C9962C" stroke-width="3"/><rect x="34" y="66" width="32" height="6" rx="2" fill="#1E2761"/></svg>',
+    alert: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="48" fill="#F3F6FC"/><path d="M50 22 L84 78 H16 Z" fill="#B3492F"/><rect x="47" y="42" width="6" height="18" fill="#fff"/><circle cx="50" cy="68" r="3" fill="#fff"/></svg>',
+    trophy: '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="48" fill="#F3F6FC"/><path d="M36 28 H64 V44 Q64 60 50 60 Q36 60 36 44 Z" fill="#C9962C"/><rect x="44" y="60" width="12" height="10" fill="#C9962C"/><rect x="36" y="70" width="28" height="6" rx="2" fill="#1E2761"/><path d="M36 32 H26 V40 Q26 46 34 46" stroke="#1E2761" stroke-width="3" fill="none"/><path d="M64 32 H74 V40 Q74 46 66 46" stroke="#1E2761" stroke-width="3" fill="none"/></svg>'
+  };
+
+  var NEEDS = [
+    { key: "speed", label: "Швидкість ухвалення рішень" },
+    { key: "execution", label: "Дисципліноване виконання й дедлайни" },
+    { key: "partnerships", label: "Зовнішні партнерства й комунікація" },
+    { key: "creativity", label: "Креативність і нестандартні рішення" },
+    { key: "quality", label: "Контроль якості" },
+    { key: "flexibility", label: "Гнучкість до зміни вимог" },
+    { key: "harmony", label: "Командна гармонія" },
+    { key: "riskAssessment", label: "Критична оцінка ризиків" }
+  ];
+
+  var CANDIDATES = [
+    { id: "olena", name: "Олена", disc: "D", role: "Формувач (Shaper)", tag: "driven",
+      strengths: "Рішуча, наполеглива, любить виклики, штовхає команду вперед.",
+      weaknesses: "Нетерпляча, може ігнорувати думку повільніших колег, провокує конфлікти.",
+      needs: ["speed", "flexibility"] },
+    { id: "maksym", name: "Максим", disc: "I", role: "Дослідник ресурсів", tag: "volatile",
+      strengths: "Комунікабельний, легко заводить зовнішні контакти й партнерства.",
+      weaknesses: "Швидко втрачає інтерес до рутинної роботи, погано доводить справи до кінця.",
+      needs: ["partnerships"] },
+    { id: "iryna", name: "Ірина", disc: "S", role: "Командний гравець", tag: "cautious",
+      strengths: "Дипломатична, згладжує конфлікти, підтримує командний дух.",
+      weaknesses: "Уникає складних, непопулярних рішень, може стримувати відверту критику.",
+      needs: ["harmony"] },
+    { id: "dmytro", name: "Дмитро", disc: "C", role: "Завершувач", tag: "cautious",
+      strengths: "Уважний до деталей, ніколи не зриває дедлайни, перевіряє все двічі.",
+      weaknesses: "Повільно ухвалює рішення, тривожиться через дрібні помилки.",
+      needs: ["execution", "quality"] },
+    { id: "sofia", name: "Софія", disc: "I", role: "Генератор ідей (Plant)", tag: "volatile",
+      strengths: "Креативна, пропонує нестандартні рішення проблем.",
+      weaknesses: "Погано працює з рутиною й жорсткими дедлайнами, ігнорує практичні обмеження.",
+      needs: ["creativity"] },
+    { id: "andriy", name: "Андрій", disc: "D", role: "Координатор", tag: "driven",
+      strengths: "Бачить картину загалом, добре фасилітує наради, вміє делегувати.",
+      weaknesses: "Не любить глибоко занурюватись у деталі виконання.",
+      needs: ["flexibility", "partnerships"] },
+    { id: "maria", name: "Марія", disc: "C", role: "Аналітик-стратег", tag: "cautious",
+      strengths: "Критично мислить, зважує ризики, якісно оцінює варіанти.",
+      weaknesses: "Повільна, надмірна критичність може демотивувати команду.",
+      needs: ["riskAssessment"] },
+    { id: "bogdan", name: "Богдан", disc: "S", role: "Реалізатор", tag: "cautious",
+      strengths: "Дисциплінований, практичний, чітко виконує затверджений план.",
+      weaknesses: "Погано адаптується до раптових змін курсу проєкту.",
+      needs: ["execution"] }
+  ];
+
+  var TEAM_SIZE = 5;
+
+  var TASKS = [
+    { key: "competitors", icon: "legal", label: "Підготувати аналіз трьох головних конкурентів продукту.", need: "riskAssessment", needLabel: "критична оцінка ризиків / аналітика" },
+    { key: "partner_pitch", icon: "conference", label: "Провести презентацію продукту для потенційного партнера.", need: "partnerships", needLabel: "зовнішні партнерства й комунікація" },
+    { key: "social_post", icon: "idea", label: "Скласти чернетку допису в соцмережах про запуск продукту.", need: "creativity", needLabel: "креативність і нестандартні рішення" }
+  ];
+
+  var AUTONOMY_LEVELS = [
+    { level: 1, title: "Виконай точно за інструкцією", desc: "Найнижча автономія — ви даєте покроковий план." },
+    { level: 2, title: "Запропонуй варіанти, фінальне рішення ухвалюю я", desc: "Людина готує чернетку, ви затверджуєте." },
+    { level: 3, title: "Дій самостійно, регулярно інформуй про прогрес", desc: "Висока автономія з контрольними точками." },
+    { level: 4, title: "Повна автономія, звітуй лише за результатом", desc: "Найвища довіра, мінімум контролю." }
+  ];
+
+  var CRISES = [
+    { key: "reactive", title: "Реактивна криза", text: "За два тижні до запуску головний конкурент несподівано випускає дуже схожий продукт. Потрібно швидко ухвалити рішення й чітко, без затримок виконати новий план дій.", needs: ["speed", "execution"] },
+    { key: "proactive", title: "Проактивна криза", text: "Аналітика ринку показує, що вже за пів року очікується суттєва зміна споживчих уподобань, яка може знецінити поточний продукт. Криза ще не настала, але потрібно заздалегідь переосмислити стратегію позиціонування і розширити партнерства під нове бачення ринку.", needs: ["creativity", "partnerships"] }
+  ];
+
+  var dbPromise = (window.claude && window.claude.use) ? window.claude.use("db") : Promise.resolve(null);
+
+  var state = {
+    screen: "intro",
+    studentName: "",
+    selected: {},
+    teamResult: null,
+    delegation: [],
+    delegateDraft: { personId: null, autonomy: null },
+    crisisIndex: 0,
+    crisisSelected: {},
+    crisisResult: null,
+    saveStatus: "idle",
+    teacherRows: null,
+    teacherLoading: false
+  };
+
+  var app = document.getElementById("app");
+  function el(html) { var t = document.createElement("template"); t.innerHTML = html.trim(); return t.content.firstElementChild; }
+  function escHtml(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  function selectedCount() { return Object.keys(state.selected).filter(function (k) { return state.selected[k]; }).length; }
+  function selectedCandidates() { return CANDIDATES.filter(function (c) { return state.selected[c.id]; }); }
+  function teamMembers() { return state.teamResult.team; }
+
+  function analyzeTeam(team) {
+    var needCoverage = {};
+    NEEDS.forEach(function (n) { needCoverage[n.key] = []; });
+    team.forEach(function (c) { c.needs.forEach(function (n) { needCoverage[n].push(c.name); }); });
+    var coveredCount = NEEDS.filter(function (n) { return needCoverage[n.key].length > 0; }).length;
+    var discCounts = {};
+    team.forEach(function (c) { discCounts[c.disc] = (discCounts[c.disc] || 0) + 1; });
+    var discPresent = Object.keys(discCounts);
+    var diversity = discPresent.length;
+    var cautiousCount = team.filter(function (c) { return c.tag === "cautious"; }).length;
+    var drivenCount = team.filter(function (c) { return c.tag === "driven"; }).length;
+
+    var flags = [];
+    var penalty = 0;
+    if (cautiousCount >= 4) { flags.push({ text: "Команда занадто обережна: " + cautiousCount + " з 5 — представники «безпечного» кластера.", positive: false }); penalty += 1; }
+    if (drivenCount === 0) { flags.push({ text: "Жоден із обраних не має вираженого напору (тип D).", positive: false }); penalty += 1; }
+    if (drivenCount === 2) { flags.push({ text: "Обрано одразу двох напористих лідерів — можливий конфлікт за лідерство.", positive: false }); penalty += 1; }
+    if (diversity === 4) flags.push({ text: "Команда охоплює всі чотири DISC-стилі — хороша різноманітність.", positive: true });
+    if (flags.length === 0) flags.push({ text: "Явних структурних ризиків не виявлено.", positive: true });
+
+    var score = coveredCount + diversity - penalty;
+    return { needCoverage: needCoverage, coveredCount: coveredCount, discCounts: discCounts, discPresent: discPresent, diversity: diversity, flags: flags, score: score };
+  }
+
+  function delegationOutcome(person, task, autonomy) {
+    var skillMatch = person.needs.indexOf(task.need) !== -1;
+    var score, key, text;
+    if (skillMatch && autonomy >= 3) {
+      score = 3; key = "best";
+      text = person.name + " чудово впорався(-лась) із завданням — компетенція збіглася з довірою, яку ви надали. Результат перевищив очікування.";
+    } else if (skillMatch && autonomy <= 2) {
+      score = 1; key = "micromanaged";
+      text = person.name + " мав(-ла) потрібні навички, але жорсткі рамки автономії стримували ініціативу. Завдання виконано, але без родзинки, на яку ця людина здатна.";
+    } else if (!skillMatch && autonomy <= 2) {
+      score = 1; key = "compensated";
+      text = "У " + person.name + " не було сильної компетенції в цій сфері, але чіткі інструкції компенсували брак досвіду. Результат прийнятний, хоча без блиску.";
+    } else {
+      score = 0; key = "worst";
+      text = person.name + " отримав(-ла) повну свободу дій у сфері, де не мав(-ла) достатньо компетенції. Результат вийшов слабким і потребував переробки.";
+    }
+    return { score: score, key: key, text: text };
+  }
+
+  var NEED_QUALITY_HINT = {
+    speed: "здатність швидко ухвалювати рішення без зайвих вагань",
+    execution: "дисципліноване, методичне виконання плану",
+    partnerships: "вміння вести перемовини й підтримувати зовнішні контакти",
+    creativity: "здатність передбачати тенденції ринку і пропонувати візіонерське, нестандартне бачення",
+    quality: "уважність до деталей і контроль якості результату",
+    flexibility: "готовність швидко змінити план і адаптуватися до нових обставин",
+    harmony: "здатність згладжувати конфлікти й підтримувати командний дух",
+    riskAssessment: "критична оцінка ризиків і наслідків рішення"
+  };
+  function needLabelOf(key) {
+    var found = NEEDS.filter(function (n) { return n.key === key; })[0];
+    return found ? found.label : key;
+  }
+
+  function crisisOutcome(pair, crisis, fullTeam) {
+    var pairIds = pair.map(function (p) { return p.id; });
+    var breakdown = crisis.needs.map(function (needKey) {
+      var coveredBy = pair.filter(function (p) { return p.needs.indexOf(needKey) !== -1; });
+      var item = { key: needKey, label: needLabelOf(needKey), hint: NEED_QUALITY_HINT[needKey], covered: coveredBy.length > 0, coveredBy: coveredBy.map(function (p) { return p.name; }) };
+      if (!item.covered) {
+        var elsewhereInTeam = fullTeam.filter(function (p) { return p.needs.indexOf(needKey) !== -1 && pairIds.indexOf(p.id) === -1; });
+        item.availableElsewhere = elsewhereInTeam.map(function (p) { return p.name; });
+      }
+      return item;
+    });
+
+    var matchCount = breakdown.filter(function (b) { return b.covered; }).length;
+    var score = matchCount * 3;
+
+    // Note any pair member whose qualities were not relevant to this specific crisis
+    var irrelevantPicks = pair.filter(function (p) {
+      return crisis.needs.every(function (needKey) { return p.needs.indexOf(needKey) === -1; });
+    }).map(function (p) { return { name: p.name, needLabel: needLabelOf(p.needs[0]) }; });
+
+    var summary;
+    if (matchCount === crisis.needs.length) {
+      summary = "Обрана пара повністю покрила потрібні для цієї кризи якості — команда впоралася швидко й впевнено.";
+    } else if (matchCount > 0) {
+      summary = "Обрана пара закрила лише частину потрібних якостей — кризу вдалося стримати, але з відчутними труднощами й затримкою.";
+    } else {
+      summary = "У жодного з обраних не було якостей, потрібних саме для цієї кризи, — команда впоралася повільно й ціною значних зусиль.";
+    }
+
+    return { score: score, summary: summary, breakdown: breakdown, irrelevantPicks: irrelevantPicks, covered: null };
+  }
+
+
+  function computeFinalVerdict(teamScore, delegationTotal, crisisScore) {
+    var total = teamScore + delegationTotal + crisisScore;
+    var tier;
+    if (total >= 16) tier = { key: "good", label: "Успішний запуск", cls: "tier-good",
+      text: "Проєкт запущено вчасно й якісно. Сильна команда, влучне делегування і впевнене подолання кризи — саме так виглядає лідерство, що поєднує стратегічний добір людей із гнучким управлінням у моменті." };
+    else if (total >= 11) tier = { key: "mixed", label: "Запуск із проблемами", cls: "tier-mixed",
+      text: "Продукт вийшов на ринок, але шлях був нерівним — десь команді бракувало потрібної компетенції, десь делегування було неточним, десь криза далася важче, ніж могла б. Реалістичний результат для складного проєкту з обмеженим часом." };
+    else tier = { key: "bad", label: "Провал запуску", cls: "tier-bad",
+      text: "Накопичені прогалини — в складі команди, в делегуванні або в реакції на кризу — призвели до того, що запуск не досяг мети. Це показовий приклад того, як рішення на самому початку (кого взяти в команду) визначають, наскільки в принципі можливо впоратися з тим, що станеться далі." };
+    return { total: total, tier: tier };
+  }
+
+  function plainTextExport() {
+    var lines = [];
+    lines.push("Проєкт «Запуск нового цифрового продукту за 3 місяці» — повний цикл");
+    if (state.studentName) lines.push("Студент: " + state.studentName);
+    lines.push("");
+    lines.push("1. КОМАНДА (" + state.teamResult.analysis.score + " балів)");
+    teamMembers().forEach(function (c) { lines.push("- " + c.name + " (" + c.disc + ", " + c.role + ")"); });
+    lines.push("");
+    lines.push("2. ДЕЛЕГУВАННЯ ЗАВДАНЬ (" + state.delegation.reduce(function (s, d) { return s + d.score; }, 0) + " балів з 9)");
+    state.delegation.forEach(function (d, i) {
+      var person = CANDIDATES.filter(function (c) { return c.id === d.personId; })[0];
+      lines.push("- " + TASKS[i].label + " → " + person.name + ", автономія рівня " + d.autonomy + " (" + d.score + " б.)");
+    });
+    lines.push("");
+    lines.push("3. КРИЗА (" + CRISES[state.crisisIndex].title + "): " + CRISES[state.crisisIndex].text);
+    var pairNames = Object.keys(state.crisisSelected).filter(function (k) { return state.crisisSelected[k]; })
+      .map(function (id) { return CANDIDATES.filter(function (c) { return c.id === id; })[0].name; });
+    lines.push("Обрана пара: " + pairNames.join(", ") + " (" + state.crisisResult.score + " б. з 6)");
+    lines.push(state.crisisResult.summary);
+    state.crisisResult.breakdown.forEach(function (b) {
+      if (b.covered) {
+        lines.push("  [+] " + b.label + " — закрито завдяки " + b.coveredBy.join(" і ") + " (" + b.hint + ").");
+      } else {
+        var alt = b.availableElsewhere && b.availableElsewhere.length
+          ? "потрібна якість не в цієї пари — перевірте решту команди."
+          : "у команді взагалі немає такої якості.";
+        lines.push("  [-] " + b.label + " (потрібна: " + b.hint + ") — не закрито; " + alt);
+      }
+    });
+    lines.push("");
+    var v = computeFinalVerdict(state.teamResult.analysis.score, state.delegation.reduce(function (s, d) { return s + d.score; }, 0), state.crisisResult.score);
+    lines.push("ЗАГАЛЬНИЙ ВЕРДИКТ: " + v.tier.label + " (" + v.total + " балів)");
+    return lines.join("\n");
+  }
+
+  function saveResultToStorage(verdict) {
+    state.saveStatus = "saving"; render();
+    dbPromise.then(function (db) {
+      if (!db) { state.saveStatus = "failed"; render(); return; }
+      var payload = {
+        name: state.studentName || "Анонім",
+        team: teamMembers().map(function (c) { return c.name; }),
+        teamScore: state.teamResult.analysis.score,
+        delegationScore: state.delegation.reduce(function (s, d) { return s + d.score; }, 0),
+        crisisScore: state.crisisResult.score,
+        total: verdict.total,
+        tier: verdict.tier.label,
+        timestamp: Date.now()
+      };
+      return db.collection("responses").add(payload).then(function () {
+        state.saveStatus = "saved"; render();
+      });
+    }).catch(function () { state.saveStatus = "failed"; render(); });
+  }
+
+  function loadTeacherRows() {
+    state.teacherLoading = true; render();
+    dbPromise.then(function (db) {
+      if (!db) { state.teacherRows = []; state.teacherLoading = false; render(); return; }
+      return db.collection("responses").orderBy("timestamp", "desc").limit(200).get().then(function (snap) {
+        state.teacherRows = snap.docs.map(function (d) { return d.data(); });
+        state.teacherLoading = false; render();
+      });
+    }).catch(function () { state.teacherRows = []; state.teacherLoading = false; render(); });
+  }
+
+  function csvEscape(t) { return '"' + String(t).replace(/"/g, '""') + '"'; }
+  function downloadCsv() {
+    var rows = state.teacherRows || [];
+    var header = ["Ім'я", "Команда", "Бал команди", "Бал делегування", "Бал кризи", "Всього", "Вердикт", "Дата"];
+    var lines = [header.map(csvEscape).join(";")];
+    rows.forEach(function (r) {
+      lines.push([csvEscape(r.name), csvEscape(r.team.join(", ")), r.teamScore, r.delegationScore, r.crisisScore, r.total, csvEscape(r.tier), csvEscape(new Date(r.timestamp).toLocaleString("uk-UA"))].join(";"));
+    });
+    var blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a"); a.href = url; a.download = "team-project-cycle-results.csv";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  }
+
+  function copyToClipboard(text, btn) {
+    function ok() { btn.textContent = "Скопійовано ✓"; setTimeout(function () { btn.textContent = "Скопіювати результат"; }, 1800); }
+    function fail() { var ta = document.getElementById("copy-fallback-area"); if (ta) { ta.style.display = "block"; ta.focus(); ta.select(); } }
+    if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(ok).catch(fail); }
+    else {
+      try {
+        var temp = document.createElement("textarea"); temp.value = text; temp.style.position = "fixed"; temp.style.opacity = "0";
+        document.body.appendChild(temp); temp.focus(); temp.select();
+        var success = document.execCommand("copy"); document.body.removeChild(temp);
+        if (success) ok(); else fail();
+      } catch (e) { fail(); }
+    }
+  }
+
+  function renderIntro() {
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<p class="kicker">Практичне заняття 4 · Бізнес-лідерство</p>' +
+      '<h1 class="title serif">Проєкт: від команди до запуску</h1>' +
+      '<div class="brief-box"><div class="b-label">Проєкт</div><p>«Запуск нового цифрового продукту на ринок за 3 місяці» — обмежений бюджет, потреба швидко реагувати на зворотний зв\'язок, стислі дедлайни.</p></div>' +
+      '<p class="lead">Повний цикл в одній грі: спершу ви сформуєте команду з 5 осіб, потім делегуватимете їй три реальні завдання проєкту, а посеред шляху вас чекає несподівана криза. У кінці — цілісний вердикт по всьому проєкту.</p>' +
+      '<label class="field-label">Ваше ім\'я (необов\'язково)</label>' +
+      '<input type="text" class="text-input" id="name-input" placeholder="Наприклад, Олена К." value="' + state.studentName.replace(/"/g,'&quot;') + '" />' +
+      '<button class="btn btn-primary" id="start-btn">Почати з формування команди →</button>' +
+      '</div></div>'
+    );
+    card.querySelector("#start-btn").addEventListener("click", function () {
+      state.studentName = card.querySelector("#name-input").value.trim();
+      state.screen = "select"; render();
+    });
+    return card;
+  }
+
+  function renderSelect() {
+    var count = selectedCount();
+    var full = count >= TEAM_SIZE;
+    var cardsHtml = CANDIDATES.map(function (c) {
+      var isSel = !!state.selected[c.id];
+      var disabled = full && !isSel;
+      return (
+        '<div class="candidate-card' + (isSel ? " selected" : "") + (disabled ? " disabled" : "") + '" data-id="' + c.id + '">' +
+          '<div class="check-mark">✓</div>' +
+          '<div class="cand-head"><div class="disc-badge ' + c.disc + '">' + c.disc + '</div><div><div class="cand-name">' + c.name + '</div><div class="cand-role">' + c.role + '</div></div></div>' +
+          '<div class="cand-trait"><b>Сила:</b> ' + c.strengths + '</div>' +
+          '<div class="cand-trait"><b>Обмеження:</b> ' + c.weaknesses + '</div>' +
+        '</div>'
+      );
+    }).join("");
+
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<p class="kicker">Фаза 1 з 3 · Формування команди</p>' +
+      '<h1 class="title serif" style="font-size:22px;">Оберіть 5 кандидатів</h1>' +
+      '<div class="counter-bar' + (full ? " full" : "") + '"><span class="c-text">Обрано: ' + count + ' / ' + TEAM_SIZE + '</span>' + (full ? '<span>✓ готово</span>' : '') + '</div>' +
+      '<div class="candidate-grid">' + cardsHtml + '</div>' +
+      '<button class="btn btn-primary" id="build-btn" ' + (full ? "" : "disabled") + '>Сформувати команду →</button>' +
+      '</div></div>'
+    );
+
+    card.querySelectorAll(".candidate-card").forEach(function (cc) {
+      cc.addEventListener("click", function () {
+        var id = cc.getAttribute("data-id"); var isSel = !!state.selected[id];
+        if (!isSel && selectedCount() >= TEAM_SIZE) return;
+        state.selected[id] = !isSel; render();
+      });
+    });
+    card.querySelector("#build-btn").addEventListener("click", function () {
+      if (selectedCount() !== TEAM_SIZE) return;
+      var team = selectedCandidates();
+      state.teamResult = { team: team, analysis: analyzeTeam(team) };
+      state.screen = "teamResults"; render();
+    });
+    return card;
+  }
+
+  function renderTeamResults() {
+    var analysis = state.teamResult.analysis;
+    var team = state.teamResult.team;
+    var rosterHtml = team.map(function (c) { return '<div class="roster-chip"><span class="disc-badge ' + c.disc + '">' + c.disc + '</span>' + c.name + ' — ' + c.role + '</div>'; }).join("");
+    var needsHtml = NEEDS.map(function (n) {
+      var names = analysis.needCoverage[n.key]; var covered = names.length > 0;
+      return '<div class="need-item ' + (covered ? "covered" : "missing") + '"><span>' + (covered ? "✓" : "✕") + '</span><span>' + n.label + (covered ? " (" + names.join(", ") + ")" : "") + '</span></div>';
+    }).join("");
+    var allDisc = ["D", "I", "S", "C"];
+    var discHtml = allDisc.map(function (d) {
+      var present = analysis.discPresent.indexOf(d) !== -1;
+      return '<span class="disc-pill ' + (present ? "present" : "absent") + '">' + d + (present ? " · " + analysis.discCounts[d] : "") + '</span>';
+    }).join("");
+    var flagsHtml = analysis.flags.map(function (f) { return '<li' + (f.positive ? ' class="positive"' : '') + '>' + escHtml(f.text) + '</li>'; }).join("");
+
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<p class="kicker">Фаза 1 з 3 · Результат формування команди</p>' +
+      '<h1 class="title serif">Ваша команда сформована</h1>' +
+      '<div class="roster-row">' + rosterHtml + '</div>' +
+      '<b style="font-size:13px;">Покриття потреб проєкту (' + analysis.coveredCount + ' з ' + NEEDS.length + ')</b>' +
+      '<div class="needs-grid" style="margin-top:10px;">' + needsHtml + '</div>' +
+      '<b style="font-size:13px;">DISC-різноманітність (' + analysis.diversity + ' з 4)</b>' +
+      '<div class="disc-diversity-row" style="margin-top:10px;">' + discHtml + '</div>' +
+      '<b style="font-size:13px;">Спостереження</b>' +
+      '<ul class="flag-list" style="margin-top:10px;">' + flagsHtml + '</ul>' +
+      '<div class="note-box">Ця команда — саме та, з ким ви працюватимете далі. Прогалини, які ви бачите зараз, дадуться взнаки під час делегування завдань і кризи.</div>' +
+      '<button class="btn btn-primary" id="continue-btn">Перейти до делегування завдань →</button>' +
+      '</div></div>'
+    );
+    card.querySelector("#continue-btn").addEventListener("click", function () {
+      state.delegation = []; state.delegateDraft = { personId: null, autonomy: null };
+      state.screen = "delegateTask"; render();
+    });
+    return card;
+  }
+
+  function renderDelegateTask() {
+    var taskIndex = state.delegation.length;
+    var task = TASKS[taskIndex];
+    var team = teamMembers();
+    var draft = state.delegateDraft;
+
+    var personsHtml = team.map(function (p) {
+      var sel = draft.personId === p.id;
+      return '<div class="person-chip' + (sel ? " selected" : "") + '" data-id="' + p.id + '"><div class="disc-badge ' + p.disc + '">' + p.disc + '</div><div class="p-name">' + p.name + '</div></div>';
+    }).join("");
+
+    var autonomyHtml = AUTONOMY_LEVELS.map(function (a) {
+      var sel = draft.autonomy === a.level;
+      return '<button class="autonomy-btn' + (sel ? " selected" : "") + '" data-level="' + a.level + '"><b>Рівень ' + a.level + '</b>' + a.title + '</button>';
+    }).join("");
+
+    var progressPct = Math.round((taskIndex / TASKS.length) * 100);
+
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<p class="kicker">Фаза 2 з 3 · Делегування · Завдання ' + (taskIndex + 1) + ' із ' + TASKS.length + '</p>' +
+      '<div class="progress-track"><div class="progress-fill" style="width:' + progressPct + '%"></div></div>' +
+      '<div class="scene-icon-wrap">' + ICONS[task.icon] + '</div>' +
+      '<p class="scene-text serif">' + task.label + '</p>' +
+      '<label class="field-label">Кому доручите?</label>' +
+      '<div class="person-grid">' + personsHtml + '</div>' +
+      '<label class="field-label">Який рівень автономії дасте?</label>' +
+      '<div class="autonomy-list">' + autonomyHtml + '</div>' +
+      '<button class="btn btn-primary" id="delegate-btn" ' + (draft.personId && draft.autonomy ? "" : "disabled") + '>Делегувати →</button>' +
+      '</div></div>'
+    );
+
+    card.querySelectorAll(".person-chip").forEach(function (pc) {
+      pc.addEventListener("click", function () { draft.personId = pc.getAttribute("data-id"); render(); });
+    });
+    card.querySelectorAll(".autonomy-btn").forEach(function (ab) {
+      ab.addEventListener("click", function () { draft.autonomy = parseInt(ab.getAttribute("data-level"), 10); render(); });
+    });
+    card.querySelector("#delegate-btn").addEventListener("click", function () {
+      if (!draft.personId || !draft.autonomy) return;
+      var person = team.filter(function (p) { return p.id === draft.personId; })[0];
+      var outcome = delegationOutcome(person, task, draft.autonomy);
+      state.delegation.push({ taskIndex: taskIndex, personId: person.id, autonomy: draft.autonomy, score: outcome.score, outcomeKey: outcome.key, text: outcome.text });
+      state.delegateDraft = { personId: null, autonomy: null };
+      state.screen = "delegateConsequence"; render();
+    });
+    return card;
+  }
+
+  function renderDelegateConsequence() {
+    var last = state.delegation[state.delegation.length - 1];
+    var isLastTask = state.delegation.length >= TASKS.length;
+
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<div class="consequence-box">' +
+        '<div class="cq-label">Результат делегування</div>' +
+        '<p>' + escHtml(last.text) + '</p>' +
+        '<span class="score-chip">+' + last.score + ' з 3 балів</span>' +
+      '</div>' +
+      '<button class="btn btn-primary" id="continue-btn">' + (isLastTask ? "Підсумок фази делегування →" : "Наступне завдання →") + '</button>' +
+      '</div></div>'
+    );
+    card.querySelector("#continue-btn").addEventListener("click", function () {
+      state.screen = isLastTask ? "delegationSummary" : "delegateTask"; render();
+    });
+    return card;
+  }
+
+  function renderDelegationSummary() {
+    var team = teamMembers();
+    var totalScore = state.delegation.reduce(function (s, d) { return s + d.score; }, 0);
+    var rowsHtml = state.delegation.map(function (d, i) {
+      var person = team.filter(function (p) { return p.id === d.personId; })[0];
+      return (
+        '<tr><td>' + TASKS[i].label + '</td><td>' + person.name + '</td><td>Рівень ' + d.autonomy + '</td><td>' + d.score + '/3</td></tr>'
+      );
+    }).join("");
+
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<p class="kicker">Фаза 2 з 3 · Підсумок делегування</p>' +
+      '<h1 class="title serif" style="font-size:22px;">Усі три завдання розподілено</h1>' +
+      '<table class="summary-table"><thead><tr><th>Завдання</th><th>Кому</th><th>Автономія</th><th>Бал</th></tr></thead><tbody>' + rowsHtml + '</tbody></table>' +
+      '<div class="score-breakdown"><div class="score-box"><div class="sb-value">' + totalScore + ' / 9</div><div class="sb-label">Бал делегування</div></div></div>' +
+      '<div class="note-box">Далі на команду очікує несподівана криза — і вирішувати її доведеться вже не всім п\'ятьом, а лише двом обраним вами людям.</div>' +
+      '<button class="btn btn-primary" id="continue-btn">До кризи →</button>' +
+      '</div></div>'
+    );
+    card.querySelector("#continue-btn").addEventListener("click", function () {
+      state.crisisIndex = Math.random() < 0.5 ? 0 : 1;
+      state.crisisSelected = {};
+      state.screen = "crisisSelect"; render();
+    });
+    return card;
+  }
+
+  function renderCrisisSelect() {
+    var crisis = CRISES[state.crisisIndex];
+    var team = teamMembers();
+    var count = Object.keys(state.crisisSelected).filter(function (k) { return state.crisisSelected[k]; }).length;
+    var full = count >= 2;
+
+    var personsHtml = team.map(function (p) {
+      var sel = !!state.crisisSelected[p.id];
+      var disabled = full && !sel;
+      return '<div class="person-chip' + (sel ? " selected" : "") + (disabled ? " disabled" : "") + '" data-id="' + p.id + '" style="' + (disabled ? "opacity:.4;cursor:not-allowed;" : "") + '"><div class="disc-badge ' + p.disc + '">' + p.disc + '</div><div class="p-name">' + p.name + '</div></div>';
+    }).join("");
+
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<p class="kicker">Фаза 3 з 3</p>' +
+      '<div class="scene-icon-wrap">' + ICONS.alert + '</div>' +
+      '<h1 class="title serif" style="text-align:center;font-size:22px;">' + crisis.title + '</h1>' +
+      '<p class="scene-text serif">' + crisis.text + '</p>' +
+      '<div class="counter-bar' + (full ? " full" : "") + '"><span class="c-text">Обрано: ' + count + ' / 2</span></div>' +
+      '<div class="person-grid">' + personsHtml + '</div>' +
+      '<button class="btn btn-primary" id="resolve-btn" ' + (full ? "" : "disabled") + '>Доручити вирішення →</button>' +
+      '</div></div>'
+    );
+
+    card.querySelectorAll(".person-chip").forEach(function (pc) {
+      pc.addEventListener("click", function () {
+        var id = pc.getAttribute("data-id"); var isSel = !!state.crisisSelected[id];
+        var curCount = Object.keys(state.crisisSelected).filter(function (k) { return state.crisisSelected[k]; }).length;
+        if (!isSel && curCount >= 2) return;
+        state.crisisSelected[id] = !isSel; render();
+      });
+    });
+    card.querySelector("#resolve-btn").addEventListener("click", function () {
+      var pair = team.filter(function (p) { return state.crisisSelected[p.id]; });
+      if (pair.length !== 2) return;
+      state.crisisResult = crisisOutcome(pair, crisis, team);
+      state.screen = "crisisConsequence"; render();
+      var v = computeFinalVerdict(state.teamResult.analysis.score, state.delegation.reduce(function (s, d) { return s + d.score; }, 0), state.crisisResult.score);
+      saveResultToStorage(v);
+    });
+    return card;
+  }
+
+  function renderCrisisConsequence() {
+    var r = state.crisisResult;
+
+    var breakdownHtml = r.breakdown.map(function (b) {
+      if (b.covered) {
+        return (
+          '<div class="need-item covered" style="align-items:flex-start;">' +
+            '<span>✓</span>' +
+            '<span><b>' + b.label + '</b> — закрито завдяки ' + b.coveredBy.join(" і ") + '. Саме ця якість (' + b.hint + ') і була потрібна тут.</span>' +
+          '</div>'
+        );
+      }
+      var altText = b.availableElsewhere && b.availableElsewhere.length
+        ? "Ця якість (" + b.hint + ") нікому з обраної пари не притаманна. Погляньте на решту членів команди, яких ви не обрали для вирішення цієї кризи, — можливо, потрібна якість є в когось із них."
+        : "У вашій команді загалом немає нікого з такою якістю — це прогалина, яка тягнеться ще з формування команди на початку.";
+      return (
+        '<div class="need-item missing" style="align-items:flex-start;">' +
+          '<span>✕</span>' +
+          '<span><b>' + b.label + '</b> (потрібна: ' + b.hint + ') — не закрито. ' + altText + '</span>' +
+        '</div>'
+      );
+    }).join("");
+
+    var irrelevantHtml = "";
+    if (r.irrelevantPicks.length > 0) {
+      irrelevantHtml = (
+        '<div class="note-box">' +
+          r.irrelevantPicks.map(function (p) {
+            return "<b>" + p.name + "</b> має цінні якості (" + p.needLabel + "), але для цієї конкретної кризи вони не знадобилися — можливо, варто було обрати іншу людину з команди.";
+          }).join("<br>") +
+        '</div>'
+      );
+    }
+
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<div class="consequence-box">' +
+        '<div class="cq-label">Як команда впоралася — і чому</div>' +
+        '<p>' + escHtml(r.summary) + '</p>' +
+        '<span class="score-chip">+' + r.score + ' з 6 балів</span>' +
+      '</div>' +
+      '<b style="font-size:13px;">Розбір по кожній потрібній якості</b>' +
+      '<div class="needs-grid" style="margin-top:10px;grid-template-columns:1fr;">' + breakdownHtml + '</div>' +
+      irrelevantHtml +
+      '<button class="btn btn-primary" id="continue-btn" style="margin-top:6px;">Фінальний вердикт проєкту →</button>' +
+      '</div></div>'
+    );
+    card.querySelector("#continue-btn").addEventListener("click", function () {
+      state.screen = "final"; render();
+    });
+    return card;
+  }
+
+  function renderFinal() {
+    var teamScore = state.teamResult.analysis.score;
+    var delegationScore = state.delegation.reduce(function (s, d) { return s + d.score; }, 0);
+    var crisisScore = state.crisisResult.score;
+    var verdict = computeFinalVerdict(teamScore, delegationScore, crisisScore);
+    var plain = plainTextExport();
+
+    var saveNote = "";
+    if (state.saveStatus === "saving") saveNote = "Зберігаємо результат…";
+    else if (state.saveStatus === "saved") saveNote = "Результат збережено.";
+    else if (state.saveStatus === "failed") saveNote = "Результат сформовано, але не вдалося зберегти для викладача.";
+
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<div class="scene-icon-wrap">' + ICONS.trophy + '</div>' +
+      '<p class="kicker" style="text-align:center;">' + (state.studentName ? escHtml(state.studentName) : "Проєкт завершено") + '</p>' +
+      '<div style="text-align:center;"><span class="ending-tier ' + (verdict.tier.key === "good" ? "tier-good" : verdict.tier.key === "mixed" ? "tier-mixed" : "tier-bad") + '">Загальний бал: ' + verdict.total + '</span></div>' +
+      '<h1 class="title serif" style="text-align:center;">' + verdict.tier.label + '</h1>' +
+      '<div class="score-breakdown">' +
+        '<div class="score-box"><div class="sb-value">' + teamScore + '</div><div class="sb-label">Команда</div></div>' +
+        '<div class="score-box"><div class="sb-value">' + delegationScore + ' / 9</div><div class="sb-label">Делегування</div></div>' +
+        '<div class="score-box"><div class="sb-value">' + crisisScore + ' / 6</div><div class="sb-label">Криза</div></div>' +
+      '</div>' +
+      '<p class="lead">' + verdict.tier.text + '</p>' +
+      (saveNote ? '<p class="save-note">' + saveNote + '</p>' : "") +
+      '<div class="result-actions">' +
+        '<button class="btn btn-secondary" id="copy-btn">Скопіювати результат</button>' +
+        '<button class="btn btn-secondary" id="retry-btn">Почати нову спробу</button>' +
+      '</div>' +
+      '<textarea id="copy-fallback-area" class="copy-textarea" style="display:none;margin-top:12px;" readonly>' + escHtml(plain) + '</textarea>' +
+      '<button class="teacher-link" id="teacher-link">Перегляд результатів групи (для викладача)</button>' +
+      '</div></div>'
+    );
+
+    card.querySelector("#copy-btn").addEventListener("click", function (e) { copyToClipboard(plainTextExport(), e.currentTarget); });
+    card.querySelector("#retry-btn").addEventListener("click", function () {
+      state.screen = "intro"; state.selected = {}; state.teamResult = null; state.delegation = [];
+      state.crisisSelected = {}; state.crisisResult = null; render();
+    });
+    card.querySelector("#teacher-link").addEventListener("click", function () { state.screen = "teacher"; render(); loadTeacherRows(); });
+    return card;
+  }
+
+  function renderTeacher() {
+    var rows = state.teacherRows;
+    var bodyHtml;
+    if (state.teacherLoading) bodyHtml = '<p class="empty-note">Завантаження результатів…</p>';
+    else if (!rows || rows.length === 0) bodyHtml = '<p class="empty-note">Поки що ніхто не пройшов гру за цим посиланням.</p>';
+    else {
+      var trs = rows.map(function (r) {
+        return '<tr><td>' + escHtml(r.name) + '</td><td>' + escHtml(r.team.join(", ")) + '</td><td>' + r.teamScore + '</td><td>' + r.delegationScore + '/9</td><td>' + r.crisisScore + '/6</td><td>' + r.total + '</td><td><span class="tag">' + escHtml(r.tier) + '</span></td></tr>';
+      }).join("");
+      bodyHtml = '<div class="table-scroll"><table class="results-table"><thead><tr><th>Студент</th><th>Команда</th><th>Кмд.</th><th>Дел.</th><th>Криза</th><th>Всього</th><th>Вердикт</th></tr></thead><tbody>' + trs + '</tbody></table></div>';
+    }
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<div class="teacher-header"><h1 class="title serif" style="margin:0;font-size:22px;">Результати групи</h1><button class="icon-btn" id="refresh-btn">Оновити</button></div>' +
+      bodyHtml +
+      '<div class="result-actions"><button class="btn btn-secondary" id="csv-btn"' + ((!rows || rows.length === 0) ? " disabled" : "") + '>Завантажити CSV</button><button class="btn btn-secondary" id="back-btn">← Назад</button></div>' +
+      '</div></div>'
+    );
+    card.querySelector("#refresh-btn").addEventListener("click", loadTeacherRows);
+    card.querySelector("#back-btn").addEventListener("click", function () { state.screen = state.crisisResult ? "final" : "intro"; render(); });
+    var csvBtn = card.querySelector("#csv-btn");
+    if (csvBtn && rows && rows.length > 0) csvBtn.addEventListener("click", downloadCsv);
+    return card;
+  }
+
+  function render() {
+    app.innerHTML = "";
+    var view;
+    if (state.screen === "intro") view = renderIntro();
+    else if (state.screen === "select") view = renderSelect();
+    else if (state.screen === "teamResults") view = renderTeamResults();
+    else if (state.screen === "delegateTask") view = renderDelegateTask();
+    else if (state.screen === "delegateConsequence") view = renderDelegateConsequence();
+    else if (state.screen === "delegationSummary") view = renderDelegationSummary();
+    else if (state.screen === "crisisSelect") view = renderCrisisSelect();
+    else if (state.screen === "crisisConsequence") view = renderCrisisConsequence();
+    else if (state.screen === "final") view = renderFinal();
+    else view = renderTeacher();
+    app.appendChild(view);
+    window.scrollTo(0, 0);
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LEAD — адаптований опитувальник ситуативного лідерства</title>
+<style>
+  :root {
+    --ink: #1E2761;
+    --ink-soft: #384080;
+    --surface: #F3F6FC;
+    --card: #FFFFFF;
+    --gold: #C9962C;
+    --gold-soft: #F3E4C6;
+    --muted: #5B6685;
+    --line: #DDE4F5;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; min-height: 100%;
+    background: var(--surface);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+  }
+  .serif { font-family: Cambria, Georgia, "Times New Roman", serif; }
+  #app { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 32px 18px; }
+  .stage { width: 100%; max-width: 660px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 40px 36px;
+    box-shadow: 0 18px 40px -24px rgba(30, 39, 97, 0.35);
+  }
+  @media (max-width: 480px) { .card { padding: 26px 20px; } }
+
+  .kicker { font-size: 13px; color: var(--muted); margin: 0 0 10px; }
+  h1.title { font-size: 28px; line-height: 1.2; margin: 0 0 14px; font-weight: 700; }
+  p.lead { font-size: 15px; line-height: 1.6; color: var(--muted); margin: 0 0 22px; }
+  label.field-label { display: block; font-size: 13px; color: var(--ink-soft); margin-bottom: 6px; font-weight: 600; }
+  input.text-input {
+    width: 100%; padding: 12px 14px; border-radius: 10px; border: 1.5px solid var(--line);
+    font-size: 15px; color: var(--ink); background: var(--surface); margin-bottom: 22px;
+  }
+  input.text-input:focus { outline: none; border-color: var(--gold); }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 13px 26px; border-radius: 10px; border: none; font-size: 15px; font-weight: 600;
+    cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .btn-primary { background: var(--ink); color: #fff; width: 100%; }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 10px 20px -12px rgba(30,39,97,0.6); }
+  .btn-ghost { background: transparent; color: var(--muted); font-weight: 500; padding: 8px 4px; }
+  .btn-ghost:hover { color: var(--ink); }
+  .btn-secondary { background: var(--surface); color: var(--ink); border: 1.5px solid var(--line); }
+  .meta-row { display: flex; gap: 22px; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line); }
+  .meta-item .num { font-weight: 700; font-size: 16px; }
+  .meta-item .lbl { font-size: 12px; color: var(--muted); }
+  .note-box {
+    margin-top: 4px; margin-bottom: 22px; padding: 12px 14px; border-radius: 10px;
+    background: var(--surface); border: 1px solid var(--line); font-size: 12.5px; color: var(--muted); line-height: 1.5;
+  }
+
+  /* Quiz */
+  .progress-track { height: 5px; background: var(--line); border-radius: 4px; overflow: hidden; margin-bottom: 22px; }
+  .progress-fill { height: 100%; background: var(--gold); border-radius: 4px; transition: width 0.35s ease; }
+  .step-count { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+  .situation-label { font-size: 12px; color: var(--gold); font-weight: 700; margin-bottom: 8px; }
+  .statement { font-size: 18px; line-height: 1.5; font-weight: 600; margin: 0 0 24px; min-height: 78px; }
+  .option-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 8px; }
+  .option-card {
+    text-align: left; padding: 14px 16px; border-radius: 12px; border: 1.5px solid var(--line);
+    background: #fff; cursor: pointer; font-size: 14px; line-height: 1.45; color: var(--ink-soft);
+    transition: all 0.15s ease;
+  }
+  .option-card:hover { border-color: var(--gold); }
+  .option-card.selected { border-color: var(--gold); background: var(--gold); color: #fff; }
+  .quiz-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; }
+
+  /* Results */
+  .result-name { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+  .bar-row { margin-bottom: 16px; }
+  .bar-row.dominant .bar-label { color: var(--ink); }
+  .bar-label { display: flex; justify-content: space-between; font-size: 13.5px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+  .bar-track { height: 13px; background: var(--surface); border-radius: 7px; overflow: hidden; border: 1px solid var(--line); }
+  .bar-fill { height: 100%; border-radius: 7px; background: var(--line); transition: width 0.8s ease; }
+  .bar-row.dominant .bar-fill { background: var(--gold); }
+
+  .stat-grid { display: flex; gap: 14px; margin-top: 24px; }
+  @media (max-width: 480px) { .stat-grid { flex-direction: column; } }
+  .stat-card { flex: 1; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; }
+  .stat-card .stat-value { font-size: 26px; font-weight: 700; color: var(--ink); }
+  .stat-card .stat-label { font-size: 12px; color: var(--muted); margin-top: 2px; font-weight: 600; }
+  .stat-card p { font-size: 12px; color: var(--muted); margin: 8px 0 0; line-height: 1.5; }
+
+  .dominant-card { margin-top: 24px; padding: 20px 22px; border-radius: 14px; background: var(--ink); color: #fff; }
+  .dominant-card .dc-label { font-size: 12px; color: var(--gold-soft); margin-bottom: 4px; }
+  .dominant-card .dc-style { font-size: 19px; font-weight: 700; margin-bottom: 10px; }
+  .dominant-card p { font-size: 13.5px; line-height: 1.55; color: #DCE1F5; margin: 0; }
+
+  .save-note { font-size: 12.5px; color: var(--muted); margin-top: 18px; text-align: center; }
+  .result-actions { display: flex; gap: 12px; margin-top: 26px; }
+  .result-actions .btn { flex: 1; }
+  .teacher-link {
+    display: block; text-align: center; margin-top: 22px; font-size: 12.5px; color: var(--muted);
+    text-decoration: underline; cursor: pointer; background: none; border: none;
+  }
+
+  /* Teacher view */
+  .teacher-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+  table.results-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  table.results-table th {
+    text-align: left; font-size: 11px; color: var(--muted); font-weight: 600; padding: 7px 6px; border-bottom: 2px solid var(--line);
+  }
+  table.results-table td { padding: 8px 6px; border-bottom: 1px solid var(--line); }
+  .tag { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; background: var(--gold-soft); color: #7A5A16; }
+  .empty-note { text-align: center; color: var(--muted); font-size: 13.5px; padding: 30px 0; }
+  .icon-btn { background: none; border: 1.5px solid var(--line); border-radius: 8px; padding: 7px 13px; font-size: 12.5px; color: var(--ink); cursor: pointer; }
+  .icon-btn:hover { border-color: var(--gold); }
+  .table-scroll { overflow-x: auto; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+(function () {
+  // ---------------- Style model ----------------
+  var STYLE_NAMES = {
+    S1: "Директивний (Telling)",
+    S2: "Навчальний (Coaching)",
+    S3: "Підтримуючий (Participating)",
+    S4: "Делегувальний (Delegating)"
+  };
+  var STYLE_ORDER = ["S1", "S2", "S3", "S4"];
+
+  var STYLE_DESC = {
+    S1: "Ви даєте команді чіткі, конкретні інструкції та тримаєте близький контроль над виконанням. Ефективно з людьми, яким ще бракує компетентності чи впевненості, але може демотивувати досвідчених фахівців.",
+    S2: "Ви поєднуєте чіткі вказівки з поясненням логіки рішень і підтримкою. Добре працює з мотивованими, але ще недосвідченими членами команди.",
+    S3: "Ви менш директивні, більше залучаєте команду до ухвалення рішень і підтримуєте її впевненість. Ефективно з компетентними, але невпевненими або тимчасово демотивованими співробітниками.",
+    S4: "Ви надаєте команді високу автономію і мінімально втручаєтесь у процес. Ефективно з досвідченими, самомотивованими фахівцями."
+  };
+
+  // ---------------- Item bank ----------------
+  // Кожна ситуація відповідає одному з чотирьох рівнів готовності (R1–R4);
+  // matchStyle — стиль, який теорія Херсі-Бланшара вважає найдоречнішим для цього рівня готовності.
+  var ITEMS_BY_ID = {
+    R1a: {
+      text: "Новий член студентської проєктної команди отримав перше завдання з підготовки звіту і не знає, з чого почати, кілька разів перепитує базові речі.",
+      matchStyle: "S1",
+      options: [
+        { style: "S3", text: "Запитати, як він сам бачить виконання завдання, і мінімально втручатися, довіряючи його підходу." },
+        { style: "S1", text: "Дати чітку покрокову інструкцію і особисто перевірити виконання кожного кроку." },
+        { style: "S4", text: "Доручити завдання і термін виконання, залишивши деталі повністю на його розсуд." },
+        { style: "S2", text: "Детально пояснити завдання, розповісти логіку підходу і запросити ставити запитання по ходу роботи." }
+      ]
+    },
+    R1b: {
+      text: "Молодший аналітик уперше готує презентацію для важливого клієнта і відверто нервує, побоюючись помилитися.",
+      matchStyle: "S1",
+      options: [
+        { style: "S2", text: "Розписати структуру презентації крок за кроком, пояснити логіку підходу і бути поруч для запитань." },
+        { style: "S4", text: "Дати повну свободу в підготовці презентації, довіряючи його компетентності." },
+        { style: "S1", text: "Особисто визначити зміст і структуру кожного слайда та проконтролювати підготовку." },
+        { style: "S3", text: "Обговорити його бачення презентації і підтримати, залишивши деталі на його розсуд." }
+      ]
+    },
+    R1c: {
+      text: "Волонтер, який щойно приєднався до організації заходу, губиться серед процесів і уникає ухвалювати будь-які рішення самостійно.",
+      matchStyle: "S1",
+      options: [
+        { style: "S4", text: "Доручити йому окрему ділянку роботи і не втручатися, поки не виникне проблема." },
+        { style: "S3", text: "Запропонувати обговорити разом, як краще організувати його ділянку роботи, підтримуючи його ідеї." },
+        { style: "S1", text: "Скласти детальний план дій із конкретними завданнями на кожен день і особисто його курувати." },
+        { style: "S2", text: "Пояснити всі процеси покроково, розповісти причини рішень і залишатися доступним для запитань." }
+      ]
+    },
+    R2a: {
+      text: "Стажер з ентузіазмом узявся вести соціальні мережі компанії, але ще не знає деяких технічних нюансів і припускається помилок у публікаціях.",
+      matchStyle: "S2",
+      options: [
+        { style: "S1", text: "Забрати ведення акаунтів собі, поки стажер не набереться досвіду." },
+        { style: "S2", text: "Показати правильний підхід, пояснити логіку рішень щодо контенту і залишатися поруч для підказок." },
+        { style: "S4", text: "Повністю довірити ведення акаунтів, не втручаючись у процес." },
+        { style: "S3", text: "Обговорити разом причини помилок і дати спробувати виправити ситуацію самостійно." }
+      ]
+    },
+    R2b: {
+      text: "Новий менеджер проєкту охоче береться за комунікацію з підрядниками, хоча ще не має досвіду ведення перемовин.",
+      matchStyle: "S2",
+      options: [
+        { style: "S3", text: "Обговорити з ним стратегію перемовин і підтримати його рішення, втручаючись мінімально." },
+        { style: "S4", text: "Дати повну свободу дій у перемовинах, довіряючи його ентузіазму." },
+        { style: "S2", text: "Разом підготувати сценарій перемовин, пояснити ключові моменти і бути доступним під час розмови." },
+        { style: "S1", text: "Особисто визначити всі формулювання і вести перемовини самостійно, залучаючи його лише як спостерігача." }
+      ]
+    },
+    R2c: {
+      text: "Студент-практикант зацікавлений розробити маркетинговий план, але раніше цим не займався і потребує наставництва.",
+      matchStyle: "S2",
+      options: [
+        { style: "S1", text: "Скласти план самостійно і доручити йому лише технічне оформлення." },
+        { style: "S4", text: "Доручити повністю розробку плану, довіряючи його ініціативності." },
+        { style: "S2", text: "Розробити план разом, пояснюючи логіку кожного рішення і відповідаючи на запитання по ходу." },
+        { style: "S3", text: "Запропонувати самостійно накидати перший варіант і обговорити його спільно, мінімально втручаючись." }
+      ]
+    },
+    R3a: {
+      text: "Досвідчений спеціаліст відділу продажів стабільно виконує план, але останнім часом уникає складних клієнтів, посилаючись на невпевненість.",
+      matchStyle: "S3",
+      options: [
+        { style: "S1", text: "Розписати чіткий скрипт розмови зі складними клієнтами і проконтролювати його дотримання." },
+        { style: "S3", text: "Обговорити причини його невпевненості, вислухати й підтримати те рішення, яке він сам запропонує." },
+        { style: "S4", text: "Передати роботу зі складними клієнтами повністю без додаткових обговорень." },
+        { style: "S2", text: "Пояснити важливість цих клієнтів для команди і разом скласти детальний план дій." }
+      ]
+    },
+    R3b: {
+      text: "Керівник підгрупи має всі навички для впровадження нового процесу, але сумнівається у власному рішенні і відкладає початок.",
+      matchStyle: "S3",
+      options: [
+        { style: "S2", text: "Разом розписати покроковий план впровадження і пояснити логіку кожного етапу." },
+        { style: "S1", text: "Особисто визначити терміни і кроки впровадження, взявши контроль на себе." },
+        { style: "S3", text: "Обговорити його сумніви, підтримати впевненість у власному рішенні і дати можливість діяти самостійно." },
+        { style: "S4", text: "Доручити впровадження повністю, не втручаючись у процес." }
+      ]
+    },
+    R3c: {
+      text: "Провідний розробник команди технічно готовий очолити новий модуль проєкту, але не хоче брати на себе додаткову відповідальність через побоювання не впоратися.",
+      matchStyle: "S3",
+      options: [
+        { style: "S4", text: "Доручити модуль повністю без обговорення додаткових деталей." },
+        { style: "S1", text: "Скласти детальний технічний план модуля і особисто контролювати кожен етап розробки." },
+        { style: "S2", text: "Пояснити, чому саме він підходить для цієї ролі, і разом скласти план дій." },
+        { style: "S3", text: "Обговорити його побоювання, підтримати і дати змогу самому визначити, як підійти до модуля." }
+      ]
+    },
+    R4a: {
+      text: "Найдосвідченіший член команди самостійно виявив проблему в проєкті і вже підготував план її вирішення.",
+      matchStyle: "S4",
+      options: [
+        { style: "S2", text: "Обговорити план разом, пояснивши свою точку зору, перш ніж дати дозвіл діяти." },
+        { style: "S3", text: "Запропонувати обговорити підхід разом, перш ніж він розпочне роботу." },
+        { style: "S1", text: "Особисто переглянути й затвердити кожен крок плану перед початком роботи." },
+        { style: "S4", text: "Довіритися його плану і дати повну автономію в реалізації." }
+      ]
+    },
+    R4b: {
+      text: "Керівник відділу з багаторічним досвідом успішно веде кілька проєктів одночасно і сам ініціює покращення процесів.",
+      matchStyle: "S4",
+      options: [
+        { style: "S1", text: "Регулярно перевіряти прогрес і затверджувати кожне рішення особисто." },
+        { style: "S4", text: "Надати повну свободу в ухваленні рішень і мінімізувати звітність." },
+        { style: "S2", text: "Обговорювати кожне важливе рішення разом, пояснюючи свою позицію." },
+        { style: "S3", text: "Періодично цікавитися його підходом і підтримувати ініціативи в розмові." }
+      ]
+    },
+    R4c: {
+      text: "Провідний фахівець команди підготував інноваційну пропозицію та впевнено відстоює її на нараді.",
+      matchStyle: "S4",
+      options: [
+        { style: "S3", text: "Підтримати пропозицію в обговоренні, залишаючи фінальне рішення за командою." },
+        { style: "S2", text: "Обговорити деталі пропозиції, поставити уточнювальні запитання і разом ухвалити рішення." },
+        { style: "S4", text: "Довіритися його експертизі і дати дозвіл реалізовувати пропозицію самостійно." },
+        { style: "S1", text: "Детально перевірити кожен аспект пропозиції особисто перед тим, як дати згоду." }
+      ]
+    }
+  };
+
+  // Порядок показу — навмисно перемішаний за рівнями готовності
+  var DISPLAY_ORDER = ["R2a", "R4a", "R1a", "R3a", "R1b", "R4b", "R2b", "R3b", "R1c", "R4c", "R2c", "R3c"];
+  var ITEMS = DISPLAY_ORDER.map(function (id) {
+    var base = ITEMS_BY_ID[id];
+    return { id: id, text: base.text, matchStyle: base.matchStyle, options: base.options };
+  });
+
+  var STORAGE_PREFIX = "lead-style-quiz:";
+
+  // ---------------- State ----------------
+  var state = {
+    screen: "intro",
+    studentName: "",
+    index: 0,
+    answers: {},        // itemId -> style ("S1".."S4")
+    result: null,
+    saveStatus: "idle",
+    teacherRows: null,
+    teacherLoading: false
+  };
+
+  var app = document.getElementById("app");
+
+  function el(html) {
+    var t = document.createElement("template");
+    t.innerHTML = html.trim();
+    return t.content.firstElementChild;
+  }
+
+  // ---------------- Scoring ----------------
+  function computeResult() {
+    var counts = { S1: 0, S2: 0, S3: 0, S4: 0 };
+    var matches = 0;
+    ITEMS.forEach(function (item) {
+      var chosen = state.answers[item.id];
+      if (chosen) counts[chosen] += 1;
+      if (chosen === item.matchStyle) matches += 1;
+    });
+    var entries = STYLE_ORDER.map(function (k) { return { key: k, count: counts[k] }; });
+    var maxCount = Math.max.apply(null, entries.map(function (e) { return e.count; }));
+    var primaryStyles = entries.filter(function (e) { return e.count === maxCount && maxCount > 0; }).map(function (e) { return e.key; });
+    var styleRange = entries.filter(function (e) { return e.count > 0; }).length;
+
+    return {
+      counts: counts,
+      primaryStyles: primaryStyles,
+      styleRange: styleRange,
+      matches: matches,
+      matchPct: Math.round((matches / ITEMS.length) * 100)
+    };
+  }
+
+  function rangeInterpretation(range) {
+    if (range <= 1) return "Ви застосували лише один стиль у всіх ситуаціях. За моделлю Херсі-Бланшара це дуже вузький діапазон — варто свідомо тренувати гнучкість переходу між стилями.";
+    if (range === 2) return "Ви використали два різні стилі. Це обмежений діапазон — спробуйте свідомо застосовувати й інші підходи залежно від готовності підлеглого.";
+    if (range === 3) return "Ви використали три з чотирьох стилів — достатньо гнучкий підхід із простором для розвитку ще одного стилю.";
+    return "Ви використали всі чотири стилі залежно від ситуації — це ознака широкого діапазону та високої лідерської гнучкості.";
+  }
+
+  function adaptabilityInterpretation(pct) {
+    if (pct >= 75) return "Висока ситуативна адаптивність: у більшості ситуацій ваш вибір стилю відповідав рівню готовності підлеглого.";
+    if (pct >= 50) return "Помірна адаптивність: у частині ситуацій обраний стиль не повністю відповідав рівню готовності підлеглого — є простір для розвитку.";
+    return "Поки що невисока адаптивність: варто приділяти більше уваги діагностиці готовності підлеглого (компетентність + мотивація) перед вибором стилю.";
+  }
+
+  // ---------------- Persistence ----------------
+  function saveResultToStorage(result) {
+    if (!window.storage) return;
+    state.saveStatus = "saving";
+    var key = STORAGE_PREFIX + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
+    var payload = {
+      name: state.studentName || "Анонім",
+      counts: result.counts,
+      primaryStyles: result.primaryStyles,
+      styleRange: result.styleRange,
+      matches: result.matches,
+      matchPct: result.matchPct,
+      timestamp: Date.now()
+    };
+    window.storage.set(key, JSON.stringify(payload), true).then(function (r) {
+      state.saveStatus = r ? "saved" : "failed";
+      render();
+    }).catch(function () {
+      state.saveStatus = "failed";
+      render();
+    });
+  }
+
+  function loadTeacherRows() {
+    state.teacherLoading = true;
+    render();
+    if (!window.storage) {
+      state.teacherRows = [];
+      state.teacherLoading = false;
+      render();
+      return;
+    }
+    window.storage.list(STORAGE_PREFIX, true).then(function (listRes) {
+      var keys = (listRes && listRes.keys) || [];
+      if (keys.length === 0) {
+        state.teacherRows = [];
+        state.teacherLoading = false;
+        render();
+        return;
+      }
+      var promises = keys.map(function (k) {
+        return window.storage.get(k, true).then(function (r) {
+          try { return JSON.parse(r.value); } catch (e) { return null; }
+        }).catch(function () { return null; });
+      });
+      Promise.all(promises).then(function (rows) {
+        rows = rows.filter(Boolean).sort(function (a, b) { return b.timestamp - a.timestamp; });
+        state.teacherRows = rows;
+        state.teacherLoading = false;
+        render();
+      });
+    }).catch(function () {
+      state.teacherRows = [];
+      state.teacherLoading = false;
+      render();
+    });
+  }
+
+  function downloadCsv() {
+    var rows = state.teacherRows || [];
+    var header = ["Ім'я", "S1 Директивний", "S2 Навчальний", "S3 Підтримуючий", "S4 Делегувальний", "Діапазон стилів", "Адаптивність %", "Основний стиль", "Дата"];
+    var lines = [header.join(";")];
+    rows.forEach(function (r) {
+      var primary = r.primaryStyles.map(function (k) { return STYLE_NAMES[k]; }).join(" / ");
+      lines.push([
+        r.name, r.counts.S1, r.counts.S2, r.counts.S3, r.counts.S4,
+        r.styleRange, r.matchPct, primary,
+        new Date(r.timestamp).toLocaleString("uk-UA")
+      ].join(";"));
+    });
+    var blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = "lead-style-results.csv";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  // ---------------- Screens ----------------
+  function renderIntro() {
+    var card = el(
+      '<div class="stage"><div class="card">' +
+      '<p class="kicker">Практичне заняття 1 · Бізнес-лідерство</p>' +
+      '<h1 class="title serif">Ситуативний стиль лідерства (LEAD, адаптовано)</h1>' +
+      '<p class="lead">12 робочих ситуацій. У кожній оберіть ОДНУ дію — ту, яку ви обрали б найімовірніше. На відміну від попереднього опитувальника тут немає шкали 1–5: це ситуаційний тест на основі моделі Херсі-Бланшара.</p>' +
+      '<label class="field-label">Ваше ім\'я (необов\'язково)</label>' +
+      '<input type="text" class="text-input" id="name-input" placeholder="Наприклад, Олена К." value="' + state.studentName.replace(/"/g,'&quot;') + '" />' +
+      '<div class="note-box">Немає правильних чи неправильних відповідей — оцінюйте, як ви дійсно вчинили б, а не як «правильно» за теорією.</div>' +
+      '<button class="btn btn-primary" id="start-btn">Почати опитування</button>' +
+      '<div class="meta-row">' +
+        '<div class="meta-item"><div class="num">12</div><div class="lbl">ситуацій</div></div>' +
+        '<div class="meta-item"><div class="num">~7 хв</div><div class="lbl">орієнтовно</div></div>' +
+        '<div class="meta-item"><div class="num">4</div><div class="lbl">стилі лідерства</div></div>' +
+      '</div>' +
+      '</div></div>'
+    );
+    card.querySelector("#start-btn").addEventListener("click", function () {
+      state.studentName = card.querySelector("#name-input").value.trim();
+      state.screen = "quiz";
+      state.index = 0;
+      render();
+    });
+    return card;
+  }
+
+  function renderQuiz() {
+    var item = ITEMS[state.index];
+    var progressPct = Math.round((state.index / ITEMS.length) * 100);
+    var selectedStyle = state.answers[item.id];
+
+    var optionsHtml = item.options.map(function (opt, i) {
+      var isSel = selectedStyle === opt.style;
+      return '<button class="option-card' + (isSel ? " selected" : "") + '" data-style="' + opt.style + '">' + opt.text + '</button>';
+    }).join("");
+
+    var card = el(
+      '<div class="stage"><div class="card">' +
+      '<div class="progress-track"><div class="progress-fill" style="width:' + progressPct + '%"></div></div>' +
+      '<p class="step-count">Ситуація ' + (state.index + 1) + ' із ' + ITEMS.length + '</p>' +
+      '<p class="situation-label">Що б ви зробили?</p>' +
+      '<p class="statement serif">' + item.text + '</p>' +
+      '<div class="option-list">' + optionsHtml + '</div>' +
+      '<div class="quiz-nav">' +
+        '<button class="btn btn-ghost" id="back-btn" ' + (state.index === 0 ? "disabled style=\"visibility:hidden\"" : "") + '>← Назад</button>' +
+        '<span></span>' +
+      '</div>' +
+      '</div></div>'
+    );
+
+    card.querySelectorAll(".option-card").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var style = btn.getAttribute("data-style");
+        state.answers[item.id] = style;
+        setTimeout(function () {
+          if (state.index < ITEMS.length - 1) {
+            state.index += 1;
+            render();
+          } else {
+            state.result = computeResult();
+            state.screen = "results";
+            state.saveStatus = "idle";
+            render();
+            saveResultToStorage(state.result);
+          }
+        }, 200);
+        render();
+      });
+    });
+
+    var backBtn = card.querySelector("#back-btn");
+    if (backBtn) {
+      backBtn.addEventListener("click", function () {
+        if (state.index > 0) { state.index -= 1; render(); }
+      });
+    }
+
+    return card;
+  }
+
+  function renderResults() {
+    var result = state.result;
+
+    var barsHtml = STYLE_ORDER.map(function (key) {
+      var isDominant = result.primaryStyles.indexOf(key) !== -1;
+      var pct = Math.round((result.counts[key] / ITEMS.length) * 100);
+      return (
+        '<div class="bar-row' + (isDominant ? " dominant" : "") + '">' +
+          '<div class="bar-label"><span>' + STYLE_NAMES[key] + '</span><span>' + result.counts[key] + ' / ' + ITEMS.length + '</span></div>' +
+          '<div class="bar-track"><div class="bar-fill" style="width:' + pct + '%"></div></div>' +
+        '</div>'
+      );
+    }).join("");
+
+    var primaryLabel = result.primaryStyles.map(function (k) { return STYLE_NAMES[k]; }).join(" + ");
+    var primaryText = result.primaryStyles.map(function (k) { return STYLE_DESC[k]; }).join(" ");
+
+    var saveNote = "";
+    if (state.saveStatus === "saving") saveNote = "Зберігаємо результат…";
+    else if (state.saveStatus === "saved") saveNote = "Результат збережено.";
+    else if (state.saveStatus === "failed") saveNote = "Результат порахований, але не вдалося зберегти для викладача.";
+
+    var card = el(
+      '<div class="stage"><div class="card">' +
+      (state.studentName ? '<p class="result-name">' + state.studentName + '</p>' : "") +
+      '<h1 class="title serif">Ваш профіль ситуативного лідерства</h1>' +
+      '<div style="margin-top:20px;">' + barsHtml + '</div>' +
+      '<div class="stat-grid">' +
+        '<div class="stat-card">' +
+          '<div class="stat-value">' + result.styleRange + ' / 4</div>' +
+          '<div class="stat-label">Діапазон стилів</div>' +
+          '<p>' + rangeInterpretation(result.styleRange) + '</p>' +
+        '</div>' +
+        '<div class="stat-card">' +
+          '<div class="stat-value">' + result.matchPct + '%</div>' +
+          '<div class="stat-label">Адаптивність (' + result.matches + ' з ' + ITEMS.length + ')</div>' +
+          '<p>' + adaptabilityInterpretation(result.matchPct) + '</p>' +
+        '</div>' +
+      '</div>' +
+      '<div class="dominant-card">' +
+        '<div class="dc-label">Основний стиль</div>' +
+        '<div class="dc-style">' + primaryLabel + '</div>' +
+        '<p>' + primaryText + '</p>' +
+      '</div>' +
+      (saveNote ? '<p class="save-note">' + saveNote + '</p>' : "") +
+      '<div class="result-actions">' +
+        '<button class="btn btn-secondary" id="retake-btn">Пройти ще раз</button>' +
+      '</div>' +
+      '<button class="teacher-link" id="teacher-link">Перегляд результатів групи (для викладача)</button>' +
+      '</div></div>'
+    );
+
+    card.querySelector("#retake-btn").addEventListener("click", function () {
+      state.screen = "intro"; state.index = 0; state.answers = {}; state.result = null;
+      render();
+    });
+    card.querySelector("#teacher-link").addEventListener("click", function () {
+      state.screen = "teacher"; render(); loadTeacherRows();
+    });
+
+    return card;
+  }
+
+  function renderTeacher() {
+    var rows = state.teacherRows;
+    var bodyHtml;
+    if (state.teacherLoading) {
+      bodyHtml = '<p class="empty-note">Завантаження результатів…</p>';
+    } else if (!rows || rows.length === 0) {
+      bodyHtml = '<p class="empty-note">Поки що ніхто не пройшов опитування за цим посиланням.</p>';
+    } else {
+      var trs = rows.map(function (r) {
+        var primary = '<span class="tag">' + r.primaryStyles.join(" / ") + '</span>';
+        return (
+          '<tr>' +
+            '<td>' + r.name + '</td>' +
+            '<td>' + r.counts.S1 + '</td>' +
+            '<td>' + r.counts.S2 + '</td>' +
+            '<td>' + r.counts.S3 + '</td>' +
+            '<td>' + r.counts.S4 + '</td>' +
+            '<td>' + r.styleRange + '/4</td>' +
+            '<td>' + r.matchPct + '%</td>' +
+            '<td>' + primary + '</td>' +
+          '</tr>'
+        );
+      }).join("");
+      bodyHtml =
+        '<div class="table-scroll"><table class="results-table">' +
+          '<thead><tr><th>Студент</th><th>S1</th><th>S2</th><th>S3</th><th>S4</th><th>Діапазон</th><th>Адапт.</th><th>Стиль</th></tr></thead>' +
+          '<tbody>' + trs + '</tbody>' +
+        '</table></div>';
+    }
+
+    var card = el(
+      '<div class="stage"><div class="card">' +
+      '<div class="teacher-header">' +
+        '<h1 class="title serif" style="margin:0;font-size:22px;">Результати групи</h1>' +
+        '<button class="icon-btn" id="refresh-btn">Оновити</button>' +
+      '</div>' +
+      bodyHtml +
+      '<div class="result-actions">' +
+        '<button class="btn btn-secondary" id="csv-btn"' + ((!rows || rows.length === 0) ? " disabled" : "") + '>Завантажити CSV</button>' +
+        '<button class="btn btn-secondary" id="back-to-quiz-btn">← Назад</button>' +
+      '</div>' +
+      '</div></div>'
+    );
+
+    card.querySelector("#refresh-btn").addEventListener("click", loadTeacherRows);
+    card.querySelector("#back-to-quiz-btn").addEventListener("click", function () {
+      state.screen = state.result ? "results" : "intro"; render();
+    });
+    var csvBtn = card.querySelector("#csv-btn");
+    if (csvBtn && rows && rows.length > 0) csvBtn.addEventListener("click", downloadCsv);
+
+    return card;
+  }
+
+  function render() {
+    app.innerHTML = "";
+    var view;
+    if (state.screen === "intro") view = renderIntro();
+    else if (state.screen === "quiz") view = renderQuiz();
+    else if (state.screen === "results") view = renderResults();
+    else view = renderTeacher();
+    app.appendChild(view);
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>

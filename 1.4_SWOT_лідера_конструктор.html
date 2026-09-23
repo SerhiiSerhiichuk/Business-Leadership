@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Індивідуальна SWOT-таблиця лідера</title>
+<style>
+  :root {
+    --ink: #1E2761; --ink-soft: #384080; --surface: #F3F6FC; --card: #FFFFFF;
+    --gold: #C9962C; --gold-soft: #F3E4C6; --muted: #5B6685; --line: #DDE4F5;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; min-height: 100%; background: var(--surface);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+  }
+  .serif { font-family: Cambria, Georgia, "Times New Roman", serif; }
+  #app { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 32px 18px; }
+  .stage { width: 100%; max-width: 760px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 40px 36px; box-shadow: 0 18px 40px -24px rgba(30,39,97,0.35); }
+  @media (max-width: 480px) { .card { padding: 24px 18px; } }
+
+  .kicker { font-size: 13px; color: var(--muted); margin: 0 0 10px; }
+  h1.title { font-size: 27px; line-height: 1.2; margin: 0 0 14px; font-weight: 700; }
+  p.lead { font-size: 15px; line-height: 1.6; color: var(--muted); margin: 0 0 22px; }
+  label.field-label { display: block; font-size: 13px; color: var(--ink-soft); margin-bottom: 6px; font-weight: 600; }
+  input.text-input, select.select-input {
+    width: 100%; padding: 12px 14px; border-radius: 10px; border: 1.5px solid var(--line);
+    font-size: 15px; color: var(--ink); background: var(--surface); margin-bottom: 20px; font-family: inherit;
+  }
+  input.text-input:focus, select.select-input:focus { outline: none; border-color: var(--gold); }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 13px 26px; border-radius: 10px; border: none; font-size: 15px; font-weight: 600;
+    cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .btn-primary { background: var(--ink); color: #fff; width: 100%; }
+  .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 10px 20px -12px rgba(30,39,97,0.6); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-secondary { background: var(--surface); color: var(--ink); border: 1.5px solid var(--line); }
+  .note-box { margin: 0 0 22px; padding: 12px 14px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+
+  /* Form / quadrants */
+  .quad-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 8px; }
+  @media (max-width: 620px) { .quad-grid { grid-template-columns: 1fr; } }
+  .quad-box { border: 1.5px solid var(--line); border-radius: 14px; padding: 16px 16px 14px; background: var(--surface); }
+  .quad-box.done { border-color: var(--gold); }
+  .quad-title { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+  .quad-sub { font-size: 11px; color: var(--muted); margin-bottom: 10px; }
+  .opt-row { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; cursor: pointer; }
+  .opt-row input[type="checkbox"] { margin-top: 3px; flex-shrink: 0; width: 16px; height: 16px; accent-color: var(--gold); cursor: pointer; }
+  .opt-row span { font-size: 12.5px; line-height: 1.4; }
+  .custom-input {
+    width: 100%; margin-top: 4px; padding: 8px 10px; border-radius: 8px; border: 1.5px solid var(--line);
+    font-size: 12.5px; font-family: inherit; background: #fff;
+  }
+  .custom-input:focus { outline: none; border-color: var(--gold); }
+  .quad-counter { font-size: 11px; color: var(--muted); margin-top: 6px; font-weight: 600; }
+  .quad-counter.ok { color: #2E7D6B; }
+
+  /* Results */
+  .result-name { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+  .swot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin-top: 18px; border-radius: 12px; overflow: hidden; }
+  @media (max-width: 560px) { .swot-grid { grid-template-columns: 1fr; } }
+  .swot-cell { padding: 16px 18px; }
+  .swot-cell.s { background: var(--ink); color: #fff; }
+  .swot-cell.w { background: var(--surface); color: var(--ink); }
+  .swot-cell.o { background: var(--surface); color: var(--ink); }
+  .swot-cell.t { background: var(--ink); color: #fff; }
+  .swot-cell h3 { font-size: 13px; margin: 0 0 10px; font-weight: 700; }
+  .swot-cell.s h3, .swot-cell.t h3 { color: var(--gold-soft); }
+  .swot-cell ul { margin: 0; padding-left: 18px; }
+  .swot-cell li { font-size: 12px; line-height: 1.5; margin-bottom: 6px; }
+  .axis-row { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; margin-top: 20px; }
+  @media (max-width: 560px) { .axis-row { display: none; } }
+  .axis-row div { text-align: center; font-size: 10.5px; font-weight: 700; color: var(--muted); letter-spacing: 0.4px; }
+
+  .conclusion-card { margin-top: 24px; padding: 20px 22px; border-radius: 14px; background: var(--ink); color: #fff; }
+  .conclusion-card .cc-label { font-size: 12px; color: var(--gold-soft); margin-bottom: 8px; font-weight: 700; }
+  .conclusion-card p { font-size: 13.5px; line-height: 1.6; color: #DCE1F5; margin: 0; }
+
+  .copy-box { margin-top: 18px; }
+  textarea.copy-textarea {
+    width: 100%; min-height: 110px; padding: 10px 12px; border-radius: 10px; border: 1.5px solid var(--line);
+    font-size: 11.5px; font-family: -apple-system, sans-serif; color: var(--muted); background: var(--surface); resize: vertical;
+  }
+  .save-note { font-size: 12.5px; color: var(--muted); margin-top: 14px; text-align: center; }
+  .result-actions { display: flex; gap: 12px; margin-top: 22px; flex-wrap: wrap; }
+  .result-actions .btn { flex: 1; min-width: 140px; }
+  .teacher-link { display: block; text-align: center; margin-top: 20px; font-size: 12.5px; color: var(--muted); text-decoration: underline; cursor: pointer; background: none; border: none; }
+
+  /* Teacher */
+  .teacher-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+  table.results-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  table.results-table th { text-align: left; font-size: 11px; color: var(--muted); font-weight: 600; padding: 7px 6px; border-bottom: 2px solid var(--line); }
+  table.results-table td { padding: 8px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .tag { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; background: var(--gold-soft); color: #7A5A16; }
+  .empty-note { text-align: center; color: var(--muted); font-size: 13.5px; padding: 30px 0; }
+  .icon-btn { background: none; border: 1.5px solid var(--line); border-radius: 8px; padding: 7px 13px; font-size: 12.5px; color: var(--ink); cursor: pointer; }
+  .icon-btn:hover { border-color: var(--gold); }
+  .table-scroll { overflow-x: auto; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+(function () {
+  // ---------------- Content bank ----------------
+  var STYLES = {
+    authoritarian: {
+      label: "Авторитарний / Директивний",
+      S: [
+        "Швидкість ухвалення рішень у кризових ситуаціях.",
+        "Чіткість вказівок мінімізує непорозуміння в команді.",
+        "Ефективний контроль виконання термінів.",
+        "Дає впевненість команді з низьким рівнем досвіду.",
+        "Дозволяє швидко стабілізувати хаотичні процеси."
+      ],
+      W: [
+        "Ризик демотивувати ініціативних членів команди.",
+        "Обмежує розвиток самостійності підлеглих.",
+        "Підвищене навантаження на лідера через надмірний контроль.",
+        "Менше простору для творчих і нестандартних ідей команди.",
+        "Ризик плинності кадрів серед досвідчених фахівців."
+      ],
+      O: [
+        "Пройти тренінг з делегування повноважень.",
+        "Розвинути навички активного слухання команди.",
+        "Впровадити регулярний зворотний зв'язок від підлеглих.",
+        "Навчитися ситуативно адаптувати стиль (модель Херсі-Бланшара).",
+        "Делегувати частину рутинного контролю досвідченим членам команди."
+      ],
+      T: [
+        "У сучасних agile-командах такий стиль може викликати опір.",
+        "Молоді фахівці частіше очікують партнерського стилю керівництва.",
+        "Ринок праці дає перевагу компаніям із гнучкою корпоративною культурою.",
+        "Ризик втрати талантів, які цінують автономію.",
+        "Конкуренти з демократичнішим підходом можуть швидше залучати ідеї команди."
+      ]
+    },
+    democratic: {
+      label: "Демократичний / Підтримуючий",
+      S: [
+        "Висока залученість і вмотивованість команди.",
+        "Якісніші рішення завдяки різноманіттю думок.",
+        "Сильна довіра між лідером і командою.",
+        "Легша адаптація команди до змін, бо рішення узгоджені спільно.",
+        "Розвиток лідерського потенціалу в самій команді."
+      ],
+      W: [
+        "Уповільнення ухвалення рішень у термінових ситуаціях.",
+        "Ризик розмиття відповідальності за фінальне рішення.",
+        "Складніше діяти рішуче в кризі, що вимагає швидкої реакції.",
+        "Можливі конфлікти через розбіжність думок у групі.",
+        "Потребує більше часу лідера на комунікацію."
+      ],
+      O: [
+        "Розвинути навички фасилітації групових обговорень.",
+        "Навчитися поєднувати участь команди зі швидкими рішеннями в кризі.",
+        "Впровадити чіткі протоколи для термінових ситуацій.",
+        "Розвинути ситуативну гнучкість (коли варто бути більш директивним).",
+        "Використати сильні сторони команди для спільного стратегічного планування."
+      ],
+      T: [
+        "У кризових ситуаціях команда може очікувати від лідера швидших одноосібних рішень.",
+        "Конкуренти з швидшим циклом ухвалення рішень можуть випереджати на ринку.",
+        "Ризик сприйняття нерішучості з боку керівництва компанії.",
+        "Складніше впроваджувати непопулярні, але необхідні зміни.",
+        "Перевантаження нарадами може знижувати продуктивність команди."
+      ]
+    },
+    liberal: {
+      label: "Ліберальний / Делегувальний",
+      S: [
+        "Висока автономія розкриває потенціал досвідчених фахівців.",
+        "Менше мікроменеджменту — більше довіри в команді.",
+        "Звільняє час лідера для стратегічних завдань.",
+        "Стимулює ініціативність і відповідальність членів команди.",
+        "Добре працює з висококваліфікованими самомотивованими командами."
+      ],
+      W: [
+        "Ризик відсутності контролю за якістю та термінами.",
+        "Новачки чи невпевнені співробітники можуть почуватися покинутими.",
+        "Складніше вчасно помітити проблему, що назріває.",
+        "Може сприйматися як байдужість лідера до результату.",
+        "Нерівномірна відповідальність, якщо хтось у команді не самоорганізований."
+      ],
+      O: [
+        "Впровадити періодичні контрольні точки без мікроменеджменту.",
+        "Розвинути навички визначення, кому потрібна більша підтримка.",
+        "Створити систему прозорої звітності про прогрес.",
+        "Навчитися поєднувати автономію з чіткими очікуваннями результату.",
+        "Використати вивільнений час для розвитку стратегічного напрямку команди."
+      ],
+      T: [
+        "У командах зі змінним складом (нові стажери) такий стиль може призвести до плутанини.",
+        "Відсутність структури може знижувати ефективність у кризових ситуаціях.",
+        "Складніше забезпечити узгодженість дій у великих розподілених командах.",
+        "Ризик, що частина команди скористається автономією для зниження продуктивності.",
+        "Керівництво компанії може сприйняти такий стиль як недостатньо активне лідерство."
+      ]
+    },
+    coaching: {
+      label: "Навчальний / Коучинговий",
+      S: [
+        "Пришвидшує розвиток навичок команди через пояснення й підтримку.",
+        "Поєднує чіткість напрямку з увагою до людей.",
+        "Формує довіру завдяки постійному зворотному зв'язку.",
+        "Ефективний для адаптації нових або недосвідчених співробітників.",
+        "Підвищує залученість через пояснення «чому», а не лише «що»."
+      ],
+      W: [
+        "Потребує значно більше часу лідера на кожного члена команди.",
+        "Може уповільнювати процеси при великій команді.",
+        "Ризик надмірної опіки для вже досвідчених фахівців.",
+        "Складно масштабувати на великі або розподілені команди.",
+        "Емоційно виснажливо для лідера при постійному менторстві."
+      ],
+      O: [
+        "Впровадити групові формати навчання замість індивідуального коучингу.",
+        "Делегувати частину менторства досвідченим членам команди.",
+        "Розвинути навички розрізняти, кому потрібен коучинг, а кому автономія.",
+        "Використати цей підхід для формування кадрового резерву.",
+        "Систематизувати процес онбордингу на основі коучингового підходу."
+      ],
+      T: [
+        "Швидкозростаючі команди можуть «перерости» можливості лідера приділяти увагу кожному.",
+        "Конкуренти з масштабованішими підходами до навчання можуть розвиватися швидше.",
+        "Ризик залежності команди від постійної підтримки лідера.",
+        "Плинність кадрів знецінює вкладений у навчання час.",
+        "Досвідчені кандидати можуть сприймати такий стиль як надмірний контроль."
+      ]
+    },
+    transformational: {
+      label: "Трансформаційний",
+      S: [
+        "Надихає команду на високі досягнення через спільне бачення.",
+        "Формує сильну лояльність і залученість.",
+        "Стимулює інновації та нестандартне мислення.",
+        "Ефективний у періоди змін і трансформації бізнесу.",
+        "Розвиває лідерський потенціал у членах команди."
+      ],
+      W: [
+        "Може бракувати уваги до чітких оперативних деталей і термінів.",
+        "Ризик, що натхнення не підкріплюється конкретними угодами про винагороду.",
+        "Залежність команди від особистої харизми лідера.",
+        "Складніше підтримувати однаковий рівень енергії постійно.",
+        "Може недооцінювати важливість рутинного контролю процесів."
+      ],
+      O: [
+        "Доповнити бачення чіткими транзакційними домовленостями про результат.",
+        "Розвинути системи, які підтримують культуру навіть за відсутності лідера.",
+        "Навчитися балансувати натхнення з операційною дисципліною.",
+        "Використати цей стиль для запуску масштабних ініціатив змін.",
+        "Формалізувати процеси менторства для масштабування впливу."
+      ],
+      T: [
+        "У стабільних, рутинних процесах надмірне натхнення може бути зайвим.",
+        "Ризик вигорання лідера через постійну емоційну віддачу.",
+        "Залежність організації від однієї харизматичної особи як ризик наступності.",
+        "Скептично налаштовані стейкхолдери можуть сприймати бачення як нереалістичне.",
+        "Конкуренти з чіткішими операційними процесами можуть випереджати у виконанні."
+      ]
+    },
+    transactional: {
+      label: "Транзакційний",
+      S: [
+        "Чіткість очікувань і винагороди підвищує передбачуваність результатів.",
+        "Ефективний контроль дотримання стандартів і термінів.",
+        "Справедливість сприйняття, бо винагорода прив'язана до результату.",
+        "Добре працює в стабільних, процесно-орієнтованих середовищах.",
+        "Легко масштабується на великі команди через формалізовані угоди."
+      ],
+      W: [
+        "Менше простору для натхнення й довгострокової мотивації.",
+        "Ризик, що команда працює лише «на винагороду», а не на місію.",
+        "Обмежує ініціативність і творчий підхід.",
+        "Складніше утримати залученість у періоди невизначеності без чітких метрик.",
+        "Може сприйматися як надто транзакційне, «холодне» лідерство."
+      ],
+      O: [
+        "Доповнити чіткі угоди елементами натхнення й визнання.",
+        "Розвинути нематеріальні форми визнання поряд із формальною винагородою.",
+        "Використати чіткість процесів як основу для впровадження інновацій.",
+        "Навчитися формулювати надихаюче бачення на додачу до операційних цілей.",
+        "Систематизувати зворотний зв'язок, а не лише контроль відхилень."
+      ],
+      T: [
+        "У творчих або інноваційних галузях такий підхід може стримувати розвиток.",
+        "Конкуренти з натхненнішою культурою можуть залучати таланти ефективніше.",
+        "Молоді покоління працівників частіше очікують сенсу, а не лише винагороди.",
+        "Ризик високої плинності кадрів при відсутності емоційного залучення.",
+        "Автоматизація рутинних процесів може знецінити суто транзакційний контроль."
+      ]
+    }
+  };
+
+  var QUADRANTS = [
+    { key: "S", title: "Strengths — сильні лідерські якості", sub: "Сприяє меті · Внутрішній фактор", cellClass: "s" },
+    { key: "W", title: "Weaknesses — слабкі місця", sub: "Заважає меті · Внутрішній фактор", cellClass: "w" },
+    { key: "O", title: "Opportunities — можливості розвинути лідерство", sub: "Сприяє меті · Зовнішній фактор", cellClass: "o" },
+    { key: "T", title: "Threats — що заважає ззовні", sub: "Заважає меті · Зовнішній фактор", cellClass: "t" }
+  ];
+
+  var STORAGE_PREFIX = "leadership-swot:";
+
+  // ---------------- State ----------------
+  var state = {
+    screen: "intro",
+    studentName: "",
+    styleKey: "authoritarian",
+    checked: { S: {}, W: {}, O: {}, T: {} },   // checked[quad][index] = true
+    custom: { S: "", W: "", O: "", T: "" },
+    result: null,
+    saveStatus: "idle",
+    teacherRows: null,
+    teacherLoading: false
+  };
+
+  var app = document.getElementById("app");
+  function el(html) {
+    var t = document.createElement("template");
+    t.innerHTML = html.trim();
+    return t.content.firstElementChild;
+  }
+  function escHtml(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  function selectedItems(quadKey) {
+    var style = STYLES[state.styleKey];
+    var items = [];
+    style[quadKey].forEach(function (text, idx) {
+      if (state.checked[quadKey][idx]) items.push(text);
+    });
+    var custom = state.custom[quadKey].trim();
+    if (custom) items.push(custom);
+    return items;
+  }
+
+  function allQuadrantsValid() {
+    return QUADRANTS.every(function (q) { return selectedItems(q.key).length >= 2; });
+  }
+
+  function buildResult() {
+    var result = { styleKey: state.styleKey, styleLabel: STYLES[state.styleKey].label, items: {} };
+    QUADRANTS.forEach(function (q) { result.items[q.key] = selectedItems(q.key); });
+    return result;
+  }
+
+  function conclusionText(result) {
+    var s0 = result.items.S[0], w0 = result.items.W[0], o0 = result.items.O[0], t0 = result.items.T[0];
+    return "За результатами SWOT-аналізу вашого профілю «" + result.styleLabel + "» найсильніша сторона — «" +
+      s0 + "» — а зона розвитку, на яку варто звернути увагу: «" + w0 + "». Гарна можливість для росту — «" +
+      o0 + "», але не забувайте враховувати ризик: «" + t0 + "».";
+  }
+
+  function plainTextExport(result) {
+    var lines = [];
+    lines.push("Індивідуальна SWOT-таблиця лідера");
+    lines.push("Стиль: " + result.styleLabel);
+    if (state.studentName) lines.push("Студент: " + state.studentName);
+    lines.push("");
+    QUADRANTS.forEach(function (q) {
+      lines.push(q.title + ":");
+      result.items[q.key].forEach(function (it) { lines.push("- " + it); });
+      lines.push("");
+    });
+    lines.push("Висновок:");
+    lines.push(conclusionText(result));
+    return lines.join("\n");
+  }
+
+  // ---------------- Persistence ----------------
+  function saveResultToStorage(result) {
+    if (!window.storage) return;
+    state.saveStatus = "saving";
+    var key = STORAGE_PREFIX + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
+    var payload = {
+      name: state.studentName || "Анонім",
+      styleKey: result.styleKey, styleLabel: result.styleLabel,
+      items: result.items, timestamp: Date.now()
+    };
+    window.storage.set(key, JSON.stringify(payload), true).then(function (r) {
+      state.saveStatus = r ? "saved" : "failed";
+      render();
+    }).catch(function () { state.saveStatus = "failed"; render(); });
+  }
+
+  function loadTeacherRows() {
+    state.teacherLoading = true;
+    render();
+    if (!window.storage) { state.teacherRows = []; state.teacherLoading = false; render(); return; }
+    window.storage.list(STORAGE_PREFIX, true).then(function (listRes) {
+      var keys = (listRes && listRes.keys) || [];
+      if (keys.length === 0) { state.teacherRows = []; state.teacherLoading = false; render(); return; }
+      var promises = keys.map(function (k) {
+        return window.storage.get(k, true).then(function (r) {
+          try { return JSON.parse(r.value); } catch (e) { return null; }
+        }).catch(function () { return null; });
+      });
+      Promise.all(promises).then(function (rows) {
+        rows = rows.filter(Boolean).sort(function (a, b) { return b.timestamp - a.timestamp; });
+        state.teacherRows = rows; state.teacherLoading = false; render();
+      });
+    }).catch(function () { state.teacherRows = []; state.teacherLoading = false; render(); });
+  }
+
+  function csvEscape(text) {
+    var t = String(text).replace(/"/g, '""');
+    return '"' + t + '"';
+  }
+
+  function downloadCsv() {
+    var rows = state.teacherRows || [];
+    var header = ["Ім'я", "Стиль", "Strengths", "Weaknesses", "Opportunities", "Threats", "Дата"];
+    var lines = [header.map(csvEscape).join(";")];
+    rows.forEach(function (r) {
+      lines.push([
+        csvEscape(r.name), csvEscape(r.styleLabel),
+        csvEscape(r.items.S.join(" | ")), csvEscape(r.items.W.join(" | ")),
+        csvEscape(r.items.O.join(" | ")), csvEscape(r.items.T.join(" | ")),
+        csvEscape(new Date(r.timestamp).toLocaleString("uk-UA"))
+      ].join(";"));
+    });
+    var blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = "leadership-swot-results.csv";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function copyToClipboard(text, btn) {
+    function ok() { btn.textContent = "Скопійовано ✓"; setTimeout(function () { btn.textContent = "Скопіювати результат"; }, 1800); }
+    function fail() {
+      var ta = document.getElementById("copy-fallback-area");
+      if (ta) { ta.style.display = "block"; ta.focus(); ta.select(); }
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(ok).catch(fail);
+    } else {
+      try {
+        var temp = document.createElement("textarea");
+        temp.value = text;
+        temp.style.position = "fixed"; temp.style.opacity = "0";
+        document.body.appendChild(temp);
+        temp.focus(); temp.select();
+        var success = document.execCommand("copy");
+        document.body.removeChild(temp);
+        if (success) ok(); else fail();
+      } catch (e) { fail(); }
+    }
+  }
+
+  // ---------------- Screens ----------------
+  function renderIntro() {
+    var options = Object.keys(STYLES).map(function (key) {
+      return '<option value="' + key + '"' + (key === state.styleKey ? " selected" : "") + '>' + STYLES[key].label + '</option>';
+    }).join("");
+
+    var card = el(
+      '<div class="stage"><div class="card">' +
+      '<p class="kicker">Практичне заняття 1, Етап 2 · Бізнес-лідерство</p>' +
+      '<h1 class="title serif">Індивідуальна SWOT-таблиця лідера</h1>' +
+      '<p class="lead">Оберіть варіанти відповіді в кожній клітинці — мінімум 2 на клітинку — і в кінці отримаєте готову SWOT-таблицю з висновком, яку можна скопіювати собі.</p>' +
+      '<label class="field-label">Ваше ім\'я (необов\'язково)</label>' +
+      '<input type="text" class="text-input" id="name-input" placeholder="Наприклад, Олена К." value="' + state.studentName.replace(/"/g,'&quot;') + '" />' +
+      '<label class="field-label">Який стиль домінує за результатами тестів із Заняття 1?</label>' +
+      '<select class="select-input" id="style-select">' + options + '</select>' +
+      '<div class="note-box">Якщо тести показали кілька виражених тенденцій одночасно (наприклад, «Аугментований профіль»), оберіть ту, що виражена найсильніше — або пройдіть SWOT двічі, для кожної.</div>' +
+      '<button class="btn btn-primary" id="start-btn">Почати SWOT-аналіз</button>' +
+      '</div></div>'
+    );
+    card.querySelector("#start-btn").addEventListener("click", function () {
+      state.studentName = card.querySelector("#name-input").value.trim();
+      state.styleKey = card.querySelector("#style-select").value;
+      state.screen = "form";
+      render();
+    });
+    return card;
+  }
+
+  function renderForm() {
+    var style = STYLES[state.styleKey];
+
+    function quadHtml(q) {
+      var items = style[q.key];
+      var optsHtml = items.map(function (text, idx) {
+        var checked = state.checked[q.key][idx] ? " checked" : "";
+        return (
+          '<label class="opt-row">' +
+            '<input type="checkbox" data-quad="' + q.key + '" data-idx="' + idx + '"' + checked + ' />' +
+            '<span>' + escHtml(text) + '</span>' +
+          '</label>'
+        );
+      }).join("");
+      var count = selectedItems(q.key).length;
+      var done = count >= 2;
+      return (
+        '<div class="quad-box' + (done ? " done" : "") + '" data-quadbox="' + q.key + '">' +
+          '<div class="quad-title">' + q.title + '</div>' +
+          '<div class="quad-sub">' + q.sub + '</div>' +
+          optsHtml +
+          '<input type="text" class="custom-input" data-customquad="' + q.key + '" placeholder="Своя відповідь (необов\'язково)" value="' + escHtml(state.custom[q.key]) + '" />' +
+          '<div class="quad-counter' + (done ? " ok" : "") + '" data-counter="' + q.key + '">Обрано: ' + count + ' / мінімум 2</div>' +
+        '</div>'
+      );
+    }
+
+    var card = el(
+      '<div class="stage"><div class="card">' +
+      '<p class="kicker">Стиль: ' + style.label + '</p>' +
+      '<h1 class="title serif" style="font-size:22px;">Оберіть пункти для кожної клітинки</h1>' +
+      '<div class="quad-grid">' + QUADRANTS.map(quadHtml).join("") + '</div>' +
+      '<button class="btn btn-primary" id="build-btn" style="margin-top:14px;" ' + (allQuadrantsValid() ? "" : "disabled") + '>Сформувати SWOT</button>' +
+      '<button class="btn btn-secondary" id="back-intro-btn" style="margin-top:10px;width:100%;">← Змінити стиль</button>' +
+      '</div></div>'
+    );
+
+    card.querySelectorAll("input[type=checkbox]").forEach(function (cb) {
+      cb.addEventListener("change", function () {
+        var q = cb.getAttribute("data-quad"), idx = cb.getAttribute("data-idx");
+        state.checked[q][idx] = cb.checked;
+        render();
+        // restore scroll-independent focus not needed; re-render is cheap
+      });
+    });
+    card.querySelectorAll(".custom-input").forEach(function (inp) {
+      inp.addEventListener("input", function () {
+        var q = inp.getAttribute("data-customquad");
+        state.custom[q] = inp.value;
+        var count = selectedItems(q).length;
+        var counter = card.querySelector('[data-counter="' + q + '"]');
+        var box = card.querySelector('[data-quadbox="' + q + '"]');
+        if (counter) {
+          counter.textContent = "Обрано: " + count + " / мінімум 2";
+          counter.classList.toggle("ok", count >= 2);
+        }
+        if (box) box.classList.toggle("done", count >= 2);
+        var buildBtn = card.querySelector("#build-btn");
+        if (buildBtn) buildBtn.disabled = !allQuadrantsValid();
+      });
+    });
+    var buildBtn = card.querySelector("#build-btn");
+    if (buildBtn) {
+      buildBtn.addEventListener("click", function () {
+        if (!allQuadrantsValid()) return;
+        state.result = buildResult();
+        state.screen = "results";
+        state.saveStatus = "idle";
+        render();
+        saveResultToStorage(state.result);
+      });
+    }
+    card.querySelector("#back-intro-btn").addEventListener("click", function () {
+      state.screen = "intro"; render();
+    });
+
+    return card;
+  }
+
+  function renderResults() {
+    var result = state.result;
+    var conclusion = conclusionText(result);
+    var plain = plainTextExport(result);
+
+    function cellHtml(q) {
+      var items = result.items[q.key].map(function (t) { return "<li>" + escHtml(t) + "</li>"; }).join("");
+      return '<div class="swot-cell ' + q.cellClass + '"><h3>' + q.title.split(" — ")[0] + '</h3><ul>' + items + '</ul></div>';
+    }
+
+    var saveNote = "";
+    if (state.saveStatus === "saving") saveNote = "Зберігаємо результат…";
+    else if (state.saveStatus === "saved") saveNote = "Результат збережено.";
+    else if (state.saveStatus === "failed") saveNote = "Результат сформовано, але не вдалося зберегти для викладача.";
+
+    var card = el(
+      '<div class="stage"><div class="card">' +
+      (state.studentName ? '<p class="result-name">' + escHtml(state.studentName) + '</p>' : "") +
+      '<h1 class="title serif">Ваша SWOT-таблиця лідера</h1>' +
+      '<p class="lead" style="margin-bottom:0;">Стиль: <strong>' + result.styleLabel + '</strong></p>' +
+      '<div class="axis-row"><div>Сприяє меті</div><div>Заважає меті</div></div>' +
+      '<div class="swot-grid">' + QUADRANTS.map(cellHtml).join("") + '</div>' +
+      '<div class="conclusion-card"><div class="cc-label">Висновок</div><p>' + escHtml(conclusion) + '</p></div>' +
+      (saveNote ? '<p class="save-note">' + saveNote + '</p>' : "") +
+      '<div class="copy-box">' +
+        '<div class="result-actions">' +
+          '<button class="btn btn-secondary" id="copy-btn">Скопіювати результат</button>' +
+          '<button class="btn btn-secondary" id="retake-btn">Пройти ще раз</button>' +
+        '</div>' +
+        '<textarea id="copy-fallback-area" class="copy-textarea" style="display:none;margin-top:12px;" readonly>' + escHtml(plain) + '</textarea>' +
+      '</div>' +
+      '<button class="teacher-link" id="teacher-link">Перегляд результатів групи (для викладача)</button>' +
+      '</div></div>'
+    );
+
+    card.querySelector("#copy-btn").addEventListener("click", function (e) {
+      copyToClipboard(plain, e.currentTarget);
+    });
+    card.querySelector("#retake-btn").addEventListener("click", function () {
+      state.screen = "intro"; state.checked = { S: {}, W: {}, O: {}, T: {} }; state.custom = { S: "", W: "", O: "", T: "" };
+      state.result = null; render();
+    });
+    card.querySelector("#teacher-link").addEventListener("click", function () {
+      state.screen = "teacher"; render(); loadTeacherRows();
+    });
+
+    return card;
+  }
+
+  function renderTeacher() {
+    var rows = state.teacherRows;
+    var bodyHtml;
+    if (state.teacherLoading) {
+      bodyHtml = '<p class="empty-note">Завантаження результатів…</p>';
+    } else if (!rows || rows.length === 0) {
+      bodyHtml = '<p class="empty-note">Поки що ніхто не пройшов опитування за цим посиланням.</p>';
+    } else {
+      var trs = rows.map(function (r) {
+        return (
+          '<tr>' +
+            '<td>' + escHtml(r.name) + '</td>' +
+            '<td><span class="tag">' + escHtml(r.styleLabel) + '</span></td>' +
+            '<td>' + r.items.S.length + '</td>' +
+            '<td>' + r.items.W.length + '</td>' +
+            '<td>' + r.items.O.length + '</td>' +
+            '<td>' + r.items.T.length + '</td>' +
+          '</tr>'
+        );
+      }).join("");
+      bodyHtml =
+        '<div class="table-scroll"><table class="results-table">' +
+          '<thead><tr><th>Студент</th><th>Стиль</th><th>S</th><th>W</th><th>O</th><th>T</th></tr></thead>' +
+          '<tbody>' + trs + '</tbody>' +
+        '</table></div>';
+    }
+
+    var card = el(
+      '<div class="stage"><div class="card">' +
+      '<div class="teacher-header">' +
+        '<h1 class="title serif" style="margin:0;font-size:22px;">Результати групи</h1>' +
+        '<button class="icon-btn" id="refresh-btn">Оновити</button>' +
+      '</div>' +
+      bodyHtml +
+      '<div class="result-actions">' +
+        '<button class="btn btn-secondary" id="csv-btn"' + ((!rows || rows.length === 0) ? " disabled" : "") + '>Завантажити CSV</button>' +
+        '<button class="btn btn-secondary" id="back-to-quiz-btn">← Назад</button>' +
+      '</div>' +
+      '</div></div>'
+    );
+
+    card.querySelector("#refresh-btn").addEventListener("click", loadTeacherRows);
+    card.querySelector("#back-to-quiz-btn").addEventListener("click", function () {
+      state.screen = state.result ? "results" : "intro"; render();
+    });
+    var csvBtn = card.querySelector("#csv-btn");
+    if (csvBtn && rows && rows.length > 0) csvBtn.addEventListener("click", downloadCsv);
+
+    return card;
+  }
+
+  function render() {
+    app.innerHTML = "";
+    var view;
+    if (state.screen === "intro") view = renderIntro();
+    else if (state.screen === "form") view = renderForm();
+    else if (state.screen === "results") view = renderResults();
+    else view = renderTeacher();
+    app.appendChild(view);
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Симулятор кризового лідера</title>
+<style>
+  :root {
+    --ink: #1E2761; --ink-soft: #384080; --surface: #F3F6FC; --card: #FFFFFF;
+    --gold: #C9962C; --gold-soft: #F3E4C6; --muted: #5B6685; --line: #DDE4F5;
+    --red: #B3492F; --green: #2E7D6B;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; min-height: 100%; background: var(--surface);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+  }
+  .serif { font-family: Cambria, Georgia, "Times New Roman", serif; }
+  #app { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 32px 18px; }
+  .stage-wrap { width: 100%; max-width: 680px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 36px 34px; box-shadow: 0 18px 40px -24px rgba(30,39,97,0.35); }
+  @media (max-width: 480px) { .card { padding: 24px 18px; } }
+
+  .kicker { font-size: 13px; color: var(--muted); margin: 0 0 10px; }
+  h1.title { font-size: 26px; line-height: 1.25; margin: 0 0 14px; font-weight: 700; }
+  p.lead { font-size: 15px; line-height: 1.6; color: var(--muted); margin: 0 0 22px; }
+  label.field-label { display: block; font-size: 13px; color: var(--ink-soft); margin-bottom: 6px; font-weight: 600; }
+  input.text-input {
+    width: 100%; padding: 12px 14px; border-radius: 10px; border: 1.5px solid var(--line);
+    font-size: 15px; color: var(--ink); background: var(--surface); margin-bottom: 20px;
+  }
+  input.text-input:focus { outline: none; border-color: var(--gold); }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 13px 24px; border-radius: 10px; border: none; font-size: 14.5px; font-weight: 600;
+    cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .btn-primary { background: var(--ink); color: #fff; width: 100%; }
+  .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 10px 20px -12px rgba(30,39,97,0.6); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-secondary { background: var(--surface); color: var(--ink); border: 1.5px solid var(--line); }
+
+  /* Crisis picker */
+  .crisis-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 22px; }
+  .crisis-card {
+    display: flex; align-items: center; gap: 14px; border: 1.5px solid var(--line); border-radius: 12px;
+    padding: 12px 14px; cursor: pointer; background: var(--surface); transition: all 0.15s ease;
+  }
+  .crisis-card:hover { border-color: var(--gold); }
+  .crisis-card.selected { border-color: var(--gold); background: var(--gold-soft); }
+  .crisis-card .c-icon { width: 46px; height: 46px; flex-shrink: 0; }
+  .crisis-card .c-icon svg { width: 100%; height: 100%; }
+  .crisis-card .c-name { font-weight: 700; font-size: 14px; margin-bottom: 2px; }
+  .crisis-card .c-desc { font-size: 11.5px; color: var(--muted); line-height: 1.4; }
+
+  /* Role picker */
+  .role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 22px; }
+  @media (max-width: 480px) { .role-grid { grid-template-columns: 1fr; } }
+  .role-card {
+    border: 1.5px solid var(--line); border-radius: 12px; padding: 14px 14px; cursor: pointer; background: var(--surface);
+    transition: all 0.15s ease;
+  }
+  .role-card:hover { border-color: var(--gold); }
+  .role-card.selected { border-color: var(--gold); background: var(--gold-soft); }
+  .role-card .r-name { font-weight: 700; font-size: 13.5px; margin-bottom: 3px; }
+  .role-card .r-desc { font-size: 11.5px; color: var(--muted); line-height: 1.4; margin-bottom: 8px; }
+  .role-bonus-row { display: flex; flex-wrap: wrap; gap: 5px; }
+  .role-bonus-chip {
+    display: inline-block; font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 20px;
+    background: var(--gold-soft); color: #7A5A16;
+  }
+
+  /* Stat dashboard */
+  .stat-dash { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 22px; }
+  @media (max-width: 480px) { .stat-dash { grid-template-columns: repeat(2, 1fr); } }
+  .stat-box { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; }
+  .stat-box .s-label-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+  .stat-box .s-label { font-size: 9.5px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
+  .stat-box .s-value { font-size: 12px; font-weight: 800; color: var(--ink); }
+  .stat-box .s-value.low { color: var(--red); }
+  .stat-box .s-value.high { color: var(--green); }
+  .stat-track { height: 6px; background: var(--line); border-radius: 4px; overflow: hidden; }
+  .stat-fill { height: 100%; background: var(--gold); border-radius: 4px; transition: width 0.5s ease; }
+  .stat-fill.low { background: var(--red); }
+  .stat-fill.high { background: var(--green); }
+
+  /* Scene */
+  .scene-icon-wrap { display: flex; justify-content: center; margin-bottom: 18px; }
+  .scene-icon-wrap svg { width: 96px; height: 96px; }
+  .scene-time { text-align: center; font-size: 12px; color: var(--gold); font-weight: 700; margin-bottom: 6px; letter-spacing: 0.3px; }
+  .scene-text { font-size: 16px; line-height: 1.55; margin: 0 0 24px; text-align: center; }
+  .choice-list { display: flex; flex-direction: column; gap: 10px; }
+  .choice-btn {
+    text-align: left; padding: 14px 16px; border-radius: 12px; border: 1.5px solid var(--line);
+    background: #fff; cursor: pointer; font-size: 13.5px; line-height: 1.45; color: var(--ink-soft);
+    transition: all 0.15s ease;
+  }
+  .choice-btn:hover { border-color: var(--gold); background: var(--gold-soft); }
+
+  /* Consequence */
+  .consequence-box { background: var(--ink); color: #fff; border-radius: 14px; padding: 18px 20px; margin-bottom: 20px; }
+  .consequence-box .cq-label { font-size: 11px; color: var(--gold-soft); font-weight: 700; margin-bottom: 8px; letter-spacing: 0.3px; }
+  .consequence-box p { font-size: 13.5px; line-height: 1.55; color: #DCE1F5; margin: 0 0 10px; }
+  .delta-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .delta-chip { font-size: 11px; padding: 3px 9px; border-radius: 20px; font-weight: 700; }
+  .delta-chip.pos { background: rgba(46,125,107,0.25); color: #8FE3CB; }
+  .delta-chip.neg { background: rgba(179,73,47,0.25); color: #F3B49E; }
+
+  /* Ending */
+  .ending-title { font-size: 22px; font-weight: 700; margin: 4px 0 10px; }
+  .ending-tier { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11.5px; font-weight: 700; margin-bottom: 14px; }
+  .tier-good { background: #DCEFE9; color: #1F5245; }
+  .tier-mixed { background: var(--gold-soft); color: #7A5A16; }
+  .tier-bad { background: #F6DCD4; color: #7A2E1A; }
+  .log-list { margin: 18px 0; padding: 0; list-style: none; }
+  .log-list li { font-size: 12.5px; color: var(--muted); padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .log-list li b { color: var(--ink); }
+  .reflect-note { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+  .save-note { font-size: 12.5px; color: var(--muted); margin-top: 14px; text-align: center; }
+  .result-actions { display: flex; gap: 12px; margin-top: 22px; flex-wrap: wrap; }
+  .result-actions .btn { flex: 1; min-width: 140px; }
+  .teacher-link { display: block; text-align: center; margin-top: 20px; font-size: 12.5px; color: var(--muted); text-decoration: underline; cursor: pointer; background: none; border: none; }
+
+  .teacher-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+  table.results-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.results-table th { text-align: left; font-size: 10.5px; color: var(--muted); font-weight: 600; padding: 7px 6px; border-bottom: 2px solid var(--line); }
+  table.results-table td { padding: 8px 6px; border-bottom: 1px solid var(--line); }
+  .tag { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; background: var(--gold-soft); color: #7A5A16; }
+  .empty-note { text-align: center; color: var(--muted); font-size: 13.5px; padding: 30px 0; }
+  .icon-btn { background: none; border: 1.5px solid var(--line); border-radius: 8px; padding: 7px 13px; font-size: 12.5px; color: var(--ink); cursor: pointer; }
+  .icon-btn:hover { border-color: var(--gold); }
+  .table-scroll { overflow-x: auto; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+(function () {
+  // ---------------- SVG scene icons (flat, brand-colored, decorative) ----------------
+  var ICONS = {
+    breach:
+      '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="48" fill="#F3F6FC"/><rect x="24" y="38" width="52" height="34" rx="4" fill="#1E2761"/><rect x="30" y="44" width="40" height="4" fill="#C9962C"/><rect x="30" y="52" width="26" height="4" fill="#DDE4F5"/><path d="M50 20 L58 34 H42 Z" fill="#B3492F"/><circle cx="50" cy="30" r="1.5" fill="#fff"/><rect x="49" y="24" width="2" height="4" fill="#fff"/></svg>',
+    scandal:
+      '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="48" fill="#F3F6FC"/><path d="M26 40 L46 40 L58 28 V64 L46 52 L26 52 Z" fill="#1E2761"/><circle cx="70" cy="30" r="9" fill="#B3492F"/><rect x="68.5" y="24" width="3" height="8" fill="#fff"/><circle cx="70" cy="35" r="1.3" fill="#fff"/><path d="M62 46 Q72 50 62 58" stroke="#C9962C" stroke-width="3" fill="none" stroke-linecap="round"/></svg>',
+    supply:
+      '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="48" fill="#F3F6FC"/><rect x="22" y="46" width="34" height="22" rx="2" fill="#1E2761"/><path d="M56 52 H70 L78 62 V68 H56 Z" fill="#384080"/><circle cx="34" cy="72" r="6" fill="#1E2761"/><circle cx="68" cy="72" r="6" fill="#1E2761"/><path d="M40 40 L46 30 L52 40" stroke="#B3492F" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="46" cy="24" r="1.5" fill="#B3492F"/></svg>',
+    recall:
+      '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="48" fill="#F3F6FC"/><rect x="30" y="38" width="40" height="32" rx="3" fill="#1E2761"/><path d="M30 46 H70" stroke="#C9962C" stroke-width="3"/><path d="M64 30 L76 50 H52 Z" fill="#B3492F"/><rect x="63" y="37" width="2" height="7" fill="#fff"/><circle cx="64" cy="47" r="1.2" fill="#fff"/></svg>',
+    whistleblower:
+      '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="48" fill="#F3F6FC"/><rect x="28" y="30" width="30" height="38" rx="3" fill="#1E2761"/><rect x="34" y="38" width="18" height="3" fill="#C9962C"/><rect x="34" y="46" width="18" height="3" fill="#DDE4F5"/><rect x="34" y="54" width="12" height="3" fill="#DDE4F5"/><circle cx="70" cy="60" r="12" fill="#384080"/><rect x="68.5" y="53" width="3" height="8" fill="#fff"/><circle cx="70" cy="65" r="1.4" fill="#fff"/></svg>',
+    meeting:
+      '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="48" fill="#F3F6FC"/><circle cx="34" cy="42" r="9" fill="#1E2761"/><rect x="22" y="54" width="24" height="20" rx="6" fill="#1E2761"/><circle cx="66" cy="42" r="9" fill="#C9962C"/><rect x="54" y="54" width="24" height="20" rx="6" fill="#C9962C"/><circle cx="50" cy="34" r="9" fill="#384080"/><rect x="38" y="46" width="24" height="20" rx="6" fill="#384080"/></svg>',
+    press:
+      '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="48" fill="#F3F6FC"/><path d="M28 44 L52 32 V68 L28 56 Z" fill="#1E2761"/><rect x="52" y="42" width="10" height="14" fill="#1E2761"/><path d="M62 38 Q74 50 62 62" stroke="#C9962C" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M62 30 Q80 50 62 70" stroke="#C9962C" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.6"/></svg>',
+    legal:
+      '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="48" fill="#F3F6FC"/><rect x="48" y="24" width="4" height="42" fill="#1E2761"/><path d="M50 24 L28 34 M50 24 L72 34" stroke="#1E2761" stroke-width="3" stroke-linecap="round"/><circle cx="28" cy="34" r="10" fill="none" stroke="#C9962C" stroke-width="3"/><circle cx="72" cy="34" r="10" fill="none" stroke="#C9962C" stroke-width="3"/><rect x="34" y="66" width="32" height="6" rx="2" fill="#1E2761"/></svg>',
+    conference:
+      '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="48" fill="#F3F6FC"/><rect x="38" y="56" width="24" height="20" fill="#1E2761"/><circle cx="50" cy="40" r="12" fill="#384080"/><rect x="46" y="52" width="8" height="10" fill="#C9962C"/><rect x="20" y="70" width="8" height="10" fill="#DDE4F5"/><rect x="72" y="70" width="8" height="10" fill="#DDE4F5"/><rect x="20" y="62" width="8" height="8" fill="#B3B9D6"/><rect x="72" y="62" width="8" height="8" fill="#B3B9D6"/></svg>',
+    trophy:
+      '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="48" fill="#F3F6FC"/><path d="M36 28 H64 V44 Q64 60 50 60 Q36 60 36 44 Z" fill="#C9962C"/><rect x="44" y="60" width="12" height="10" fill="#C9962C"/><rect x="36" y="70" width="28" height="6" rx="2" fill="#1E2761"/><path d="M36 32 H26 V40 Q26 46 34 46" stroke="#1E2761" stroke-width="3" fill="none"/><path d="M64 32 H74 V40 Q74 46 66 46" stroke="#1E2761" stroke-width="3" fill="none"/></svg>'
+  };
+
+  // ---------------- Roles ----------------
+  var ROLES = {
+    ceo: { label: "CEO", desc: "Відповідає за компанію загалом, ухвалює фінальні рішення.", bonusLabels: ["+1 Довіра", "+1 Юридична безпека"], bonus: { trust: 1, legal: 1 } },
+    hr: { label: "HR-директор", desc: "Пріоритет — люди: команда і персонал.", bonusLabels: ["+2 Командний дух"], bonus: { morale: 2 } },
+    pr: { label: "PR-директор", desc: "Пріоритет — репутація й комунікація назовні.", bonusLabels: ["+2 Довіра"], bonus: { trust: 2 } },
+    cfo: { label: "Фінансовий директор", desc: "Пріоритет — фінансова стійкість компанії.", bonusLabels: ["+2 Фінансова стабільність"], bonus: { finance: 2 } }
+  };
+
+  var STAT_META = {
+    trust: { label: "Довіра громадськості" },
+    finance: { label: "Фінансова стабільність" },
+    legal: { label: "Юридична безпека" },
+    morale: { label: "Командний дух" }
+  };
+
+  // ---------------- Crisis scenarios ----------------
+  var CRISES = {
+    breach: {
+      title: "Витік даних",
+      desc: "Хтось отримав доступ до персональних даних десятків тисяч клієнтів. Годинник цокає.",
+      icon: "breach",
+      stages: [
+        {
+          icon: "breach",
+          time: "08:00 — понеділок",
+          text: "Служба безпеки повідомляє: стався витік персональних даних близько 50 000 клієнтів. Причина поки не встановлена. Перші запити від журналістів уже надходять на загальну пошту компанії.",
+          choices: [
+            { label: "Негайно скликати кризову нараду директорів і зупинити вразливу систему.",
+              consequence: "Ви дієте швидко й скоординовано. Систему ізольовано за 40 хвилин — витік зупинено, але команда IT працює на межі можливостей.",
+              delta: { legal: 2, morale: -1 } },
+            { label: "Спочатку особисто перевірити масштаб проблеми, перш ніж когось турбувати.",
+              consequence: "Поки ви аналізуєте дані самостійно, минає дві години. Витік триває довше, ніж міг би.",
+              delta: { legal: -2, finance: -1 } },
+            { label: "Делегувати перевірку IT-відділу, а самим зайнятися чернеткою публічної заяви.",
+              consequence: "IT ізолює загрозу протягом години, а у вас уже є чернетка заяви — але деталі витоку ще не підтверджені.",
+              delta: { trust: 1, legal: -1 } }
+          ]
+        },
+        {
+          icon: "meeting",
+          time: "10:30 — та сама доба",
+          text: "Потрібно повідомити понад 200 співробітників. Чутки вже шириться коридорами й корпоративним чатом швидше, ніж офіційна інформація.",
+          choices: [
+            { label: "Провести відкриту загальну онлайн-нараду: чесно розповісти все, що відомо, і чого ще не відомо.",
+              consequence: "Команда цінує чесність, хоча тривога через невизначеність зростає.",
+              delta: { morale: 2 } },
+            { label: "Повідомити лише керівників відділів і попросити стримано інформувати підлеглих.",
+              consequence: "Інформація просочується нерівномірно — з'являються перекручені чутки.",
+              delta: { morale: -2, legal: -1 } },
+            { label: "Розіслати короткий офіційний лист і попросити не коментувати ситуацію публічно.",
+              consequence: "Частина команди сприймає прохання мовчати як спробу приховати правду.",
+              delta: { morale: -1, trust: -1 } }
+          ]
+        },
+        {
+          icon: "press",
+          time: "13:00 — та сама доба",
+          text: "Перші новини вже з'являються в соцмережах. Клієнти залишають гнівні коментарі під офіційними сторінками компанії. Редакції великих ЗМІ просять офіційний коментар.",
+          choices: [
+            { label: "Опублікувати офіційну заяву протягом кількох годин з чесним визнанням проблеми і обіцянкою деталей найближчим часом.",
+              consequence: "ЗМІ відзначають оперативність компанії, хоча частина деталей ще уточнюється.",
+              delta: { trust: 2, legal: -1 } },
+            { label: "Почекати добу, поки юристи повністю не перевірять кожне формулювання заяви.",
+              consequence: "Мовчання компанії трактують як спробу приховати масштаб проблеми — перші матеріали виходять без вашого коментаря.",
+              delta: { trust: -2, legal: 1 } },
+            { label: "Дати коментар лише окремим ключовим журналістам приватно, без офіційної заяви.",
+              consequence: "Непублічні й непослідовні коментарі лише посилюють підозри.",
+              delta: { trust: -1, legal: -1 } }
+          ]
+        },
+        {
+          icon: "legal",
+          time: "Наступного дня",
+          text: "Регулятор вимагає офіційного звіту протягом 72 годин. Юристи попереджають про ймовірність позовів від постраждалих клієнтів.",
+          choices: [
+            { label: "Створити фонд компенсацій для постраждалих клієнтів і публічно повідомити про це.",
+              consequence: "Витрати зростають, але клієнти й регулятор відзначають відповідальний підхід.",
+              delta: { finance: -2, trust: 2, legal: 1 } },
+            { label: "Обмежитися мінімальними діями, яких вимагає закон, без додаткових компенсацій.",
+              consequence: "Юридично ви захищені, але публічна критика посилюється.",
+              delta: { finance: 1, trust: -2, legal: 1 } },
+            { label: "Затягнути з рішенням, очікуючи результатів внутрішнього розслідування.",
+              consequence: "Невизначеність дратує і клієнтів, і регулятора.",
+              delta: { trust: -1, legal: -2 } }
+          ]
+        },
+        {
+          icon: "conference",
+          time: "День 3 — пресконференція",
+          text: "Настав момент публічної пресконференції. Зала повна журналістів із гострими запитаннями. Це остання можливість вплинути на те, як історію запам'ятають.",
+          choices: [
+            { label: "Відповідати чесно й прямо, визнаючи помилки там, де вони справді були.",
+              consequence: "Ваша відкритість справляє сильне враження, хоча не всі питання отримують остаточну відповідь.",
+              delta: { trust: 2, morale: 1 } },
+            { label: "Ухилятися від конкретики, посилаючись на «триваюче розслідування».",
+              consequence: "Журналісти відчувають ухильність — тон публікацій стає ще критичнішим.",
+              delta: { trust: -2 } },
+            { label: "Перекласти частину відповідальності на зовнішнього підрядника, що обслуговував систему.",
+              consequence: "Це звучить як спроба уникнути відповідальності й підриває довіру ще більше.",
+              delta: { trust: -3, legal: -1 } }
+          ]
+        }
+      ]
+    },
+
+    scandal: {
+      title: "Скандал у мережі",
+      desc: "Відео з топменеджером стало вірусним за одну ніч. Мільйони переглядів, хвиля обурення.",
+      icon: "scandal",
+      stages: [
+        {
+          icon: "scandal",
+          time: "Понеділок, ранок",
+          text: "Вночі в мережі з'явилося відео з корпоративного заходу: один із топменеджерів допускає образливі жарти. Відео набрало мільйони переглядів за ніч, назва компанії — у топі трендів.",
+          choices: [
+            { label: "Негайно публічно відсторонити менеджера від посади до завершення розслідування.",
+              consequence: "Рішучий крок демонструє нульову толерантність, хоча дехто вважає його передчасним вироком без розслідування.",
+              delta: { trust: 2, legal: -1 } },
+            { label: "Спершу провести внутрішнє розслідування, не роблячи публічних заяв.",
+              consequence: "Мовчання компанії тим часом трактують як мовчазну згоду з поведінкою на відео.",
+              delta: { trust: -2, legal: 1 } },
+            { label: "Публічно заявити, що відео «вирвано з контексту», продовжуючи вивчати ситуацію приватно.",
+              consequence: "Коли з'являються додаткові деталі, заява про «контекст» виглядає як спроба виправдатися.",
+              delta: { trust: -3, legal: -1 } }
+          ]
+        },
+        {
+          icon: "meeting",
+          time: "Той самий день, усередині компанії",
+          text: "Співробітники обговорюють ситуацію в корпоративному чаті. Частина команди вимагає чіткої позиції керівництва, дехто погрожує звільненням.",
+          choices: [
+            { label: "Провести відкриту зустріч із командою, де можна ставити будь-які запитання керівництву.",
+              consequence: "Відкритість заспокоює частину команди, хоча деякі запитання залишаються без остаточної відповіді.",
+              delta: { morale: 2 } },
+            { label: "Попросити HR розіслати стандартну заяву про «цінності компанії» без деталей.",
+              consequence: "Формальна відповідь сприймається як байдужість до реальних переживань команди.",
+              delta: { morale: -2 } },
+            { label: "Не коментувати ситуацію всередині, поки не завершиться зовнішнє розслідування.",
+              consequence: "Відсутність будь-якої реакції зсередини посилює тривогу та чутки.",
+              delta: { morale: -1, trust: -1 } }
+          ]
+        },
+        {
+          icon: "press",
+          time: "Наступного дня",
+          text: "Кілька рекламодавців публічно заявляють про призупинення співпраці. Журналісти вимагають офіційного коментаря щодо подальших кроків.",
+          choices: [
+            { label: "Опублікувати чітку публічну заяву з конкретними кроками: розслідування, можливі наслідки, зміни політики.",
+              consequence: "Конкретика заяви сприймається позитивно, хоча частина аудиторії залишається скептичною.",
+              delta: { trust: 2, legal: -1 } },
+            { label: "Обмежитися короткою загальною заявою про «неприпустимість дискримінації» без конкретних дій.",
+              consequence: "Загальні слова без дій розцінюють як спробу перечекати хвилю обурення.",
+              delta: { trust: -1 } },
+            { label: "Не давати офіційних коментарів пресі, поки триває розслідування.",
+              consequence: "Мовчання компанії стає окремою новиною — «чому вони мовчать?» — і посилює тиск.",
+              delta: { trust: -2 } }
+          ]
+        },
+        {
+          icon: "legal",
+          time: "За кілька днів",
+          text: "Розслідування підтверджує інцидент. Потрібно ухвалити рішення щодо менеджера і щодо політики компанії надалі.",
+          choices: [
+            { label: "Звільнити менеджера і публічно оголосити обов'язковий тренінг з інклюзивності для всього керівництва.",
+              consequence: "Системні зміни сприймають як щиру відповідь, хоча витрати на впровадження суттєві.",
+              delta: { trust: 2, finance: -2, legal: 1 } },
+            { label: "Обмежитися офіційним попередженням менеджеру без публічного розголосу деталей рішення.",
+              consequence: "Відсутність прозорості щодо наслідків викликає нову хвилю критики.",
+              delta: { trust: -2, finance: 1 } },
+            { label: "Дозволити менеджеру спокійно піти «за власним бажанням» без згадки про причину.",
+              consequence: "Публіка швидко здогадується про справжню причину — спроба «тихого відходу» виглядає як приховування.",
+              delta: { trust: -1, legal: -1 } }
+          ]
+        },
+        {
+          icon: "conference",
+          time: "Публічна пресконференція",
+          text: "Компанія скликає пресконференцію, щоб закрити тему для медіа. Журналісти готові ставити гострі запитання про культуру компанії загалом.",
+          choices: [
+            { label: "Чесно визнати системну проблему і розповісти про конкретні кроки з її вирішення.",
+              consequence: "Визнання проблеми на рівні системи, а не лише «одного поганого менеджера», справляє сильне враження.",
+              delta: { trust: 2, morale: 1 } },
+            { label: "Наполягати, що це був поодинокий випадок, не пов'язаний із культурою компанії.",
+              consequence: "Журналісти й аудиторія сумніваються в щирості такого пояснення.",
+              delta: { trust: -2 } },
+            { label: "Уникати прямих відповідей, посилаючись на «повагу до приватності» учасників розслідування.",
+              consequence: "Ухильність на цьому етапі виглядає особливо погано після кількох днів тиші.",
+              delta: { trust: -3 } }
+          ]
+        }
+      ]
+    },
+
+    supply: {
+      title: "Розрив постачання",
+      desc: "Пожежа на заводі постачальника — за 10 днів до великого запуску продукту.",
+      icon: "supply",
+      stages: [
+        {
+          icon: "supply",
+          time: "Понеділок, 6:00 ранку",
+          text: "Пожежа на заводі ключового постачальника знищила лінію, яка забезпечувала 60% критичного компонента для флагманського продукту — за 10 днів до масштабного запуску.",
+          choices: [
+            { label: "Негайно скликати штаб і почати паралельний пошук альтернативних постачальників.",
+              consequence: "Швидка мобілізація дає час, але альтернативні постачальники коштують значно дорожче.",
+              delta: { finance: -2, legal: 1 } },
+            { label: "Почекати офіційного звіту постачальника про терміни відновлення, перш ніж діяти.",
+              consequence: "Втрачені дні очікування скорочують і без того обмежений запас часу до запуску.",
+              delta: { legal: -2 } },
+            { label: "Одразу перенести дату запуску, не шукаючи альтернатив.",
+              consequence: "Рішення економить зусилля команди, але означає втрату переваги першими на ринку.",
+              delta: { finance: -1, trust: -1 } }
+          ]
+        },
+        {
+          icon: "meeting",
+          time: "Той самий день",
+          text: "Команда виробництва повідомляє: наявних запасів компонента вистачить лише на часткове виконання замовлень. Потрібно розподілити дефіцитний ресурс.",
+          choices: [
+            { label: "Чесно повідомити всім клієнтам про ситуацію і пропорційно розподілити наявні запаси.",
+              consequence: "Пропорційний підхід сприймається як справедливий, хоча жоден клієнт не отримує повний обсяг вчасно.",
+              delta: { trust: 1, morale: 1 } },
+            { label: "Пріоритезувати найбільших клієнтів, а дрібніші замовлення відкласти без попередження.",
+              consequence: "Великі клієнти задоволені, але дрібні партнери дізнаються про затримку із запізненням і обурюються.",
+              delta: { trust: -2, finance: 1 } },
+            { label: "Приховати масштаб дефіциту від клієнтів, сподіваючись вирішити проблему непомітно.",
+              consequence: "Коли затримки стають очевидними самі по собі, відсутність завчасного попередження підриває довіру ще більше.",
+              delta: { trust: -2, legal: -1 } }
+          ]
+        },
+        {
+          icon: "press",
+          time: "За кілька днів",
+          text: "Новини про затримки поставок поширюються в галузевих медіа. Конкуренти помічають ситуацію й активізують власний маркетинг.",
+          choices: [
+            { label: "Опублікувати відкритий лист із чесним поясненням причин затримки і новими орієнтовними термінами.",
+              consequence: "Прозорість щодо причин зменшує роздратування, хоча очікування все одно засмучує частину клієнтів.",
+              delta: { trust: 2 } },
+            { label: "Обмежитися короткими особистими відповідями лише тим клієнтам, які поскаржилися напряму.",
+              consequence: "Клієнти, яких проігнорували публічно, почуваються менш важливими для компанії.",
+              delta: { trust: -1, morale: -1 } },
+            { label: "Публічно звинуватити постачальника у всіх проблемах, дистанціюючись від відповідальності.",
+              consequence: "Перекладання провини виглядає як спроба уникнути власної відповідальності за диверсифікацію постачальників.",
+              delta: { trust: -2, legal: -1 } }
+          ]
+        },
+        {
+          icon: "legal",
+          time: "Тиждень по тому",
+          text: "Юридичний відділ нагадує про штрафні санкції в контрактах за прострочену поставку. Потрібно ухвалити рішення щодо компенсацій постраждалим клієнтам.",
+          choices: [
+            { label: "Запропонувати постраждалим клієнтам знижки або бонуси як компенсацію за затримку.",
+              consequence: "Клієнти цінують жест доброї волі, хоча це додатково тисне на маржинальність кварталу.",
+              delta: { finance: -2, trust: 2 } },
+            { label: "Виконати лише мінімальні контрактні зобов'язання, без додаткових жестів.",
+              consequence: "Формально все за законом, але клієнти запам'ятовують відсутність гнучкості у складний момент.",
+              delta: { finance: 1, trust: -1 } },
+            { label: "Спробувати домовитися про перегляд умов контрактів заднім числом, посилаючись на форс-мажор.",
+              consequence: "Частина клієнтів погоджується, але інші сприймають це як недобросовісну спробу змінити умови заднім числом.",
+              delta: { trust: -2, legal: -1 } }
+          ]
+        },
+        {
+          icon: "conference",
+          time: "Публічна пресконференція",
+          text: "Галузеві медіа запросили компанію прокоментувати ситуацію публічно й розповісти, як вона планує уникати подібного надалі.",
+          choices: [
+            { label: "Розповісти про конкретний план диверсифікації постачальників на майбутнє.",
+              consequence: "Конкретний план на майбутнє демонструє, що урок засвоєно, а не лише владнано поточну кризу.",
+              delta: { trust: 2, legal: 1 } },
+            { label: "Запевнити, що «подібне більше не повториться», без деталей плану.",
+              consequence: "Порожня обіцянка без деталей не переконує досвідчених журналістів галузевих видань.",
+              delta: { trust: -1 } },
+            { label: "Уникати теми майбутніх ризиків, зосереджуючись лише на поточному вирішенні ситуації.",
+              consequence: "Відсутність погляду в майбутнє залишає відчуття, що компанія не винесла уроків.",
+              delta: { trust: -2 } }
+          ]
+        }
+      ]
+    },
+
+    recall: {
+      title: "Відкликання продукту",
+      desc: "Найпопулярніша модель перегрівається. Перші постраждалі вже є.",
+      icon: "recall",
+      stages: [
+        {
+          icon: "recall",
+          time: "Вівторок, ранок",
+          text: "Служба підтримки повідомляє про кілька випадків перегріву акумулятора в найпопулярнішій моделі продукту. Один випадок призвів до незначного опіку користувача.",
+          choices: [
+            { label: "Негайно призупинити продажі моделі до з'ясування причини, навіть без підтвердженого масового дефекту.",
+              consequence: "Обережний крок захищає споживачів, але призупинення продажів найпопулярнішої моделі одразу б'є по виручці.",
+              delta: { finance: -2, legal: 2 } },
+            { label: "Продовжити продажі, паралельно тихо розслідуючи причину інцидентів.",
+              consequence: "Продажі тривають, але якщо проблема підтвердиться, кількість постраждалих користувачів може зрости.",
+              delta: { legal: -2 } },
+            { label: "Публічно заявити, що це поодинокі випадки неправильного використання з боку користувачів.",
+              consequence: "Перекладання провини на користувачів виглядає передчасним ще до завершення технічної експертизи.",
+              delta: { trust: -2, legal: -1 } }
+          ]
+        },
+        {
+          icon: "meeting",
+          time: "Той самий день",
+          text: "Інженерна команда не одностайна: одні вважають дефект підтвердженим і системним, інші — поодиноким браком партії.",
+          choices: [
+            { label: "Зібрати екстрену нараду і встановити чіткий дедлайн для остаточного технічного висновку.",
+              consequence: "Чіткий дедлайн дисциплінує команду, хоча тиск часу підвищує ризик недостатньо ретельного аналізу.",
+              delta: { legal: 1, morale: -1 } },
+            { label: "Дати інженерам стільки часу, скільки потрібно, без зовнішнього тиску.",
+              consequence: "Якісніший аналіз потребує більше часу, протягом якого проблема може зачепити ще більше користувачів.",
+              delta: { legal: -1, morale: 1 } },
+            { label: "Доручити ухвалення рішення виключно керівництву, без очікування остаточного висновку інженерів.",
+              consequence: "Рішення без технічного підтвердження ризикує бути або надто обережним, або недостатньо обережним.",
+              delta: { legal: -2 } }
+          ]
+        },
+        {
+          icon: "press",
+          time: "За два дні",
+          text: "Відео з перегрітим пристроєм набирає популярності в соцмережах. Журналісти запитують, чи знала компанія про проблему заздалегідь.",
+          choices: [
+            { label: "Публічно підтвердити факт розслідування і пообіцяти оновлення протягом 48 годин.",
+              consequence: "Чесне визнання розслідування, що триває, сприймається краще, ніж повне мовчання.",
+              delta: { trust: 1 } },
+            { label: "Не коментувати ситуацію публічно, поки розслідування не завершено на 100%.",
+              consequence: "Мовчання компанії саме по собі стає темою обговорення й здогадок у медіа.",
+              delta: { trust: -2 } },
+            { label: "Заперечити наявність будь-якої проблеми до завершення розслідування.",
+              consequence: "Якщо проблему згодом підтвердять, попереднє заперечення виглядатиме як пряма недобросовісність.",
+              delta: { trust: -3, legal: -1 } }
+          ]
+        },
+        {
+          icon: "legal",
+          time: "Тиждень по тому",
+          text: "Технічна експертиза підтверджує дефект у певній партії акумуляторів. Потрібно ухвалити рішення про масштаб відкликання.",
+          choices: [
+            { label: "Оголосити повне добровільне відкликання всіх одиниць постраждалої партії з повним поверненням коштів.",
+              consequence: "Повне відкликання коштує дорого, але демонструє відповідальність і випереджає можливі регуляторні вимоги.",
+              delta: { finance: -2, trust: 2, legal: 2 } },
+            { label: "Запропонувати лише безкоштовний ремонт для тих, хто самостійно звернеться зі скаргою.",
+              consequence: "Менші витрати, але значна частина постраждалих користувачів може не дізнатися про можливість ремонту.",
+              delta: { finance: 1, trust: -1, legal: -1 } },
+            { label: "Почекати офіційного припису регулятора, перш ніж оголошувати будь-яке відкликання.",
+              consequence: "Очікування зовнішнього тиску замість власної ініціативи виглядає як відсутність турботи про безпеку користувачів.",
+              delta: { trust: -2, legal: -2 } }
+          ]
+        },
+        {
+          icon: "conference",
+          time: "Публічна пресконференція",
+          text: "Компанія скликає пресконференцію, щоб пояснити суть дефекту, масштаб відкликання і подальші кроки з безпеки продукції.",
+          choices: [
+            { label: "Детально й технічно чесно пояснити причину дефекту та кроки контролю якості на майбутнє.",
+              consequence: "Технічна чесність і конкретний план контролю якості справляють враження компетентного, відповідального реагування.",
+              delta: { trust: 2, legal: 1 } },
+            { label: "Обмежитися загальними фразами про «найвищі стандарти якості» без технічних деталей.",
+              consequence: "Загальні фрази без деталей не задовольняють технічно підкованих журналістів і експертів.",
+              delta: { trust: -1 } },
+            { label: "Натякнути, що постачальник компонентів несе основну відповідальність за дефект.",
+              consequence: "Спроба перекласти провину на постачальника посеред власної пресконференції виглядає захисною реакцією.",
+              delta: { trust: -2, legal: -1 } }
+          ]
+        }
+      ]
+    },
+
+    whistleblower: {
+      title: "Голос зсередини",
+      desc: "Колишня співробітниця публічно звинувачує керівництво в приховуванні токсичної поведінки.",
+      icon: "whistleblower",
+      stages: [
+        {
+          icon: "whistleblower",
+          time: "Неділя ввечері",
+          text: "У соцмережі колишня співробітниця публікує розгорнутий допис: звинувачує одного з топменеджерів у токсичній поведінці й стверджує, що HR роками ігнорував скарги. Допис швидко поширюється.",
+          choices: [
+            { label: "Негайно повідомити, що звинувачення сприймають серйозно і призначають незалежне розслідування.",
+              consequence: "Швидка й серйозна реакція сприймається позитивно, хоча деталі розслідування ще попереду.",
+              delta: { trust: 2, legal: 1 } },
+            { label: "Почекати кілька днів, вивчаючи внутрішні документи, перш ніж щось коментувати публічно.",
+              consequence: "Мовчання протягом кількох днів дає простір для поширення додаткових звинувачень і здогадок.",
+              delta: { trust: -2 } },
+            { label: "Публічно поставити під сумнів достовірність звинувачень колишньої співробітниці.",
+              consequence: "Спроба дискредитувати автора допису виглядає як захист кривдника, а не турбота про постраждалих.",
+              delta: { trust: -3, morale: -1 } }
+          ]
+        },
+        {
+          icon: "meeting",
+          time: "Наступного ранку",
+          text: "У внутрішньому корпоративному чаті співробітники починають ділитися власними схожими історіями. Атмосфера в команді напружена.",
+          choices: [
+            { label: "Відкрито визнати серйозність ситуації перед усією командою і повідомити про кроки розслідування.",
+              consequence: "Відкритість допомагає частині команди відчути, що їх почули, хоча тривога залишається високою.",
+              delta: { morale: 2 } },
+            { label: "Попросити співробітників утриматися від обговорення ситуації на робочих каналах.",
+              consequence: "Прохання мовчати сприймають як спробу заглушити тему, а не вирішити її.",
+              delta: { morale: -2, trust: -1 } },
+            { label: "Не звертати офіційної уваги на внутрішні обговорення, вважаючи їх приватною справою команди.",
+              consequence: "Відсутність реакції керівництва на реальний біль команди підриває довіру зсередини.",
+              delta: { morale: -2 } }
+          ]
+        },
+        {
+          icon: "press",
+          time: "За кілька днів",
+          text: "Історію підхоплюють журналісти, що спеціалізуються на корпоративній культурі. Кілька анонімних співробітників дають коментарі пресі.",
+          choices: [
+            { label: "Дати офіційний коментар пресі про хід розслідування, не називаючи імен і деталей до завершення процесу.",
+              consequence: "Збалансований коментар демонструє серйозність без порушення конфіденційності розслідування.",
+              delta: { trust: 1 } },
+            { label: "Відмовитися коментувати пресі взагалі, посилаючись на «внутрішній характер» питання.",
+              consequence: "Повна відмова коментувати на тлі активного висвітлення в медіа виглядає як ухилення.",
+              delta: { trust: -2 } },
+            { label: "Дати розлогий коментар із деталями, яких розслідування ще не підтвердило.",
+              consequence: "Передчасні деталі можуть зашкодити самому розслідуванню і викликають нові запитання.",
+              delta: { trust: -1, legal: -2 } }
+          ]
+        },
+        {
+          icon: "legal",
+          time: "Через два тижні",
+          text: "Незалежне розслідування підтверджує частину звинувачень. Потрібно ухвалити рішення щодо звинуваченого менеджера та системних змін у компанії.",
+          choices: [
+            { label: "Звільнити менеджера і публічно оголосити про перегляд усієї системи розгляду скарг HR.",
+              consequence: "Системні зміни поряд із персональним рішенням сприймають як щиру, а не косметичну відповідь.",
+              delta: { trust: 2, morale: 1, finance: -1 } },
+            { label: "Перевести менеджера на іншу посаду без публічного розголосу причин.",
+              consequence: "Відсутність прозорих наслідків для менеджера сприймається як приховане покривання проблеми.",
+              delta: { trust: -2, morale: -1 } },
+            { label: "Обмежитися внутрішнім попередженням менеджеру без змін у процесах HR.",
+              consequence: "Мінімальна реакція без системних змін залишає відчуття, що проблема повториться знову.",
+              delta: { trust: -1, morale: -1, legal: -1 } }
+          ]
+        },
+        {
+          icon: "conference",
+          time: "Публічна пресконференція",
+          text: "Компанія проводить пресконференцію, щоб публічно закрити тему для медіа і власних співробітників, які уважно стежать за реакцією керівництва.",
+          choices: [
+            { label: "Публічно вибачитися перед постраждалими та детально розповісти про нову систему захисту скаржників.",
+              consequence: "Пряме вибачення і конкретний план захисту скаржників на майбутнє сприймають як щиру відповідальність.",
+              delta: { trust: 2, morale: 1 } },
+            { label: "Висловити «жаль з приводу ситуації» без прямого вибачення чи деталей системних змін.",
+              consequence: "Обтічні формулювання без прямого вибачення сприймаються як недостатня відповідальність.",
+              delta: { trust: -1 } },
+            { label: "Наголосити, що подібні випадки — рідкість і не відображають загальну культуру компанії.",
+              consequence: "Заперечення системного характеру проблеми після підтвердженого розслідування виглядає нещиро.",
+              delta: { trust: -2, morale: -1 } }
+          ]
+        }
+      ]
+    }
+  };
+
+  var STORAGE_PREFIX = "crisis-game:";
+
+  // ---------------- State ----------------
+  var state = {
+    screen: "intro",       // intro -> crisisSelect -> roleSelect -> play -> consequence -> ending -> teacher
+    studentName: "",
+    crisisKey: null,
+    roleKey: null,
+    stats: { trust: 5, finance: 5, legal: 5, morale: 5 },
+    stageIndex: 0,
+    log: [],
+    lastDelta: null,
+    saveStatus: "idle",
+    teacherRows: null,
+    teacherLoading: false
+  };
+
+  var app = document.getElementById("app");
+  function el(html) {
+    var t = document.createElement("template");
+    t.innerHTML = html.trim();
+    return t.content.firstElementChild;
+  }
+  function escHtml(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+  function clamp(v) { return Math.max(0, Math.min(10, v)); }
+  function currentStages() { return CRISES[state.crisisKey].stages; }
+
+  function applyDelta(delta) {
+    Object.keys(delta).forEach(function (k) {
+      state.stats[k] = clamp(state.stats[k] + delta[k]);
+    });
+  }
+
+  function statFillClass(v) {
+    if (v <= 3) return "low";
+    if (v >= 8) return "high";
+    return "";
+  }
+
+  function renderStatDash() {
+    var html = '<div class="stat-dash">';
+    Object.keys(STAT_META).forEach(function (k) {
+      var v = state.stats[k];
+      html += (
+        '<div class="stat-box">' +
+          '<div class="s-label-row"><span class="s-label">' + STAT_META[k].label + '</span><span class="s-value ' + statFillClass(v) + '">' + v + '/10</span></div>' +
+          '<div class="stat-track"><div class="stat-fill ' + statFillClass(v) + '" style="width:' + (v * 10) + '%"></div></div>' +
+        '</div>'
+      );
+    });
+    html += "</div>";
+    return html;
+  }
+
+  // ---------------- Ending logic ----------------
+  function computeEnding() {
+    var total = state.stats.trust + state.stats.finance + state.stats.legal + state.stats.morale;
+    if (total >= 22) return { tier: "good", title: "Зразкове антикризове лідерство", cls: "tier-good",
+      text: "Ви провели компанію крізь кризу, зберігши довіру клієнтів, стабільність команди й юридичну безпеку. Саме така збалансованість — швидкі дії, чесна комунікація, відповідальність — і є суттю антикризового лідерства." };
+    if (total >= 15) return { tier: "mixed", title: "Криза стабілізована, але з наслідками", cls: "tier-mixed",
+      text: "Компанія пережила кризу, але не без втрат — десь довіру, десь фінанси, десь моральний стан команди. Це реалістичний результат: у кризі рідко вдається зберегти все одразу, важливо усвідомлювати компроміси." };
+    return { tier: "bad", title: "Репутаційні втрати поглибились", cls: "tier-bad",
+      text: "Низка рішень — затримки, ухильність або перекладання відповідальності — поглибили кризу, а не стабілізували її. Це показовий приклад того, як брак прозорості й швидкості посилює наслідки навіть невеликого початкового інциденту." };
+  }
+
+  // ---------------- Persistence ----------------
+  function saveResultToStorage(ending) {
+    if (!window.storage) return;
+    state.saveStatus = "saving";
+    var key = STORAGE_PREFIX + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
+    var payload = {
+      name: state.studentName || "Анонім",
+      crisis: CRISES[state.crisisKey].title,
+      role: ROLES[state.roleKey].label,
+      stats: state.stats,
+      tier: ending.tier,
+      title: ending.title,
+      choices: state.log.map(function (l) { return l.choiceLabel; }),
+      timestamp: Date.now()
+    };
+    window.storage.set(key, JSON.stringify(payload), true).then(function (r) {
+      state.saveStatus = r ? "saved" : "failed";
+      render();
+    }).catch(function () { state.saveStatus = "failed"; render(); });
+  }
+
+  function loadTeacherRows() {
+    state.teacherLoading = true;
+    render();
+    if (!window.storage) { state.teacherRows = []; state.teacherLoading = false; render(); return; }
+    window.storage.list(STORAGE_PREFIX, true).then(function (listRes) {
+      var keys = (listRes && listRes.keys) || [];
+      if (keys.length === 0) { state.teacherRows = []; state.teacherLoading = false; render(); return; }
+      var promises = keys.map(function (k) {
+        return window.storage.get(k, true).then(function (r) {
+          try { return JSON.parse(r.value); } catch (e) { return null; }
+        }).catch(function () { return null; });
+      });
+      Promise.all(promises).then(function (rows) {
+        rows = rows.filter(Boolean).sort(function (a, b) { return b.timestamp - a.timestamp; });
+        state.teacherRows = rows; state.teacherLoading = false; render();
+      });
+    }).catch(function () { state.teacherRows = []; state.teacherLoading = false; render(); });
+  }
+
+  function csvEscape(text) { return '"' + String(text).replace(/"/g, '""') + '"'; }
+  function downloadCsv() {
+    var rows = state.teacherRows || [];
+    var header = ["Ім'я", "Криза", "Роль", "Довіра", "Фінанси", "Юридична безпека", "Командний дух", "Фінал", "Дата"];
+    var lines = [header.map(csvEscape).join(";")];
+    rows.forEach(function (r) {
+      lines.push([
+        csvEscape(r.name), csvEscape(r.crisis), csvEscape(r.role), r.stats.trust, r.stats.finance, r.stats.legal, r.stats.morale,
+        csvEscape(r.title), csvEscape(new Date(r.timestamp).toLocaleString("uk-UA"))
+      ].join(";"));
+    });
+    var blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = "crisis-game-results.csv";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  // ---------------- Screens ----------------
+  function renderIntro() {
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<p class="kicker">Практичне заняття 3 · Бізнес-лідерство</p>' +
+      '<h1 class="title serif">Симулятор кризового лідера</h1>' +
+      '<p class="lead">Текстовий квест для одного гравця: на кожному етапі ви отримуєте ситуацію і обираєте одну з дій. Кожен вибір змінює чотири показники — довіру, фінанси, юридичну безпеку і командний дух — і веде до наступної сцени. У кінці ви побачите повний підсумок для звіту.</p>' +
+      '<label class="field-label">Ваше ім\'я (необов\'язково)</label>' +
+      '<input type="text" class="text-input" id="name-input" placeholder="Наприклад, Олена К." value="' + state.studentName.replace(/"/g,'&quot;') + '" />' +
+      '<button class="btn btn-primary" id="start-btn">Обрати кризу →</button>' +
+      '</div></div>'
+    );
+    card.querySelector("#start-btn").addEventListener("click", function () {
+      state.studentName = card.querySelector("#name-input").value.trim();
+      state.screen = "crisisSelect";
+      render();
+    });
+    return card;
+  }
+
+  function renderCrisisSelect() {
+    var cardsHtml = Object.keys(CRISES).map(function (key) {
+      var c = CRISES[key];
+      var sel = state.crisisKey === key ? " selected" : "";
+      return (
+        '<div class="crisis-card' + sel + '" data-crisis="' + key + '">' +
+          '<div class="c-icon">' + ICONS[c.icon] + '</div>' +
+          '<div><div class="c-name">' + c.title + '</div><div class="c-desc">' + c.desc + '</div></div>' +
+        '</div>'
+      );
+    }).join("");
+
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<p class="kicker">Крок 1 з 3</p>' +
+      '<h1 class="title serif" style="font-size:22px;">Яку кризу проживає ваша компанія?</h1>' +
+      '<div class="crisis-grid">' + cardsHtml + '</div>' +
+      '<button class="btn btn-primary" id="confirm-crisis-btn" ' + (state.crisisKey ? "" : "disabled") + '>Обрати роль →</button>' +
+      '</div></div>'
+    );
+
+    card.querySelectorAll(".crisis-card").forEach(function (cc) {
+      cc.addEventListener("click", function () {
+        state.crisisKey = cc.getAttribute("data-crisis");
+        render();
+      });
+    });
+    card.querySelector("#confirm-crisis-btn").addEventListener("click", function () {
+      if (!state.crisisKey) return;
+      state.screen = "roleSelect";
+      render();
+    });
+    return card;
+  }
+
+  function renderRoleSelect() {
+    var cardsHtml = Object.keys(ROLES).map(function (key) {
+      var r = ROLES[key];
+      var sel = state.roleKey === key ? " selected" : "";
+      var chipsHtml = r.bonusLabels.map(function (b) { return '<span class="role-bonus-chip">' + b + '</span>'; }).join("");
+      return (
+        '<div class="role-card' + sel + '" data-role="' + key + '">' +
+          '<div class="r-name">' + r.label + '</div>' +
+          '<div class="r-desc">' + r.desc + '</div>' +
+          '<div class="role-bonus-row">' + chipsHtml + '</div>' +
+        '</div>'
+      );
+    }).join("");
+
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<p class="kicker">Крок 2 з 3 · Криза: ' + CRISES[state.crisisKey].title + '</p>' +
+      '<h1 class="title serif" style="font-size:22px;">Яку роль ви граєте в кризовій команді?</h1>' +
+      '<div class="role-grid">' + cardsHtml + '</div>' +
+      '<div class="result-actions">' +
+        '<button class="btn btn-secondary" id="back-crisis-btn">← Інша криза</button>' +
+        '<button class="btn btn-primary" id="confirm-role-btn" ' + (state.roleKey ? "" : "disabled") + '>Почати кризу →</button>' +
+      '</div>' +
+      '</div></div>'
+    );
+
+    card.querySelectorAll(".role-card").forEach(function (rc) {
+      rc.addEventListener("click", function () {
+        state.roleKey = rc.getAttribute("data-role");
+        render();
+      });
+    });
+    card.querySelector("#back-crisis-btn").addEventListener("click", function () {
+      state.screen = "crisisSelect"; render();
+    });
+    card.querySelector("#confirm-role-btn").addEventListener("click", function () {
+      if (!state.roleKey) return;
+      state.stats = { trust: 5, finance: 5, legal: 5, morale: 5 };
+      applyDelta(ROLES[state.roleKey].bonus);
+      state.stageIndex = 0;
+      state.log = [];
+      state.screen = "play";
+      render();
+    });
+    return card;
+  }
+
+  function renderPlay() {
+    var stages = currentStages();
+    var stage = stages[state.stageIndex];
+    var choicesHtml = stage.choices.map(function (c, idx) {
+      return '<button class="choice-btn" data-idx="' + idx + '">' + escHtml(c.label) + '</button>';
+    }).join("");
+
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<p class="kicker">' + CRISES[state.crisisKey].title + ' · Роль: ' + ROLES[state.roleKey].label + ' · Сцена ' + (state.stageIndex + 1) + ' із ' + stages.length + '</p>' +
+      renderStatDash() +
+      '<div class="scene-icon-wrap">' + ICONS[stage.icon] + '</div>' +
+      '<div class="scene-time">' + stage.time + '</div>' +
+      '<p class="scene-text serif">' + stage.text + '</p>' +
+      '<div class="choice-list">' + choicesHtml + '</div>' +
+      '</div></div>'
+    );
+
+    card.querySelectorAll(".choice-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var idx = parseInt(btn.getAttribute("data-idx"), 10);
+        var choice = stage.choices[idx];
+        applyDelta(choice.delta);
+        state.log.push({ stageText: stage.text, choiceLabel: choice.label, consequence: choice.consequence });
+        state.lastDelta = choice.delta;
+        state.screen = "consequence";
+        render();
+      });
+    });
+
+    return card;
+  }
+
+  function renderConsequence() {
+    var stages = currentStages();
+    var lastLog = state.log[state.log.length - 1];
+    var delta = state.lastDelta;
+    var chipsHtml = Object.keys(delta).map(function (k) {
+      var v = delta[k];
+      var cls = v >= 0 ? "pos" : "neg";
+      var sign = v >= 0 ? "+" : "";
+      return '<span class="delta-chip ' + cls + '">' + STAT_META[k].label + " " + sign + v + '</span>';
+    }).join("");
+
+    var isLast = state.stageIndex >= stages.length - 1;
+
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      renderStatDash() +
+      '<div class="consequence-box">' +
+        '<div class="cq-label">Що змінилося</div>' +
+        '<p>' + escHtml(lastLog.consequence) + '</p>' +
+        '<div class="delta-row">' + chipsHtml + '</div>' +
+      '</div>' +
+      '<button class="btn btn-primary" id="continue-btn">' + (isLast ? "Дивитися підсумок →" : "Далі →") + '</button>' +
+      '</div></div>'
+    );
+
+    card.querySelector("#continue-btn").addEventListener("click", function () {
+      if (isLast) {
+        var ending = computeEnding();
+        state.screen = "ending";
+        render();
+        saveResultToStorage(ending);
+      } else {
+        state.stageIndex += 1;
+        state.screen = "play";
+        render();
+      }
+    });
+
+    return card;
+  }
+
+  function renderEnding() {
+    var ending = computeEnding();
+    var logHtml = state.log.map(function (l, i) {
+      return '<li><b>Сцена ' + (i + 1) + ':</b> ' + escHtml(l.choiceLabel) + '</li>';
+    }).join("");
+
+    var saveNote = "";
+    if (state.saveStatus === "saving") saveNote = "Зберігаємо результат…";
+    else if (state.saveStatus === "saved") saveNote = "Результат збережено.";
+    else if (state.saveStatus === "failed") saveNote = "Результат сформовано, але не вдалося зберегти для викладача.";
+
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<div class="scene-icon-wrap">' + ICONS.trophy + '</div>' +
+      '<p class="kicker" style="text-align:center;">' + CRISES[state.crisisKey].title + ' · Роль: ' + ROLES[state.roleKey].label + (state.studentName ? " · " + escHtml(state.studentName) : "") + '</p>' +
+      '<div style="text-align:center;"><span class="ending-tier ' + (ending.tier === "good" ? "tier-good" : ending.tier === "mixed" ? "tier-mixed" : "tier-bad") + '">' + (ending.tier === "good" ? "Найкращий фінал" : ending.tier === "mixed" ? "Змішаний фінал" : "Найгірший фінал") + '</span></div>' +
+      '<h1 class="ending-title serif" style="text-align:center;">' + ending.title + '</h1>' +
+      renderStatDash() +
+      '<p class="lead">' + ending.text + '</p>' +
+      '<b style="font-size:13px;">Ваш шлях через кризу:</b>' +
+      '<ul class="log-list">' + logHtml + '</ul>' +
+      '<p class="reflect-note"><b>Для рефлексії:</b> що б ви зробили інакше на кожному етапі? Який ваш вибір найбільше вплинув на фінал? Які лідерські компетенції знадобилися саме вашій ролі (' + ROLES[state.roleKey].label + ')?</p>' +
+      (saveNote ? '<p class="save-note">' + saveNote + '</p>' : "") +
+      '<div class="result-actions">' +
+        '<button class="btn btn-secondary" id="retry-btn">Інша криза / ще раз</button>' +
+      '</div>' +
+      '<button class="teacher-link" id="teacher-link">Перегляд результатів групи (для викладача)</button>' +
+      '</div></div>'
+    );
+
+    card.querySelector("#retry-btn").addEventListener("click", function () {
+      state.screen = "intro"; state.crisisKey = null; state.roleKey = null; state.log = [];
+      state.stats = { trust: 5, finance: 5, legal: 5, morale: 5 }; state.stageIndex = 0;
+      render();
+    });
+    card.querySelector("#teacher-link").addEventListener("click", function () {
+      state.screen = "teacher"; render(); loadTeacherRows();
+    });
+
+    return card;
+  }
+
+  function renderTeacher() {
+    var rows = state.teacherRows;
+    var bodyHtml;
+    if (state.teacherLoading) {
+      bodyHtml = '<p class="empty-note">Завантаження результатів…</p>';
+    } else if (!rows || rows.length === 0) {
+      bodyHtml = '<p class="empty-note">Поки що ніхто не пройшов гру за цим посиланням.</p>';
+    } else {
+      var tierLabel = { good: "Найкращий", mixed: "Змішаний", bad: "Найгірший" };
+      var trs = rows.map(function (r) {
+        return (
+          '<tr>' +
+            '<td>' + escHtml(r.name) + '</td>' +
+            '<td>' + escHtml(r.crisis || "—") + '</td>' +
+            '<td>' + escHtml(r.role) + '</td>' +
+            '<td>' + r.stats.trust + '</td><td>' + r.stats.finance + '</td><td>' + r.stats.legal + '</td><td>' + r.stats.morale + '</td>' +
+            '<td><span class="tag">' + (tierLabel[r.tier] || r.tier) + '</span></td>' +
+          '</tr>'
+        );
+      }).join("");
+      bodyHtml =
+        '<div class="table-scroll"><table class="results-table">' +
+          '<thead><tr><th>Студент</th><th>Криза</th><th>Роль</th><th>Дов.</th><th>Фін.</th><th>Юрид.</th><th>Дух</th><th>Фінал</th></tr></thead>' +
+          '<tbody>' + trs + '</tbody>' +
+        '</table></div>';
+    }
+
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<div class="teacher-header">' +
+        '<h1 class="title serif" style="margin:0;font-size:22px;">Результати групи</h1>' +
+        '<button class="icon-btn" id="refresh-btn">Оновити</button>' +
+      '</div>' +
+      bodyHtml +
+      '<div class="result-actions">' +
+        '<button class="btn btn-secondary" id="csv-btn"' + ((!rows || rows.length === 0) ? " disabled" : "") + '>Завантажити CSV</button>' +
+        '<button class="btn btn-secondary" id="back-btn">← Назад</button>' +
+      '</div>' +
+      '</div></div>'
+    );
+
+    card.querySelector("#refresh-btn").addEventListener("click", loadTeacherRows);
+    card.querySelector("#back-btn").addEventListener("click", function () {
+      state.screen = state.log.length > 0 ? "ending" : "intro"; render();
+    });
+    var csvBtn = card.querySelector("#csv-btn");
+    if (csvBtn && rows && rows.length > 0) csvBtn.addEventListener("click", downloadCsv);
+
+    return card;
+  }
+
+  function render() {
+    app.innerHTML = "";
+    var view;
+    if (state.screen === "intro") view = renderIntro();
+    else if (state.screen === "crisisSelect") view = renderCrisisSelect();
+    else if (state.screen === "roleSelect") view = renderRoleSelect();
+    else if (state.screen === "play") view = renderPlay();
+    else if (state.screen === "consequence") view = renderConsequence();
+    else if (state.screen === "ending") view = renderEnding();
+    else view = renderTeacher();
+    app.appendChild(view);
+    window.scrollTo(0, 0);
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>

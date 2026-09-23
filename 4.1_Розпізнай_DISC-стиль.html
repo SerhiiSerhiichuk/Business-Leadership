@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Розпізнай DISC-стиль</title>
+<style>
+  :root {
+    --ink: #1E2761; --ink-soft: #384080; --surface: #F3F6FC; --card: #FFFFFF;
+    --gold: #C9962C; --gold-soft: #F3E4C6; --muted: #5B6685; --line: #DDE4F5;
+    --red: #B3492F; --green: #2E7D6B;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; min-height: 100%; background: var(--surface);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+  }
+  .serif { font-family: Cambria, Georgia, "Times New Roman", serif; }
+  #app { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 32px 18px; }
+  .stage-wrap { width: 100%; max-width: 660px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 36px 34px; box-shadow: 0 18px 40px -24px rgba(30,39,97,0.35); }
+  @media (max-width: 480px) { .card { padding: 24px 18px; } }
+
+  .kicker { font-size: 13px; color: var(--muted); margin: 0 0 10px; }
+  h1.title { font-size: 26px; line-height: 1.25; margin: 0 0 14px; font-weight: 700; }
+  p.lead { font-size: 15px; line-height: 1.6; color: var(--muted); margin: 0 0 22px; }
+  label.field-label { display: block; font-size: 13px; color: var(--ink-soft); margin-bottom: 6px; font-weight: 600; }
+  input.text-input {
+    width: 100%; padding: 12px 14px; border-radius: 10px; border: 1.5px solid var(--line);
+    font-size: 15px; color: var(--ink); background: var(--surface); margin-bottom: 20px;
+  }
+  input.text-input:focus { outline: none; border-color: var(--gold); }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 13px 24px; border-radius: 10px; border: none; font-size: 14.5px; font-weight: 600;
+    cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .btn-primary { background: var(--ink); color: #fff; width: 100%; }
+  .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 10px 20px -12px rgba(30,39,97,0.6); }
+  .btn-secondary { background: var(--surface); color: var(--ink); border: 1.5px solid var(--line); }
+  .note-box { margin: 0 0 20px; padding: 12px 14px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+
+  /* DISC primer */
+  .primer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+  @media (max-width: 480px) { .primer-grid { grid-template-columns: 1fr; } }
+  .primer-item { display: flex; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); align-items: flex-start; }
+  .primer-letter { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; color: #fff; flex-shrink: 0; }
+  .primer-letter.D { background: var(--red); } .primer-letter.I { background: var(--gold); } .primer-letter.S { background: var(--green); } .primer-letter.C { background: var(--ink); }
+  .primer-text { font-size: 11.5px; line-height: 1.4; color: var(--muted); }
+  .primer-text b { color: var(--ink); }
+
+  /* Quiz */
+  .progress-track { height: 5px; background: var(--line); border-radius: 4px; overflow: hidden; margin-bottom: 22px; }
+  .progress-fill { height: 100%; background: var(--gold); border-radius: 4px; transition: width 0.4s ease; }
+  .step-count { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .cand-name-big { font-size: 20px; font-weight: 700; margin-bottom: 14px; }
+  .desc-box { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; margin-bottom: 22px; }
+  .desc-box p { font-size: 14px; line-height: 1.65; margin: 0; color: var(--ink-soft); }
+  .disc-choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 480px) { .disc-choice-grid { grid-template-columns: 1fr; } }
+  .disc-choice-btn {
+    display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 12px;
+    border: 1.5px solid var(--line); background: #fff; cursor: pointer; transition: all 0.15s ease; text-align: left;
+  }
+  .disc-choice-btn:hover { border-color: var(--gold); background: var(--gold-soft); }
+  .disc-choice-btn .dc-badge { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; color: #fff; flex-shrink: 0; }
+  .disc-choice-btn .dc-badge.D { background: var(--red); } .disc-choice-btn .dc-badge.I { background: var(--gold); } .disc-choice-btn .dc-badge.S { background: var(--green); } .disc-choice-btn .dc-badge.C { background: var(--ink); }
+  .disc-choice-btn .dc-title { font-weight: 700; font-size: 13.5px; }
+  .disc-choice-btn .dc-sub { font-size: 11px; color: var(--muted); }
+
+  /* Consequence */
+  .consequence-box { border-radius: 14px; padding: 18px 20px; margin-bottom: 20px; color: #fff; }
+  .consequence-box.correct { background: var(--green); }
+  .consequence-box.incorrect { background: var(--red); }
+  .consequence-box .cq-label { font-size: 11px; font-weight: 700; margin-bottom: 8px; letter-spacing: 0.3px; opacity: 0.85; }
+  .consequence-box p { font-size: 13.5px; line-height: 1.55; margin: 0; }
+  .consequence-box .cq-your { font-size: 12px; margin-bottom: 8px; opacity: 0.9; }
+
+  /* Results */
+  table.results-recap { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-bottom: 20px; }
+  table.results-recap th { text-align: left; font-size: 11px; color: var(--muted); font-weight: 600; padding: 7px 6px; border-bottom: 2px solid var(--line); }
+  table.results-recap td { padding: 8px 6px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  .mini-badge { width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 11px; color: #fff; }
+  .mini-badge.D { background: var(--red); } .mini-badge.I { background: var(--gold); } .mini-badge.S { background: var(--green); } .mini-badge.C { background: var(--ink); }
+  .result-icon { font-weight: 800; }
+  .result-icon.ok { color: var(--green); } .result-icon.no { color: var(--red); }
+
+  .tier-card { margin-top: 4px; padding: 20px 22px; border-radius: 14px; background: var(--ink); color: #fff; margin-bottom: 20px; }
+  .tier-card .t-label { font-size: 11px; color: var(--gold-soft); font-weight: 700; margin-bottom: 8px; letter-spacing: 0.3px; }
+  .tier-card .t-title { font-size: 19px; font-weight: 700; margin-bottom: 8px; }
+  .tier-card p { font-size: 13.5px; line-height: 1.55; color: #DCE1F5; margin: 0; }
+  .score-big { text-align: center; margin-bottom: 4px; }
+  .score-big .num { font-size: 40px; font-weight: 800; color: var(--ink); }
+  .score-big .den { font-size: 16px; color: var(--muted); }
+
+  .save-note { font-size: 12.5px; color: var(--muted); margin-top: 14px; text-align: center; }
+  .result-actions { display: flex; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
+  .result-actions .btn { flex: 1; min-width: 140px; }
+  .teacher-link { display: block; text-align: center; margin-top: 20px; font-size: 12.5px; color: var(--muted); text-decoration: underline; cursor: pointer; background: none; border: none; }
+
+  .teacher-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+  table.results-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.results-table th { text-align: left; font-size: 10.5px; color: var(--muted); font-weight: 600; padding: 7px 6px; border-bottom: 2px solid var(--line); }
+  table.results-table td { padding: 8px 6px; border-bottom: 1px solid var(--line); }
+  .tag { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; background: var(--gold-soft); color: #7A5A16; }
+  .empty-note { text-align: center; color: var(--muted); font-size: 13.5px; padding: 30px 0; }
+  .icon-btn { background: none; border: 1.5px solid var(--line); border-radius: 8px; padding: 7px 13px; font-size: 12.5px; color: var(--ink); cursor: pointer; }
+  .icon-btn:hover { border-color: var(--gold); }
+  .table-scroll { overflow-x: auto; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+(function () {
+  var DISC_META = {
+    D: { name: "Домінування", sub: "Напір, швидкість, контроль", short: "Прямий, рішучий, орієнтований на результат і швидкі дії." },
+    I: { name: "Вплив", sub: "Комунікація, ентузіазм", short: "Товариський, енергійний, надихає інших, любить увагу." },
+    S: { name: "Стабільність", sub: "Терпіння, підтримка", short: "Спокійний, лояльний, уникає конфліктів, цінує стабільність." },
+    C: { name: "Сумлінність", sub: "Точність, аналіз", short: "Уважний до деталей, орієнтований на факти й якість." }
+  };
+  var DISC_ORDER = ["D", "I", "S", "C"];
+
+  var CANDIDATES = [
+    { id: "olena", name: "Олена", correct: "D",
+      description: "На нарадах Олена рідко чекає, поки всі висловляться, — вона одразу пропонує рішення й наполягає на швидких діях. Коли обговорення затягується, відкрито каже: «Досить говорити, час діяти». Не любить, коли хтось ставить під сумнів її підхід, і легко вступає в суперечку, обстоюючи свою позицію. У кризових ситуаціях бере відповідальність на себе, навіть якщо це означає діяти без повного погодження команди.",
+      explanation: "Прямі формулювання, нетерпіння до довгих обговорень, готовність сперечатися й діяти без повного консенсусу — класичні маркери типу D: орієнтація на результат і контроль, а не на процес чи згоду групи." },
+    { id: "maksym", name: "Максим", correct: "I",
+      description: "Максим — душа компанії: на будь-якому заході за кілька хвилин знайомиться з половиною присутніх і легко домовляється про майбутню зустріч. Обожнює презентувати ідеї перед аудиторією та отримувати схвальні відгуки. Водночас часто забуває заповнити звіт вчасно чи довести до кінця рутинне завдання, бо його увагу вже захопила нова ідея. Погано переносить одноманітну, самотню роботу за комп'ютером без спілкування.",
+      explanation: "Легкість у знайомствах, любов до публічних виступів і визнання, поряд із слабкою дисципліною в рутинних завданнях — типовий профіль I: енергія й товариськість важливіші за системність." },
+    { id: "iryna", name: "Ірина", correct: "S",
+      description: "Ірина рідко першою висловлює свою думку на нараді, але уважно слухає кожного і часто саме вона помічає, що хтось із колег засмучений чи перевантажений. Уникає прямих конфліктів навіть тоді, коли не згодна з рішенням, і намагається знайти компроміс, який влаштує всіх. Дуже цінує стабільність у команді й важко переживає раптові зміни планів чи складу проєкту.",
+      explanation: "Уважність до емоцій колег, уникнення конфлікту навіть ціною власної думки, важке переживання змін — це стрижневі риси типу S: цінність гармонії та стабільності понад усе." },
+    { id: "dmytro", name: "Дмитро", correct: "C",
+      description: "Дмитро завжди готує детальний план перед початком будь-якої роботи і кілька разів перевіряє розрахунки, перш ніж показати їх іншим. Вважає за краще спиратися на дані й факти, а не на інтуїцію чи припущення, і може годинами шукати першоджерело статистики, яку хтось згадав побіжно. Некомфортно почувається, коли рішення ухвалюють поспіхом, без достатнього аналізу.",
+      explanation: "Схильність до ретельної перевірки, опора на факти й дані замість інтуїції, дискомфорт від поспішних рішень без аналізу — чіткі ознаки типу C: точність і якість важливіші за швидкість." },
+    { id: "sofia", name: "Софія", correct: "I",
+      description: "Софія постійно пропонує нові, часом несподівані ідеї на нарадах — від зміни дизайну продукту до незвичного формату презентації. Легко надихається новою концепцією, але швидко втрачає інтерес, коли доходить до втілення деталей і бюрократичних узгоджень. Любить обговорювати можливості вголос, у групі, і отримує енергію від жвавого мозкового штурму. Дедлайни й чіткі рамки сприймає як щось, що заважає творчості.",
+      explanation: "Потік нових ідей, енергія від групового обговорення й швидка втрата інтересу до деталей виконання — це той самий поведінковий патерн, що й у Максима: тип I, орієнтований на натхнення, а не на структуру." },
+    { id: "andriy", name: "Андрій", correct: "D",
+      description: "Андрій добре бачить картину проєкту загалом і не боїться змінити початковий план, якщо вважає новий підхід ефективнішим — навіть якщо це означає суперечку з тим, хто пропонував старий варіант. На нарадах бере ініціативу модерувати обговорення й підштовхує команду швидше переходити від слів до дій. Не любить довго занурюватися в дрібні деталі виконання, довіряючи це іншим, поки загальний напрямок під контролем.",
+      explanation: "Готовність сперечатися заради ефективнішого рішення, ініціативність у підштовхуванні команди до дій і фокус на напрямку, а не на деталях — це той самий напористий, орієнтований на контроль профіль, що й у Олени: тип D." },
+    { id: "maria", name: "Марія", correct: "C",
+      description: "Марія перш ніж підтримати будь-яку ідею ставить кілька уточнювальних запитань про ризики та можливі наслідки, і часто саме вона на нараді вказує на слабке місце в плані, яке інші не помітили. Ретельно документує кожен крок аналізу, щоб рішення можна було легко пояснити пізніше. Уникає категоричних тверджень без достатніх доказів і насторожено ставиться до занадто оптимістичних прогнозів.",
+      explanation: "Систематичні уточнювальні запитання, увага до ризиків і документування кожного кроку, скептицизм щодо необґрунтованого оптимізму — знову тип C: аналітичність і обережність понад ентузіазм." },
+    { id: "bogdan", name: "Богдан", correct: "S",
+      description: "Богдан методично виконує кожен пункт затвердженого плану крок за кроком і рідко відхиляється від узгодженого підходу навіть під тиском часу. Коли керівництво раптово змінює напрямок проєкту, йому потрібен час, щоб перелаштуватися, — різкі повороти вибивають його з колії. Цінує чіткі, передбачувані процеси й охоче бере на себе повторювані, рутинні завдання, які інших дратують.",
+      explanation: "Методичність, дискомфорт від раптових змін напрямку та любов до передбачуваних, рутинних процесів — ті самі маркери стабільності й терпіння, що й в Ірини: тип S." }
+  ];
+
+  var STORAGE_PREFIX = "disc-recognition-quiz:";
+
+  var state = {
+    screen: "intro",
+    studentName: "",
+    order: [],
+    index: 0,
+    answers: [],       // { candidateId, chosen, correct, isCorrect }
+    lastAnswer: null,
+    saveStatus: "idle",
+    teacherRows: null,
+    teacherLoading: false
+  };
+
+  var app = document.getElementById("app");
+  function el(html) { var t = document.createElement("template"); t.innerHTML = html.trim(); return t.content.firstElementChild; }
+  function escHtml(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  function shuffle(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+    }
+    return a;
+  }
+
+  function scoreCount() { return state.answers.filter(function (a) { return a.isCorrect; }).length; }
+
+  function tierFor(score, total) {
+    var pct = score / total;
+    if (pct >= 0.875) return { label: "Відмінне розпізнавання DISC", cls: "good",
+      text: "Ви впевнено зчитуєте поведінкові маркери кожного стилю. Це саме той навик, який знадобиться під час формування команди — розпізнавати DISC не з готової позначки, а з реальної поведінки колег." };
+    if (pct >= 0.625) return { label: "Непогане розуміння, є прогалини", cls: "mixed",
+      text: "Більшість профілів ви визначили правильно, але кілька стилів усе ще плутаються. Варто ще раз звернути увагу на різницю між типами, які найчастіше плутають (наприклад, D і C — обидва рішучі, але по-різному; I і S — обидва товариські, але по-різному)." };
+    return { label: "Варто повторити теорію DISC", cls: "bad",
+      text: "Поки що складно з першого прочитання визначити стиль за поведінкою. Це нормально на старті — поверніться до опису чотирьох стилів і зверніть увагу на конкретні слова-маркери в описах (наприклад, «уникає конфлікту», «любить деталі», «бере ініціативу», «надихається новою ідeєю»)." };
+  }
+
+  function plainTextExport() {
+    var lines = [];
+    lines.push("Тренажер розпізнавання DISC-стилів — результати");
+    if (state.studentName) lines.push("Студент: " + state.studentName);
+    lines.push("");
+    lines.push("Результат: " + scoreCount() + " з " + CANDIDATES.length);
+    lines.push("");
+    state.answers.forEach(function (a) {
+      var cand = CANDIDATES.filter(function (c) { return c.id === a.candidateId; })[0];
+      lines.push((a.isCorrect ? "[правильно] " : "[неправильно] ") + cand.name + " — ваша відповідь: " + a.chosen + ", правильна: " + a.correct);
+    });
+    return lines.join("\n");
+  }
+
+  function saveResultToStorage() {
+    if (!window.storage) return;
+    state.saveStatus = "saving";
+    var key = STORAGE_PREFIX + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
+    var payload = {
+      name: state.studentName || "Анонім",
+      score: scoreCount(),
+      total: CANDIDATES.length,
+      answers: state.answers,
+      timestamp: Date.now()
+    };
+    window.storage.set(key, JSON.stringify(payload), true).then(function (r) {
+      state.saveStatus = r ? "saved" : "failed"; render();
+    }).catch(function () { state.saveStatus = "failed"; render(); });
+  }
+
+  function loadTeacherRows() {
+    state.teacherLoading = true; render();
+    if (!window.storage) { state.teacherRows = []; state.teacherLoading = false; render(); return; }
+    window.storage.list(STORAGE_PREFIX, true).then(function (listRes) {
+      var keys = (listRes && listRes.keys) || [];
+      if (keys.length === 0) { state.teacherRows = []; state.teacherLoading = false; render(); return; }
+      var promises = keys.map(function (k) {
+        return window.storage.get(k, true).then(function (r) { try { return JSON.parse(r.value); } catch (e) { return null; } }).catch(function () { return null; });
+      });
+      Promise.all(promises).then(function (rows) {
+        rows = rows.filter(Boolean).sort(function (a, b) { return b.timestamp - a.timestamp; });
+        state.teacherRows = rows; state.teacherLoading = false; render();
+      });
+    }).catch(function () { state.teacherRows = []; state.teacherLoading = false; render(); });
+  }
+
+  function csvEscape(t) { return '"' + String(t).replace(/"/g, '""') + '"'; }
+  function downloadCsv() {
+    var rows = state.teacherRows || [];
+    var header = ["Ім'я", "Бал", "З", "Дата"];
+    var lines = [header.map(csvEscape).join(";")];
+    rows.forEach(function (r) {
+      lines.push([csvEscape(r.name), r.score, r.total, csvEscape(new Date(r.timestamp).toLocaleString("uk-UA"))].join(";"));
+    });
+    var blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a"); a.href = url; a.download = "disc-recognition-results.csv";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  }
+
+  function copyToClipboard(text, btn) {
+    function ok() { btn.textContent = "Скопійовано ✓"; setTimeout(function () { btn.textContent = "Скопіювати результат"; }, 1800); }
+    function fail() { var ta = document.getElementById("copy-fallback-area"); if (ta) { ta.style.display = "block"; ta.focus(); ta.select(); } }
+    if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(ok).catch(fail); }
+    else {
+      try {
+        var temp = document.createElement("textarea"); temp.value = text; temp.style.position = "fixed"; temp.style.opacity = "0";
+        document.body.appendChild(temp); temp.focus(); temp.select();
+        var success = document.execCommand("copy"); document.body.removeChild(temp);
+        if (success) ok(); else fail();
+      } catch (e) { fail(); }
+    }
+  }
+
+  function renderIntro() {
+    var primerHtml = DISC_ORDER.map(function (d) {
+      var m = DISC_META[d];
+      return '<div class="primer-item"><div class="primer-letter ' + d + '">' + d + '</div><div class="primer-text"><b>' + m.name + '.</b> ' + m.short + '</div></div>';
+    }).join("");
+
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<p class="kicker">Практичне заняття 4 · Бізнес-лідерство</p>' +
+      '<h1 class="title serif">Розпізнай DISC-стиль</h1>' +
+      '<p class="lead">Перш ніж формувати команду за готовими бейджами DISC, спробуйте визначити стиль самостійно — за детальним описом поведінки кандидата, без підказок.</p>' +
+      '<label class="field-label">Нагадування моделі DISC</label>' +
+      '<div class="primer-grid">' + primerHtml + '</div>' +
+      '<label class="field-label">Ваше ім\'я (необов\'язково)</label>' +
+      '<input type="text" class="text-input" id="name-input" placeholder="Наприклад, Олена К." value="' + state.studentName.replace(/"/g,'&quot;') + '" />' +
+      '<button class="btn btn-primary" id="start-btn">Почати (8 кандидатів) →</button>' +
+      '</div></div>'
+    );
+    card.querySelector("#start-btn").addEventListener("click", function () {
+      state.studentName = card.querySelector("#name-input").value.trim();
+      state.order = shuffle(CANDIDATES.map(function (c) { return c.id; }));
+      state.index = 0;
+      state.answers = [];
+      state.screen = "quiz";
+      render();
+    });
+    return card;
+  }
+
+  function renderQuiz() {
+    var candId = state.order[state.index];
+    var cand = CANDIDATES.filter(function (c) { return c.id === candId; })[0];
+    var progressPct = Math.round((state.index / state.order.length) * 100);
+
+    var choicesHtml = DISC_ORDER.map(function (d) {
+      var m = DISC_META[d];
+      return (
+        '<button class="disc-choice-btn" data-disc="' + d + '">' +
+          '<div class="dc-badge ' + d + '">' + d + '</div>' +
+          '<div><div class="dc-title">' + m.name + '</div><div class="dc-sub">' + m.sub + '</div></div>' +
+        '</button>'
+      );
+    }).join("");
+
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<div class="progress-track"><div class="progress-fill" style="width:' + progressPct + '%"></div></div>' +
+      '<p class="step-count">Кандидат ' + (state.index + 1) + ' із ' + state.order.length + '</p>' +
+      '<div class="cand-name-big serif">' + cand.name + '</div>' +
+      '<div class="desc-box"><p>' + cand.description + '</p></div>' +
+      '<label class="field-label">Який стиль DISC переважає в цій поведінці?</label>' +
+      '<div class="disc-choice-grid">' + choicesHtml + '</div>' +
+      '</div></div>'
+    );
+
+    card.querySelectorAll(".disc-choice-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var chosen = btn.getAttribute("data-disc");
+        var isCorrect = chosen === cand.correct;
+        var answer = { candidateId: cand.id, chosen: chosen, correct: cand.correct, isCorrect: isCorrect };
+        state.answers.push(answer);
+        state.lastAnswer = answer;
+        state.screen = "feedback";
+        render();
+      });
+    });
+
+    return card;
+  }
+
+  function renderFeedback() {
+    var a = state.lastAnswer;
+    var cand = CANDIDATES.filter(function (c) { return c.id === a.candidateId; })[0];
+    var isLast = state.index >= state.order.length - 1;
+
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<div class="consequence-box ' + (a.isCorrect ? "correct" : "incorrect") + '">' +
+        '<div class="cq-label">' + (a.isCorrect ? "Правильно!" : "Неправильно") + '</div>' +
+        '<div class="cq-your">Ваша відповідь: ' + DISC_META[a.chosen].name + ' (' + a.chosen + ')' + (a.isCorrect ? "" : " · Правильна відповідь: " + DISC_META[a.correct].name + " (" + a.correct + ")") + '</div>' +
+        '<p>' + escHtml(cand.explanation) + '</p>' +
+      '</div>' +
+      '<button class="btn btn-primary" id="continue-btn">' + (isLast ? "Дивитися підсумок →" : "Наступний кандидат →") + '</button>' +
+      '</div></div>'
+    );
+
+    card.querySelector("#continue-btn").addEventListener("click", function () {
+      if (isLast) {
+        state.screen = "results";
+        render();
+        saveResultToStorage();
+      } else {
+        state.index += 1;
+        state.screen = "quiz";
+        render();
+      }
+    });
+
+    return card;
+  }
+
+  function renderResults() {
+    var score = scoreCount();
+    var total = CANDIDATES.length;
+    var tier = tierFor(score, total);
+
+    var rowsHtml = state.answers.map(function (a) {
+      var cand = CANDIDATES.filter(function (c) { return c.id === a.candidateId; })[0];
+      return (
+        '<tr>' +
+          '<td>' + cand.name + '</td>' +
+          '<td><span class="mini-badge ' + a.chosen + '">' + a.chosen + '</span></td>' +
+          '<td><span class="mini-badge ' + a.correct + '">' + a.correct + '</span></td>' +
+          '<td><span class="result-icon ' + (a.isCorrect ? "ok" : "no") + '">' + (a.isCorrect ? "✓" : "✕") + '</span></td>' +
+        '</tr>'
+      );
+    }).join("");
+
+    var plain = plainTextExport();
+    var saveNote = "";
+    if (state.saveStatus === "saving") saveNote = "Зберігаємо результат…";
+    else if (state.saveStatus === "saved") saveNote = "Результат збережено.";
+    else if (state.saveStatus === "failed") saveNote = "Результат сформовано, але не вдалося зберегти для викладача.";
+
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      (state.studentName ? '<p class="kicker" style="text-align:center;">' + escHtml(state.studentName) + '</p>' : "") +
+      '<div class="score-big"><span class="num">' + score + '</span><span class="den"> / ' + total + '</span></div>' +
+      '<table class="results-recap"><thead><tr><th>Кандидат</th><th>Ваша відповідь</th><th>Правильно</th><th></th></tr></thead><tbody>' + rowsHtml + '</tbody></table>' +
+      '<div class="tier-card"><div class="t-label">Підсумок</div><div class="t-title">' + tier.label + '</div><p>' + tier.text + '</p></div>' +
+      '<div class="note-box">Наступний крок: спробуйте гру «Формування ідеальної команди» або повний цикл «Проєкт: від команди до запуску» — там ці ж 8 кандидатів уже з готовими DISC-бейджами.</div>' +
+      (saveNote ? '<p class="save-note">' + saveNote + '</p>' : "") +
+      '<div class="result-actions">' +
+        '<button class="btn btn-secondary" id="copy-btn">Скопіювати результат</button>' +
+        '<button class="btn btn-secondary" id="retry-btn">Спробувати ще раз</button>' +
+      '</div>' +
+      '<textarea id="copy-fallback-area" style="display:none;margin-top:12px;width:100%;min-height:110px;padding:10px;border-radius:10px;border:1.5px solid var(--line);font-size:11.5px;color:var(--muted);background:var(--surface);" readonly>' + escHtml(plain) + '</textarea>' +
+      '<button class="teacher-link" id="teacher-link">Перегляд результатів групи (для викладача)</button>' +
+      '</div></div>'
+    );
+
+    card.querySelector("#copy-btn").addEventListener("click", function (e) { copyToClipboard(plainTextExport(), e.currentTarget); });
+    card.querySelector("#retry-btn").addEventListener("click", function () {
+      state.screen = "intro"; state.answers = []; state.index = 0; render();
+    });
+    card.querySelector("#teacher-link").addEventListener("click", function () { state.screen = "teacher"; render(); loadTeacherRows(); });
+
+    return card;
+  }
+
+  function renderTeacher() {
+    var rows = state.teacherRows;
+    var bodyHtml;
+    if (state.teacherLoading) bodyHtml = '<p class="empty-note">Завантаження результатів…</p>';
+    else if (!rows || rows.length === 0) bodyHtml = '<p class="empty-note">Поки що ніхто не пройшов тренажер за цим посиланням.</p>';
+    else {
+      var trs = rows.map(function (r) {
+        return '<tr><td>' + escHtml(r.name) + '</td><td>' + r.score + ' / ' + r.total + '</td><td>' + new Date(r.timestamp).toLocaleString("uk-UA") + '</td></tr>';
+      }).join("");
+      bodyHtml = '<div class="table-scroll"><table class="results-table"><thead><tr><th>Студент</th><th>Бал</th><th>Дата</th></tr></thead><tbody>' + trs + '</tbody></table></div>';
+    }
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<div class="teacher-header"><h1 class="title serif" style="margin:0;font-size:22px;">Результати групи</h1><button class="icon-btn" id="refresh-btn">Оновити</button></div>' +
+      bodyHtml +
+      '<div class="result-actions"><button class="btn btn-secondary" id="csv-btn"' + ((!rows || rows.length === 0) ? " disabled" : "") + '>Завантажити CSV</button><button class="btn btn-secondary" id="back-btn">← Назад</button></div>' +
+      '</div></div>'
+    );
+    card.querySelector("#refresh-btn").addEventListener("click", loadTeacherRows);
+    card.querySelector("#back-btn").addEventListener("click", function () { state.screen = state.answers.length > 0 ? "results" : "intro"; render(); });
+    var csvBtn = card.querySelector("#csv-btn");
+    if (csvBtn && rows && rows.length > 0) csvBtn.addEventListener("click", downloadCsv);
+    return card;
+  }
+
+  function render() {
+    app.innerHTML = "";
+    var view;
+    if (state.screen === "intro") view = renderIntro();
+    else if (state.screen === "quiz") view = renderQuiz();
+    else if (state.screen === "feedback") view = renderFeedback();
+    else if (state.screen === "results") view = renderResults();
+    else view = renderTeacher();
+    app.appendChild(view);
+    window.scrollTo(0, 0);
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
