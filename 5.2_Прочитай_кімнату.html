@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Прочитай кімнату</title>
+<style>
+  :root {
+    --ink: #1E2761; --ink-soft: #384080; --surface: #F3F6FC; --card: #FFFFFF;
+    --gold: #C9962C; --gold-soft: #F3E4C6; --muted: #5B6685; --line: #DDE4F5;
+    --red: #B3492F; --green: #2E7D6B;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; min-height: 100%; background: var(--surface);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+  }
+  .serif { font-family: Cambria, Georgia, "Times New Roman", serif; }
+  #app { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 32px 18px; }
+  .stage-wrap { width: 100%; max-width: 660px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 36px 34px; box-shadow: 0 18px 40px -24px rgba(30,39,97,0.35); }
+  @media (max-width: 480px) { .card { padding: 24px 18px; } }
+
+  .kicker { font-size: 13px; color: var(--muted); margin: 0 0 10px; }
+  h1.title { font-size: 26px; line-height: 1.25; margin: 0 0 14px; font-weight: 700; }
+  p.lead { font-size: 15px; line-height: 1.6; color: var(--muted); margin: 0 0 22px; }
+  label.field-label { display: block; font-size: 13px; color: var(--ink-soft); margin-bottom: 6px; font-weight: 600; }
+  input.text-input {
+    width: 100%; padding: 12px 14px; border-radius: 10px; border: 1.5px solid var(--line);
+    font-size: 15px; color: var(--ink); background: var(--surface); margin-bottom: 20px;
+  }
+  input.text-input:focus { outline: none; border-color: var(--gold); }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 13px 24px; border-radius: 10px; border: none; font-size: 14.5px; font-weight: 600;
+    cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .btn-primary { background: var(--ink); color: #fff; width: 100%; }
+  .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 10px 20px -12px rgba(30,39,97,0.6); }
+  .btn-secondary { background: var(--surface); color: var(--ink); border: 1.5px solid var(--line); }
+  .note-box { margin: 0 0 20px; padding: 12px 14px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+
+  /* State primer */
+  .primer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+  @media (max-width: 480px) { .primer-grid { grid-template-columns: 1fr; } }
+  .primer-item { padding: 10px 12px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); display: flex; gap: 10px; align-items: flex-start; }
+  .primer-item .primer-emoji { font-size: 22px; line-height: 1; flex-shrink: 0; }
+  .primer-item b { display: block; font-size: 12.5px; color: var(--ink); margin-bottom: 2px; }
+  .primer-item span { font-size: 11px; color: var(--muted); line-height: 1.4; }
+
+  /* Quiz */
+  .progress-track { height: 5px; background: var(--line); border-radius: 4px; overflow: hidden; margin-bottom: 22px; }
+  .progress-fill { height: 100%; background: var(--gold); border-radius: 4px; transition: width 0.4s ease; }
+  .step-count { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .scene-label { font-size: 12px; color: var(--gold); font-weight: 700; margin-bottom: 10px; letter-spacing: 0.2px; }
+  .desc-box { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; margin-bottom: 22px; }
+  .desc-box p { font-size: 14.5px; line-height: 1.65; margin: 0; color: var(--ink-soft); }
+  .choice-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 480px) { .choice-list { grid-template-columns: 1fr; } }
+  .choice-btn {
+    display: flex; align-items: center; gap: 10px; text-align: left; padding: 14px 16px; border-radius: 12px; border: 1.5px solid var(--line);
+    background: #fff; cursor: pointer; font-size: 13.5px; font-weight: 600; color: var(--ink-soft);
+    transition: all 0.15s ease;
+  }
+  .choice-btn .choice-emoji { font-size: 22px; line-height: 1; flex-shrink: 0; }
+  .choice-btn:hover { border-color: var(--gold); background: var(--gold-soft); }
+
+  /* Feedback */
+  .consequence-box { border-radius: 14px; padding: 18px 20px; margin-bottom: 20px; color: #fff; }
+  .consequence-box.correct { background: var(--green); }
+  .consequence-box.incorrect { background: var(--red); }
+  .consequence-box .cq-label { font-size: 11px; font-weight: 700; margin-bottom: 8px; letter-spacing: 0.3px; opacity: 0.85; }
+  .consequence-box p { font-size: 13.5px; line-height: 1.55; margin: 0; }
+  .consequence-box .cq-your { font-size: 12px; margin-bottom: 8px; opacity: 0.9; }
+
+  /* Results */
+  table.results-recap { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px; }
+  table.results-recap th { text-align: left; font-size: 10.5px; color: var(--muted); font-weight: 600; padding: 7px 6px; border-bottom: 2px solid var(--line); }
+  table.results-recap td { padding: 8px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .result-icon { font-weight: 800; }
+  .result-icon.ok { color: var(--green); } .result-icon.no { color: var(--red); }
+
+  .tier-card { margin-top: 4px; padding: 20px 22px; border-radius: 14px; background: var(--ink); color: #fff; margin-bottom: 20px; }
+  .tier-card .t-label { font-size: 11px; color: var(--gold-soft); font-weight: 700; margin-bottom: 8px; letter-spacing: 0.3px; }
+  .tier-card .t-title { font-size: 19px; font-weight: 700; margin-bottom: 8px; }
+  .tier-card p { font-size: 13.5px; line-height: 1.55; color: #DCE1F5; margin: 0; }
+  .score-big { text-align: center; margin-bottom: 4px; }
+  .score-big .num { font-size: 40px; font-weight: 800; color: var(--ink); }
+  .score-big .den { font-size: 16px; color: var(--muted); }
+
+  .save-note { font-size: 12.5px; color: var(--muted); margin-top: 14px; text-align: center; }
+  .result-actions { display: flex; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
+  .result-actions .btn { flex: 1; min-width: 140px; }
+  .teacher-link { display: block; text-align: center; margin-top: 20px; font-size: 12.5px; color: var(--muted); text-decoration: underline; cursor: pointer; background: none; border: none; }
+
+  .teacher-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+  table.results-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.results-table th { text-align: left; font-size: 10.5px; color: var(--muted); font-weight: 600; padding: 7px 6px; border-bottom: 2px solid var(--line); }
+  table.results-table td { padding: 8px 6px; border-bottom: 1px solid var(--line); }
+  .tag { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; background: var(--gold-soft); color: #7A5A16; }
+  .empty-note { text-align: center; color: var(--muted); font-size: 13.5px; padding: 30px 0; }
+  .icon-btn { background: none; border: 1.5px solid var(--line); border-radius: 8px; padding: 7px 13px; font-size: 12.5px; color: var(--ink); cursor: pointer; }
+  .icon-btn:hover { border-color: var(--gold); }
+  .table-scroll { overflow-x: auto; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+(function () {
+  var STATES = [
+    { key: "anxiety", emoji: "😰", label: "Тривога / невпевненість", short: "Нервозність, потреба в підтвердженні, уникання погляду." },
+    { key: "irritation", emoji: "😤", label: "Роздратування / фрустрація", short: "Різкість, нетерпіння, стислі відповіді." },
+    { key: "demotivation", emoji: "😞", label: "Демотивація / вигорання", short: "Втрата ініціативи, рівний тон, відстороненість." },
+    { key: "resistance", emoji: "🎭", label: "Прихований опір", short: "Словесна згода за відсутності реальних дій." }
+  ];
+  var STATE_ORDER = STATES.map(function (s) { return s.key; });
+  function stateLabel(key) { return STATES.filter(function (s) { return s.key === key; })[0].label; }
+  function stateEmoji(key) { return STATES.filter(function (s) { return s.key === key; })[0].emoji; }
+  function stateLabelWithEmoji(key) { return stateEmoji(key) + " " + stateLabel(key); }
+
+  var SCENARIOS = [
+    { id: "s1", correct: "anxiety",
+      text: "На нараді, коли ви запитуєте молодшого аналітика про статус звіту, він починає говорити швидше, кілька разів перепрошує за «ще не зовсім готово», хоча дедлайн ще не настав. Уникає прямого погляду, тримає руки під столом, і в кінці додає: «Вибачте, якщо це звучить незрозуміло, можу переробити, якщо треба»." ,
+      explanation: "Пришвидшена мова, повторні вибачення ще до настання дедлайну, уникання зорового контакту й закрита поза — класичні вербальні й невербальні сигнали тривоги та невпевненості, а не роздратування чи опору." },
+    { id: "s2", correct: "irritation",
+      text: "Коли ви вкотре просите керівника відділу продажів уточнити цифри у звіті, він коротко відповідає: «Вже надсилав, подивіться пошту», закриває ноутбук трохи різкіше, ніж зазвичай, і не пропонує, як завжди, обговорити деталі далі.",
+      explanation: "Короткі, різкі відповіді, різкіший, ніж зазвичай, фізичний жест і відмова від звичного продовження діалогу — ознаки роздратування, а не тривоги чи вигорання." },
+    { id: "s3", correct: "demotivation",
+      text: "Раніше ініціативний менеджер проєкту останнім часом виконує лише те, що прямо доручено, не пропонує власних ідей на нарадах, і на запитання «як просувається проєкт» відповідає рівним голосом: «Йде, як і мало йти».",
+      explanation: "Звуження поведінки лише до прямих доручень, відсутність ініціативи і рівний, байдужий тон — типові ознаки демотивації, на відміну від тривоги (немає нервозності) чи опору (немає прихованого сарказму)." },
+    { id: "s4", correct: "resistance",
+      text: "На нараді, де ви презентуєте нову систему звітності, керівник відділу каже: «Звучить розумно, спробуємо», але наступного тижня його команда «ще не встигла» почати, а сам він у приватній розмові з колегою іронічно назвав це «черговою модною штукою згори».",
+      explanation: "Словесна згода («спробуємо») разом із фактичною бездіяльністю команди і саркастичним коментарем у приватній розмові — класичний розрив між тим, що людина каже публічно, і тим, що робить чи говорить насправді. Це прихований опір, а не щире прийняття." },
+    { id: "s5", correct: "anxiety",
+      text: "Співробітниця, яка зазвичай впевнено презентує свої ідеї, цього разу говорить тихіше, часто зупиняється, щоб уточнити «чи це взагалі має сенс», і кілька разів озирається на вас у пошуках підтвердження, перш ніж продовжити речення.",
+      explanation: "Тихіший голос, паузи для перевірки «чи це має сенс» і пошук підтвердження поглядом — ознаки невпевненості, яка проявляється саме як тривога, а не байдужість чи демотивація." },
+    { id: "s6", correct: "irritation",
+      text: "На спільному дзвінку колега кілька разів перебиває інших, барабанить пальцями по столу, коли хтось говорить довше хвилини, і зрештою каже: «Може, вже перейдемо до суті, у нас обмаль часу».",
+      explanation: "Перебивання інших, нетерпляче постукування пальцями і пряма вимога «перейти до суті» — явні поведінкові маркери фрустрації через тиск часу." },
+    { id: "s7", correct: "demotivation",
+      text: "Співробітник, який три місяці тому із захопленням розповідав про нову ініціативу, тепер приходить на статус-зустрічі без ноутбука, коротко відповідає «зроблено» чи «не встиг», і жодного разу не поставив уточнювального запитання за останній місяць.",
+      explanation: "Втрата колишнього ентузіазму, мінімальні односкладові відповіді і повна відсутність запитань протягом місяця — це виснаження чи вигорання, що розвивається поступово, а не гостра реакція на одну конкретну подію." },
+    { id: "s8", correct: "resistance",
+      text: "Співробітниця погоджується з новим графіком змін словами «добре, зрозуміла», але потім двічі «випадково» плутає нові часи в календарі, а на прямі запитання про причину каже, що «просто забула», хоча раніше такого не траплялося.",
+      explanation: "Повторювані «випадкові» помилки саме в тому, з чим людина не згодна, при формальній словесній згоді — типовий пасивно-агресивний патерн прихованого опору, а не звичайна неуважність." },
+
+    { id: "s9", correct: "anxiety",
+      text: "Перед виступом на зустрічі з клієнтом молодший спеціаліст кілька разів перепитує в колег, чи правильно він підготував слайди, хоча вже отримав схвалення тричі. Руки злегка тремтять, коли він тримає ручку, і він відмовляється від кави, кажучи, що «і так нервую».",
+      explanation: "Повторні прохання підтвердити те, що вже підтверджено, тремтіння рук і пряме визнання нервозності — прямі й непрямі сигнали тривоги." },
+    { id: "s10", correct: "anxiety",
+      text: "Коли керівник заходить у відкритий опенспейс, співробітниця швидко закриває вкладку з особистими нотатками, випрямляється на стільці і починає друкувати швидше, хоча до цього моменту працювала спокійно.",
+      explanation: "Раптова зміна пози й темпу роботи у відповідь на появу керівника — реакція настороженості й тривоги, а не роздратування чи демотивації." },
+    { id: "s11", correct: "anxiety",
+      text: "На запитання «чи є питання щодо нового процесу» новачок довго мовчить, потім тихо каже «ні, все зрозуміло», хоча за хвилину до цього кілька разів гортав нотатки туди-сюди, шукаючи щось.",
+      explanation: "Розрив між невпевненою поведінкою (гортання нотаток, пошук) і словесним запевненням «усе зрозуміло» — типовий прояв тривоги, коли людина боїться визнати нерозуміння." },
+    { id: "s12", correct: "anxiety",
+      text: "Співробітник, готуючи звіт для інвестора, надсилає його вам на перевірку тричі за один вечір з однаковим текстом, щоразу додаючи «вибачте, що турбую, просто хочу переконатися».",
+      explanation: "Повторне звернення по підтвердження без реальних змін у документі та надмірні вибачення — класична поведінка тривожної людини, яка шукає заспокоєння, а не фрустрованої чи опірної." },
+    { id: "s13", correct: "anxiety",
+      text: "Під час зідзвону камера новачка кілька разів вмикається і вимикається, ніби він не може вирішити, чи готовий показати обличчя, а коли нарешті лишає камеру увімкненою, весь час поправляє волосся чи одяг.",
+      explanation: "Нерішучість щодо власної видимості й постійне поправляння зовнішнього вигляду — невербальні сигнали тривожності й самосвідомості, притаманні саме цьому стану." },
+    { id: "s14", correct: "anxiety",
+      text: "Коли ви хвалите роботу співробітниці перед командою, вона одразу перебиває: «та там ще багато що можна покращити», і швидко переводить розмову на інше, ніби похвала викликає незручність.",
+      explanation: "Дискомфорт від похвали й швидка спроба применшити власний результат — прояв невпевненості в собі, а не демотивації чи опору." },
+
+    { id: "s15", correct: "irritation",
+      text: "Коли зустріч переноситься втретє за тиждень, керівник відділу логістики пише в чаті одним реченням без розділових знаків: «ну добре перенесемо ще раз» і не додає жодного смайлика, хоча зазвичай завжди підтримує розмову жартами.",
+      explanation: "Помітна зміна звичного комунікативного стилю на сухий і формальний — ознака стриманого роздратування через повторювані незручності." },
+    { id: "s16", correct: "irritation",
+      text: "Під час обговорення бюджету фінансовий директор різко відкладає ручку, коли хтось пропонує «ще раз розглянути цифри», і каже: «ми вже тричі це обговорювали, час рухатися далі».",
+      explanation: "Різкий фізичний жест і пряма вербальна вказівка на втому від повторення — очевидні ознаки фрустрації, а не тривоги чи опору." },
+    { id: "s17", correct: "irritation",
+      text: "Коли IT-фахівець отримує п'ятий за день терміновий запит, він відповідає односкладово «зроблю», не уточнюючи деталей, хоча зазвичай завжди перепитує контекст перш ніж почати.",
+      explanation: "Відмова від звичного уточнювального діалогу на користь короткої, формальної відповіді сигналізує про накопичене роздратування через перевантаження." },
+    { id: "s18", correct: "irritation",
+      text: "На зустрічі один із учасників гучно видихає й закочує очі, коли колега вкотре повторює той самий аргумент, і зрештою каже: «ми вже це чули, може щось нове?»",
+      explanation: "Демонстративне видихання, закочування очей і пряме, дещо саркастичне зауваження — явні відкриті прояви роздратування." },
+    { id: "s19", correct: "irritation",
+      text: "Коли клієнт просить ще одну правку в дизайні за день до дедлайну, дизайнерка відповідає в переписці коротко: «Ок» без жодних емодзі чи пояснень, хоча зазвичай детально описує свій підхід.",
+      explanation: "Різке скорочення звичного стилю спілкування до мінімуму слів — стримана, але явна ознака фрустрації через додатковий тиск перед дедлайном." },
+    { id: "s20", correct: "irritation",
+      text: "Помітивши, що колега знову спізнюється на щоденний статус-мітинг, тімлід демонстративно дивиться на годинник, коли той заходить, і починає нараду без привітання.",
+      explanation: "Демонстративний жест (погляд на годинник) і пропуск звичного соціального ритуалу привітання — невербальні сигнали роздратування через повторювану поведінку колеги." },
+
+    { id: "s21", correct: "demotivation",
+      text: "Співробітниця, яка раніше завжди піднімала руку першою на брейнштормах, тепер мовчки слухає і, коли до неї звертаються напряму, каже: «мені нормально з будь-яким варіантом, вирішуйте самі».",
+      explanation: "Втрата колишньої ініціативності й байдужість до результату («вирішуйте самі») — типова ознака демотивації, а не тривоги чи прихованого незгоди." },
+    { id: "s22", correct: "demotivation",
+      text: "Раніше пунктуальний працівник почав приходити на 10–15 хвилин пізніше щодня, не пояснюючи причини, і залишає робоче місце рівно о 18:00, навіть якщо завдання не завершене.",
+      explanation: "Поступове зниження залученості (запізнення, чітке дотримання лише формального часу) без будь-яких пояснень — поведінковий патерн, типовий для вигорання." },
+    { id: "s23", correct: "demotivation",
+      text: "На запитання про кар'єрні плани на наступний рік співробітник знизує плечима і каже: «подивимось, як піде», хоча ще пів року тому детально розписував, ким хоче стати за два роки.",
+      explanation: "Різка втрата довгострокового бачення власного розвитку порівняно з попередньою амбітністю — ознака демотивації, а не тимчасового роздратування." },
+    { id: "s24", correct: "demotivation",
+      text: "Дизайнер, який раніше пропонував по три варіанти на кожне завдання, тепер здає рівно один варіант, точно за технічним завданням, без жодних додаткових ідей чи коментарів.",
+      explanation: "Звуження внеску до формального мінімуму й зникнення ініціативної творчості — характерна ознака вигорання чи втрати мотивації." },
+    { id: "s25", correct: "demotivation",
+      text: "На запитання «як тобі новий проєкт» співробітник відповідає «нормально» і одразу перемикається на інше вікно на екрані, не розвиваючи тему, хоча раніше залюбки ділився враженнями.",
+      explanation: "Мінімальна, формальна відповідь і швидке переключення уваги замість звичного зацікавленого обговорення — ознака емоційного відсторонення." },
+    { id: "s26", correct: "demotivation",
+      text: "Керівник відділу помічає, що співробітник перестав ставити питання на нарадах взагалі — ні уточнювальні, ні критичні — і просто занотовує все мовчки, хоча раніше був одним з найактивніших.",
+      explanation: "Повне зникнення залученості (жодних питань, лише пасивне занотовування) у людини, яка раніше була активною, — явний сигнал демотивації." },
+
+    { id: "s27", correct: "resistance",
+      text: "Керівник команди публічно підтримує рішення про перехід на нову CRM-систему, але на щотижневих звітах його команда постійно «ще не встигла» перенести дані, хоча в інших відділах перехід уже завершено.",
+      explanation: "Публічна підтримка рішення при систематичному затягуванні його впровадження власною командою — ознака прихованого опору на рівні керівника." },
+    { id: "s28", correct: "resistance",
+      text: "Співробітник каже «звісно, зроблю це в пріоритеті», але завдання опиняється в самому кінці його списку справ, і коли ви запитуєте про прогрес, він щоразу знаходить нову «важливішу» причину відкласти.",
+      explanation: "Постійне знаходження нових причин для відкладання завдання, яке словесно назване пріоритетним, — класичний патерн прихованого опору через бездіяльність." },
+    { id: "s29", correct: "resistance",
+      text: "На нараді, де обговорюють нову політику звітності, менеджер киває і каже «усе зрозуміло», але потім у приватних повідомленнях команді пише: «зробимо так, як просять, хоча це не має сенсу».",
+      explanation: "Розбіжність між публічною згодою й приватним висловленням незгоди команді — прихований опір, що підриває довіру до рішення без відкритого заперечення." },
+    { id: "s30", correct: "resistance",
+      text: "Технічний директор погоджується з новим дедлайном публічно, але команда розробників дізнається про «нереалістичність» цього дедлайну лише через тиждень, коли вже втрачено частину часу.",
+      explanation: "Затримка з озвученням реальних застережень до моменту, коли це вже завдає шкоди термінам, — пасивна форма опору замість відкритого заперечення одразу." },
+    { id: "s31", correct: "resistance",
+      text: "Співробітниця каже «без проблем, підтримаю нову ініціативу», але на зустрічах із колегами регулярно ставить під сумнів її доцільність, хоча жодного разу не висловила ці сумніви безпосередньо керівництву.",
+      explanation: "Відкрите вираження сумнівів лише в колі колег, а не керівництву, при формальній публічній підтримці — типовий прихований опір." },
+    { id: "s32", correct: "resistance",
+      text: "Керівник відділу продажів формально впроваджує нову систему звітності, вимагану згори, але жодного разу сам її не використовує, продовжуючи вести облік у старій таблиці «для власної зручності».",
+      explanation: "Формальне впровадження без особистого використання нового підходу — дії, що суперечать заявленій підтримці, ознака прихованого опору змінам." }
+  ];
+
+  var STORAGE_PREFIX = "read-the-room-quiz:";
+
+  var state = {
+    screen: "intro",
+    studentName: "",
+    order: [],
+    index: 0,
+    answers: [],
+    lastAnswer: null,
+    saveStatus: "idle",
+    teacherRows: null,
+    teacherLoading: false
+  };
+
+  var app = document.getElementById("app");
+  function el(html) { var t = document.createElement("template"); t.innerHTML = html.trim(); return t.content.firstElementChild; }
+  function escHtml(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  function shuffle(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+    }
+    return a;
+  }
+
+  function pickRoundScenarios() {
+    var picked = [];
+    STATE_ORDER.forEach(function (key) {
+      var pool = SCENARIOS.filter(function (s) { return s.correct === key; });
+      var shuffledPool = shuffle(pool);
+      picked.push(shuffledPool[0], shuffledPool[1]);
+    });
+    return shuffle(picked).map(function (s) { return s.id; });
+  }
+
+  function scoreCount() { return state.answers.filter(function (a) { return a.isCorrect; }).length; }
+
+  function tierFor(score, total) {
+    var pct = score / total;
+    if (pct >= 0.875) return { label: "Відмінне зчитування емоційного стану", text: "Ви впевнено помічаєте й вербальні, і невербальні сигнали — саме ця чутливість і є основою емпатії та якісного лідерського зворотного зв'язку." };
+    if (pct >= 0.625) return { label: "Непогано, є прогалини", text: "Більшість станів ви визначили правильно, але деякі сигнали ще плутаються між собою — найчастіше плутають тривогу з демотивацією (обидві виглядають «тихо», але мають різну природу) або роздратування з прихованим опором (одне явне, інше приховане)." };
+    return { label: "Варто потренувати уважність до сигналів", text: "Поки що складно з першого прочитання розрізнити стани. Спробуйте звертати увагу не лише на слова, а на розрив між словами й діями (опір), різкість реакцій (роздратування), рівень ініціативи (демотивація) та тілесні сигнали (тривога)." };
+  }
+
+  function plainTextExport() {
+    var lines = [];
+    lines.push("Тренажер «Прочитай кімнату» — результати");
+    if (state.studentName) lines.push("Студент: " + state.studentName);
+    lines.push("");
+    lines.push("Результат: " + scoreCount() + " з " + SCENARIOS.length);
+    lines.push("");
+    state.answers.forEach(function (a) {
+      var sc = SCENARIOS.filter(function (s) { return s.id === a.scenarioId; })[0];
+      lines.push((a.isCorrect ? "[правильно] " : "[неправильно] ") + sc.id + " — ваша відповідь: " + stateLabel(a.chosen) + ", правильна: " + stateLabel(a.correct));
+    });
+    return lines.join("\n");
+  }
+
+  function saveResultToStorage() {
+    if (!window.storage) return;
+    state.saveStatus = "saving";
+    var key = STORAGE_PREFIX + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
+    var payload = { name: state.studentName || "Анонім", score: scoreCount(), total: SCENARIOS.length, answers: state.answers, timestamp: Date.now() };
+    window.storage.set(key, JSON.stringify(payload), true).then(function (r) {
+      state.saveStatus = r ? "saved" : "failed"; render();
+    }).catch(function () { state.saveStatus = "failed"; render(); });
+  }
+
+  function loadTeacherRows() {
+    state.teacherLoading = true; render();
+    if (!window.storage) { state.teacherRows = []; state.teacherLoading = false; render(); return; }
+    window.storage.list(STORAGE_PREFIX, true).then(function (listRes) {
+      var keys = (listRes && listRes.keys) || [];
+      if (keys.length === 0) { state.teacherRows = []; state.teacherLoading = false; render(); return; }
+      var promises = keys.map(function (k) {
+        return window.storage.get(k, true).then(function (r) { try { return JSON.parse(r.value); } catch (e) { return null; } }).catch(function () { return null; });
+      });
+      Promise.all(promises).then(function (rows) {
+        rows = rows.filter(Boolean).sort(function (a, b) { return b.timestamp - a.timestamp; });
+        state.teacherRows = rows; state.teacherLoading = false; render();
+      });
+    }).catch(function () { state.teacherRows = []; state.teacherLoading = false; render(); });
+  }
+
+  function csvEscape(t) { return '"' + String(t).replace(/"/g, '""') + '"'; }
+  function downloadCsv() {
+    var rows = state.teacherRows || [];
+    var header = ["Ім'я", "Бал", "З", "Дата"];
+    var lines = [header.map(csvEscape).join(";")];
+    rows.forEach(function (r) {
+      lines.push([csvEscape(r.name), r.score, r.total, csvEscape(new Date(r.timestamp).toLocaleString("uk-UA"))].join(";"));
+    });
+    var blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a"); a.href = url; a.download = "read-the-room-results.csv";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  }
+
+  function copyToClipboard(text, btn) {
+    function ok() { btn.textContent = "Скопійовано ✓"; setTimeout(function () { btn.textContent = "Скопіювати результат"; }, 1800); }
+    function fail() { var ta = document.getElementById("copy-fallback-area"); if (ta) { ta.style.display = "block"; ta.focus(); ta.select(); } }
+    if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(ok).catch(fail); }
+    else {
+      try {
+        var temp = document.createElement("textarea"); temp.value = text; temp.style.position = "fixed"; temp.style.opacity = "0";
+        document.body.appendChild(temp); temp.focus(); temp.select();
+        var success = document.execCommand("copy"); document.body.removeChild(temp);
+        if (success) ok(); else fail();
+      } catch (e) { fail(); }
+    }
+  }
+
+  function renderIntro() {
+    var primerHtml = STATES.map(function (s) {
+      return '<div class="primer-item"><span class="primer-emoji">' + s.emoji + '</span><div><b>' + s.label + '</b><span>' + s.short + '</span></div></div>';
+    }).join("");
+
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<p class="kicker">Практичне заняття 5 · Бізнес-лідерство</p>' +
+      '<h1 class="title serif">Прочитай кімнату</h1>' +
+      '<p class="lead">8 робочих ситуацій. У кожній — детальний опис поведінки людини на нараді чи в розмові. Визначте, який емоційний стан за цим стоїть.</p>' +
+      '<label class="field-label">Чотири стани, серед яких обирати</label>' +
+      '<div class="primer-grid">' + primerHtml + '</div>' +
+      '<label class="field-label">Ваше ім\'я (необов\'язково)</label>' +
+      '<input type="text" class="text-input" id="name-input" placeholder="Наприклад, Олена К." value="' + state.studentName.replace(/"/g,'&quot;') + '" />' +
+      '<button class="btn btn-primary" id="start-btn">Почати (8 ситуацій) →</button>' +
+      '</div></div>'
+    );
+    card.querySelector("#start-btn").addEventListener("click", function () {
+      state.studentName = card.querySelector("#name-input").value.trim();
+      state.order = pickRoundScenarios();
+      state.index = 0; state.answers = [];
+      state.screen = "quiz"; render();
+    });
+    return card;
+  }
+
+  function renderQuiz() {
+    var scId = state.order[state.index];
+    var sc = SCENARIOS.filter(function (s) { return s.id === scId; })[0];
+    var progressPct = Math.round((state.index / state.order.length) * 100);
+
+    var choicesHtml = STATE_ORDER.map(function (key) {
+      return '<button class="choice-btn" data-state="' + key + '"><span class="choice-emoji">' + stateEmoji(key) + '</span><span>' + stateLabel(key) + '</span></button>';
+    }).join("");
+
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<div class="progress-track"><div class="progress-fill" style="width:' + progressPct + '%"></div></div>' +
+      '<p class="step-count">Ситуація ' + (state.index + 1) + ' із ' + state.order.length + '</p>' +
+      '<p class="scene-label">Що відчуває ця людина?</p>' +
+      '<div class="desc-box"><p>' + sc.text + '</p></div>' +
+      '<div class="choice-list">' + choicesHtml + '</div>' +
+      '</div></div>'
+    );
+
+    card.querySelectorAll(".choice-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var chosen = btn.getAttribute("data-state");
+        var isCorrect = chosen === sc.correct;
+        var answer = { scenarioId: sc.id, chosen: chosen, correct: sc.correct, isCorrect: isCorrect };
+        state.answers.push(answer);
+        state.lastAnswer = answer;
+        state.screen = "feedback"; render();
+      });
+    });
+    return card;
+  }
+
+  function renderFeedback() {
+    var a = state.lastAnswer;
+    var sc = SCENARIOS.filter(function (s) { return s.id === a.scenarioId; })[0];
+    var isLast = state.index >= state.order.length - 1;
+
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<div class="consequence-box ' + (a.isCorrect ? "correct" : "incorrect") + '">' +
+        '<div class="cq-label">' + (a.isCorrect ? "Правильно!" : "Неправильно") + '</div>' +
+        '<div class="cq-your">Ваша відповідь: ' + stateLabelWithEmoji(a.chosen) + (a.isCorrect ? "" : " · Правильна: " + stateLabelWithEmoji(a.correct)) + '</div>' +
+        '<p>' + escHtml(sc.explanation) + '</p>' +
+      '</div>' +
+      '<button class="btn btn-primary" id="continue-btn">' + (isLast ? "Дивитися підсумок →" : "Наступна ситуація →") + '</button>' +
+      '</div></div>'
+    );
+
+    card.querySelector("#continue-btn").addEventListener("click", function () {
+      if (isLast) { state.screen = "results"; render(); saveResultToStorage(); }
+      else { state.index += 1; state.screen = "quiz"; render(); }
+    });
+    return card;
+  }
+
+  function renderResults() {
+    var score = scoreCount();
+    var total = SCENARIOS.length;
+    var tier = tierFor(score, total);
+
+    var rowsHtml = state.answers.map(function (a) {
+      return (
+        '<tr>' +
+          '<td>' + stateLabelWithEmoji(a.correct) + '</td>' +
+          '<td>' + stateLabelWithEmoji(a.chosen) + '</td>' +
+          '<td><span class="result-icon ' + (a.isCorrect ? "ok" : "no") + '">' + (a.isCorrect ? "✓" : "✕") + '</span></td>' +
+        '</tr>'
+      );
+    }).join("");
+
+    var plain = plainTextExport();
+    var saveNote = "";
+    if (state.saveStatus === "saving") saveNote = "Зберігаємо результат…";
+    else if (state.saveStatus === "saved") saveNote = "Результат збережено.";
+    else if (state.saveStatus === "failed") saveNote = "Результат сформовано, але не вдалося зберегти для викладача.";
+
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      (state.studentName ? '<p class="kicker" style="text-align:center;">' + escHtml(state.studentName) + '</p>' : "") +
+      '<div class="score-big"><span class="num">' + score + '</span><span class="den"> / ' + total + '</span></div>' +
+      '<table class="results-recap"><thead><tr><th>Правильний стан</th><th>Ваша відповідь</th><th></th></tr></thead><tbody>' + rowsHtml + '</tbody></table>' +
+      '<div class="tier-card"><div class="t-label">Підсумок</div><div class="t-title">' + tier.label + '</div><p>' + tier.text + '</p></div>' +
+      (saveNote ? '<p class="save-note">' + saveNote + '</p>' : "") +
+      '<div class="result-actions">' +
+        '<button class="btn btn-secondary" id="copy-btn">Скопіювати результат</button>' +
+        '<button class="btn btn-secondary" id="retry-btn">Спробувати ще раз</button>' +
+      '</div>' +
+      '<textarea id="copy-fallback-area" style="display:none;margin-top:12px;width:100%;min-height:110px;padding:10px;border-radius:10px;border:1.5px solid var(--line);font-size:11.5px;color:var(--muted);background:var(--surface);" readonly>' + escHtml(plain) + '</textarea>' +
+      '<button class="teacher-link" id="teacher-link">Перегляд результатів групи (для викладача)</button>' +
+      '</div></div>'
+    );
+
+    card.querySelector("#copy-btn").addEventListener("click", function (e) { copyToClipboard(plainTextExport(), e.currentTarget); });
+    card.querySelector("#retry-btn").addEventListener("click", function () { state.screen = "intro"; state.answers = []; state.index = 0; render(); });
+    card.querySelector("#teacher-link").addEventListener("click", function () { state.screen = "teacher"; render(); loadTeacherRows(); });
+    return card;
+  }
+
+  function renderTeacher() {
+    var rows = state.teacherRows;
+    var bodyHtml;
+    if (state.teacherLoading) bodyHtml = '<p class="empty-note">Завантаження результатів…</p>';
+    else if (!rows || rows.length === 0) bodyHtml = '<p class="empty-note">Поки що ніхто не пройшов тренажер за цим посиланням.</p>';
+    else {
+      var trs = rows.map(function (r) {
+        return '<tr><td>' + escHtml(r.name) + '</td><td>' + r.score + ' / ' + r.total + '</td><td>' + new Date(r.timestamp).toLocaleString("uk-UA") + '</td></tr>';
+      }).join("");
+      bodyHtml = '<div class="table-scroll"><table class="results-table"><thead><tr><th>Студент</th><th>Бал</th><th>Дата</th></tr></thead><tbody>' + trs + '</tbody></table></div>';
+    }
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<div class="teacher-header"><h1 class="title serif" style="margin:0;font-size:22px;">Результати групи</h1><button class="icon-btn" id="refresh-btn">Оновити</button></div>' +
+      bodyHtml +
+      '<div class="result-actions"><button class="btn btn-secondary" id="csv-btn"' + ((!rows || rows.length === 0) ? " disabled" : "") + '>Завантажити CSV</button><button class="btn btn-secondary" id="back-btn">← Назад</button></div>' +
+      '</div></div>'
+    );
+    card.querySelector("#refresh-btn").addEventListener("click", loadTeacherRows);
+    card.querySelector("#back-btn").addEventListener("click", function () { state.screen = state.answers.length > 0 ? "results" : "intro"; render(); });
+    var csvBtn = card.querySelector("#csv-btn");
+    if (csvBtn && rows && rows.length > 0) csvBtn.addEventListener("click", downloadCsv);
+    return card;
+  }
+
+  function render() {
+    app.innerHTML = "";
+    var view;
+    if (state.screen === "intro") view = renderIntro();
+    else if (state.screen === "quiz") view = renderQuiz();
+    else if (state.screen === "feedback") view = renderFeedback();
+    else if (state.screen === "results") view = renderResults();
+    else view = renderTeacher();
+    app.appendChild(view);
+    window.scrollTo(0, 0);
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>

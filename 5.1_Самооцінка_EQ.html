@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Самооцінка емоційного інтелекту (EQ)</title>
+<style>
+  :root {
+    --ink: #1E2761; --ink-soft: #384080; --surface: #F3F6FC; --card: #FFFFFF;
+    --gold: #C9962C; --gold-soft: #F3E4C6; --muted: #5B6685; --line: #DDE4F5;
+    --red: #B3492F; --green: #2E7D6B; --teal: #2E7D6B;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; min-height: 100%; background: var(--surface);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+  }
+  .serif { font-family: Cambria, Georgia, "Times New Roman", serif; }
+  #app { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 32px 18px; }
+  .stage { width: 100%; max-width: 640px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 40px 36px; box-shadow: 0 18px 40px -24px rgba(30,39,97,0.35); }
+  @media (max-width: 480px) { .card { padding: 26px 20px; } }
+
+  .kicker { font-size: 13px; color: var(--muted); margin: 0 0 10px; }
+  h1.title { font-size: 27px; line-height: 1.2; margin: 0 0 14px; font-weight: 700; }
+  p.lead { font-size: 15px; line-height: 1.6; color: var(--muted); margin: 0 0 22px; }
+  label.field-label { display: block; font-size: 13px; color: var(--ink-soft); margin-bottom: 6px; font-weight: 600; }
+  input.text-input {
+    width: 100%; padding: 12px 14px; border-radius: 10px; border: 1.5px solid var(--line);
+    font-size: 15px; color: var(--ink); background: var(--surface); margin-bottom: 22px;
+  }
+  input.text-input:focus { outline: none; border-color: var(--gold); }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 13px 26px; border-radius: 10px; border: none; font-size: 15px; font-weight: 600;
+    cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .btn-primary { background: var(--ink); color: #fff; width: 100%; }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 10px 20px -12px rgba(30,39,97,0.6); }
+  .btn-secondary { background: var(--surface); color: var(--ink); border: 1.5px solid var(--line); }
+  .meta-row { display: flex; gap: 22px; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line); }
+  .meta-item .num { font-weight: 700; font-size: 16px; }
+  .meta-item .lbl { font-size: 12px; color: var(--muted); }
+  .legend-row { display: flex; flex-wrap: wrap; gap: 12px; margin: 0 0 22px; }
+  .legend-item { display: flex; align-items: center; gap: 7px; font-size: 11.5px; color: var(--muted); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+
+  /* Quiz */
+  .progress-track { height: 5px; background: var(--line); border-radius: 4px; overflow: hidden; margin-bottom: 26px; }
+  .progress-fill { height: 100%; background: var(--gold); border-radius: 4px; transition: width 0.35s ease; }
+  .step-count { font-size: 13px; color: var(--muted); margin-bottom: 18px; }
+  .statement { font-size: 21px; line-height: 1.45; font-weight: 600; margin: 0 0 34px; min-height: 96px; }
+  .scale-row { display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; margin-bottom: 10px; }
+  .dot-btn {
+    flex: 1; aspect-ratio: 1; border-radius: 50%; border: 2px solid var(--line); background: #fff;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 15px; color: var(--ink-soft); transition: all 0.15s ease;
+    max-width: 58px; margin: 0 auto;
+  }
+  .dot-btn:hover { border-color: var(--gold); }
+  .dot-btn.selected { background: var(--gold); border-color: var(--gold); color: #fff; transform: scale(1.08); }
+  .scale-labels { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 30px; }
+  .quiz-nav { display: flex; justify-content: space-between; align-items: center; }
+
+  /* Results */
+  .result-name { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+  .bar-row { margin-bottom: 18px; }
+  .bar-row.dominant .bar-label { color: var(--ink); }
+  .bar-row.growth .bar-fill { background: var(--red); }
+  .bar-label { display: flex; justify-content: space-between; font-size: 13.5px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+  .bar-track { height: 13px; background: var(--surface); border-radius: 7px; overflow: hidden; border: 1px solid var(--line); }
+  .bar-fill { height: 100%; border-radius: 7px; background: var(--line); transition: width 0.8s ease; }
+  .bar-row.dominant .bar-fill { background: var(--gold); }
+
+  .total-box { text-align: center; margin: 22px 0; padding: 16px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); }
+  .total-box .num { font-size: 32px; font-weight: 800; color: var(--ink); }
+  .total-box .den { font-size: 14px; color: var(--muted); }
+  .total-box .tier-label { font-size: 12.5px; font-weight: 700; color: var(--gold); margin-top: 4px; letter-spacing: 0.2px; }
+
+  .profile-card { margin-top: 6px; padding: 20px 22px; border-radius: 14px; background: var(--ink); color: #fff; }
+  .profile-card .pc-label { font-size: 12px; color: var(--gold-soft); margin-bottom: 4px; font-weight: 700; }
+  .profile-card .pc-style { font-size: 17px; font-weight: 700; margin-bottom: 10px; }
+  .profile-card p { font-size: 13.5px; line-height: 1.55; color: #DCE1F5; margin: 0 0 10px; }
+  .profile-card p:last-child { margin-bottom: 0; }
+
+  .save-note { font-size: 12.5px; color: var(--muted); margin-top: 18px; text-align: center; }
+  .result-actions { display: flex; gap: 12px; margin-top: 22px; flex-wrap: wrap; }
+  .result-actions .btn { flex: 1; min-width: 140px; }
+  .teacher-link { display: block; text-align: center; margin-top: 20px; font-size: 12.5px; color: var(--muted); text-decoration: underline; cursor: pointer; background: none; border: none; }
+  textarea.copy-textarea { width: 100%; min-height: 110px; padding: 10px 12px; border-radius: 10px; border: 1.5px solid var(--line); font-size: 11.5px; color: var(--muted); background: var(--surface); resize: vertical; }
+
+  .teacher-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+  table.results-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  table.results-table th { text-align: left; font-size: 11px; color: var(--muted); font-weight: 600; padding: 7px 6px; border-bottom: 2px solid var(--line); }
+  table.results-table td { padding: 8px 6px; border-bottom: 1px solid var(--line); }
+  .tag { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; background: var(--gold-soft); color: #7A5A16; }
+  .empty-note { text-align: center; color: var(--muted); font-size: 13.5px; padding: 30px 0; }
+  .icon-btn { background: none; border: 1.5px solid var(--line); border-radius: 8px; padding: 7px 13px; font-size: 12.5px; color: var(--ink); cursor: pointer; }
+  .icon-btn:hover { border-color: var(--gold); }
+  .table-scroll { overflow-x: auto; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+(function () {
+  var COMP_NAMES = {
+    SA: "Самоусвідомлення",
+    SR: "Саморегуляція",
+    EM: "Емпатія",
+    SS: "Соціальні навички"
+  };
+  var COMP_DESC = {
+    SA: "здатність точно розпізнавати власні емоції та розуміти їхній вплив на рішення й поведінку.",
+    SR: "здатність керувати імпульсами й зберігати самовладання під тиском, а не діяти реактивно.",
+    EM: "здатність вловлювати емоційний стан інших людей і враховувати його в спілкуванні.",
+    SS: "здатність будувати стосунки, впливати, вирішувати конфлікти та надихати інших."
+  };
+  var COMP_ORDER = ["SA", "SR", "EM", "SS"];
+  var COMP_COLOR = { SA: "#C9962C", SR: "#2E7D6B", EM: "#B3492F", SS: "#384080" };
+
+  var ITEMS_BY_ID = {
+    SA1: { comp: "SA", text: "Я легко можу назвати, яку саме емоцію відчуваю в конкретний момент." },
+    SA2: { comp: "SA", text: "Я усвідомлюю, які ситуації чи люди зазвичай виводять мене з рівноваги." },
+    SA3: { comp: "SA", text: "Я помічаю фізичні сигнали (напруга, прискорене серцебиття), коли емоції наростають." },
+    SA4: { comp: "SA", text: "Я розумію, як мій настрій впливає на якість моїх рішень." },
+    SA5: { comp: "SA", text: "Я можу пояснити іншим, чому відреагував саме так, а не інакше." },
+
+    SR1: { comp: "SR", text: "Перш ніж відповісти різко, я роблю паузу, щоб заспокоїтися." },
+    SR2: { comp: "SR", text: "Я зберігаю самовладання навіть у стресових ситуаціях." },
+    SR3: { comp: "SR", text: "Мені вдається не переносити поганий настрій на спілкування з колегами." },
+    SR4: { comp: "SR", text: "Я контролюю бажання негайно відповісти на критику захисною реакцією." },
+    SR5: { comp: "SR", text: "Я можу відкласти емоційну реакцію й повернутися до розмови пізніше, коли заспокоюся." },
+
+    EM1: { comp: "EM", text: "Я помічаю, коли хтось у команді засмучений, навіть якщо він цього не каже прямо." },
+    EM2: { comp: "EM", text: "Мені легко уявити ситуацію очима іншої людини, навіть якщо я не згоден з нею." },
+    EM3: { comp: "EM", text: "Я щиро цікавлюся тим, що відчувають мої колеги, а не лише результатами їхньої роботи." },
+    EM4: { comp: "EM", text: "Я помічаю зміни в тоні голосу чи невербальній поведінці співрозмовника." },
+    EM5: { comp: "EM", text: "Я підлаштовую свій підхід до спілкування залежно від емоційного стану людини." },
+
+    SS1: { comp: "SS", text: "Мені вдається залагоджувати конфлікти так, щоб обидві сторони залишались задоволені." },
+    SS2: { comp: "SS", text: "Я вмію донести складну чи неприємну інформацію так, щоб не образити співрозмовника." },
+    SS3: { comp: "SS", text: "Люди довіряють мені свої проблеми чи побоювання." },
+    SS4: { comp: "SS", text: "Я вмію надихати й мотивувати інших навіть у складні періоди." },
+    SS5: { comp: "SS", text: "Мені легко будувати довготривалі робочі стосунки з різними типами людей." }
+  };
+
+  var DISPLAY_ORDER = [
+    "SR2", "EM1", "SA1", "SS1", "SA2",
+    "SS2", "SR1", "EM2", "SS3", "SA3",
+    "EM3", "SR3", "SA4", "SS4", "EM4",
+    "SR4", "SA5", "SS5", "EM5", "SR5"
+  ];
+  var ITEMS = DISPLAY_ORDER.map(function (id) {
+    var base = ITEMS_BY_ID[id];
+    return { id: id, comp: base.comp, text: base.text };
+  });
+
+  var STORAGE_PREFIX = "eq-self-assessment:";
+
+  var state = {
+    screen: "intro",
+    studentName: "",
+    index: 0,
+    answers: {},
+    result: null,
+    saveStatus: "idle",
+    teacherRows: null,
+    teacherLoading: false
+  };
+
+  var app = document.getElementById("app");
+  function el(html) { var t = document.createElement("template"); t.innerHTML = html.trim(); return t.content.firstElementChild; }
+  function escHtml(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+
+  function computeResult() {
+    var sums = { SA: 0, SR: 0, EM: 0, SS: 0 };
+    ITEMS.forEach(function (item) { sums[item.comp] += state.answers[item.id] || 0; });
+    var total = sums.SA + sums.SR + sums.EM + sums.SS;
+    var entries = COMP_ORDER.map(function (k) { return { key: k, score: sums[k] }; });
+    var maxScore = Math.max.apply(null, entries.map(function (e) { return e.score; }));
+    var minScore = Math.min.apply(null, entries.map(function (e) { return e.score; }));
+    var strongest = entries.filter(function (e) { return e.score === maxScore; }).map(function (e) { return e.key; });
+    var growth = entries.filter(function (e) { return e.score === minScore; }).map(function (e) { return e.key; });
+    return { sums: sums, total: total, strongest: strongest, growth: growth };
+  }
+
+  function totalTier(total) {
+    if (total >= 80) return { label: "Високий рівень емоційного інтелекту", text: "Ви добре усвідомлюєте власні емоції, керуєте ними під тиском і чутливі до емоційного стану інших. Це сильна база для лідерської комунікації — варто свідомо підтримувати ці навички." };
+    if (total >= 55) return { label: "Помірний рівень EQ — є конкретні напрямки розвитку", text: "У вас є хороша основа, але, ймовірно, один чи два компоненти помітно відстають від інших. Розвиток EQ рідко буває рівномірним — варто зосередитися саме на слабшій ланці, а не на всіх чотирьох компонентах одразу." };
+    return { label: "EQ поки не є вашою сильною стороною", text: "Це не вирок, а стартова точка: емоційний інтелект — навичка, яка розвивається практикою значно надійніше, ніж, наприклад, темперамент. Почніть з малого — з одного конкретного компонента, де розрив найбільший." };
+  }
+
+  function saveResultToStorage(result) {
+    if (!window.storage) return;
+    state.saveStatus = "saving";
+    var key = STORAGE_PREFIX + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
+    var payload = {
+      name: state.studentName || "Анонім",
+      sums: result.sums, total: result.total,
+      strongest: result.strongest, growth: result.growth,
+      timestamp: Date.now()
+    };
+    window.storage.set(key, JSON.stringify(payload), true).then(function (r) {
+      state.saveStatus = r ? "saved" : "failed"; render();
+    }).catch(function () { state.saveStatus = "failed"; render(); });
+  }
+
+  function loadTeacherRows() {
+    state.teacherLoading = true; render();
+    if (!window.storage) { state.teacherRows = []; state.teacherLoading = false; render(); return; }
+    window.storage.list(STORAGE_PREFIX, true).then(function (listRes) {
+      var keys = (listRes && listRes.keys) || [];
+      if (keys.length === 0) { state.teacherRows = []; state.teacherLoading = false; render(); return; }
+      var promises = keys.map(function (k) {
+        return window.storage.get(k, true).then(function (r) { try { return JSON.parse(r.value); } catch (e) { return null; } }).catch(function () { return null; });
+      });
+      Promise.all(promises).then(function (rows) {
+        rows = rows.filter(Boolean).sort(function (a, b) { return b.timestamp - a.timestamp; });
+        state.teacherRows = rows; state.teacherLoading = false; render();
+      });
+    }).catch(function () { state.teacherRows = []; state.teacherLoading = false; render(); });
+  }
+
+  function csvEscape(t) { return '"' + String(t).replace(/"/g, '""') + '"'; }
+  function downloadCsv() {
+    var rows = state.teacherRows || [];
+    var header = ["Ім'я", "Самоусвідомлення", "Саморегуляція", "Емпатія", "Соціальні навички", "Всього", "Дата"];
+    var lines = [header.map(csvEscape).join(";")];
+    rows.forEach(function (r) {
+      lines.push([csvEscape(r.name), r.sums.SA, r.sums.SR, r.sums.EM, r.sums.SS, r.total, csvEscape(new Date(r.timestamp).toLocaleString("uk-UA"))].join(";"));
+    });
+    var blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a"); a.href = url; a.download = "eq-self-assessment-results.csv";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  }
+
+  function plainTextExport(result) {
+    var lines = [];
+    lines.push("Самооцінка емоційного інтелекту (EQ)");
+    if (state.studentName) lines.push("Студент: " + state.studentName);
+    lines.push("");
+    COMP_ORDER.forEach(function (k) { lines.push(COMP_NAMES[k] + ": " + result.sums[k] + " / 25"); });
+    lines.push("Загалом: " + result.total + " / 100");
+    lines.push("");
+    lines.push("Найсильніша сторона: " + result.strongest.map(function (k) { return COMP_NAMES[k]; }).join(", "));
+    lines.push("Зона розвитку: " + result.growth.map(function (k) { return COMP_NAMES[k]; }).join(", "));
+    return lines.join("\n");
+  }
+
+  function copyToClipboard(text, btn) {
+    function ok() { btn.textContent = "Скопійовано ✓"; setTimeout(function () { btn.textContent = "Скопіювати результат"; }, 1800); }
+    function fail() { var ta = document.getElementById("copy-fallback-area"); if (ta) { ta.style.display = "block"; ta.focus(); ta.select(); } }
+    if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(ok).catch(fail); }
+    else {
+      try {
+        var temp = document.createElement("textarea"); temp.value = text; temp.style.position = "fixed"; temp.style.opacity = "0";
+        document.body.appendChild(temp); temp.focus(); temp.select();
+        var success = document.execCommand("copy"); document.body.removeChild(temp);
+        if (success) ok(); else fail();
+      } catch (e) { fail(); }
+    }
+  }
+
+  function renderIntro() {
+    var legendHtml = COMP_ORDER.map(function (k) {
+      return '<div class="legend-item"><span class="legend-dot" style="background:' + COMP_COLOR[k] + ';"></span>' + COMP_NAMES[k] + '</div>';
+    }).join("");
+
+    var card = el(
+      '<div class="stage"><div class="card">' +
+      '<p class="kicker">Практичне заняття 5 · Бізнес-лідерство</p>' +
+      '<h1 class="title serif">Самооцінка емоційного інтелекту</h1>' +
+      '<p class="lead">20 тверджень, по 5 на кожен із чотирьох компонентів EQ. Оцініть, наскільки кожне описує вас, за шкалою від 1 до 5.</p>' +
+      '<div class="legend-row">' + legendHtml + '</div>' +
+      '<label class="field-label">Ваше ім\'я (необов\'язково)</label>' +
+      '<input type="text" class="text-input" id="name-input" placeholder="Наприклад, Олена К." value="' + state.studentName.replace(/"/g,'&quot;') + '" />' +
+      '<button class="btn btn-primary" id="start-btn">Почати опитування</button>' +
+      '<div class="meta-row">' +
+        '<div class="meta-item"><div class="num">20</div><div class="lbl">тверджень</div></div>' +
+        '<div class="meta-item"><div class="num">~5 хв</div><div class="lbl">орієнтовно</div></div>' +
+        '<div class="meta-item"><div class="num">4</div><div class="lbl">компоненти EQ</div></div>' +
+      '</div>' +
+      '</div></div>'
+    );
+    card.querySelector("#start-btn").addEventListener("click", function () {
+      state.studentName = card.querySelector("#name-input").value.trim();
+      state.screen = "quiz"; state.index = 0; render();
+    });
+    return card;
+  }
+
+  function renderQuiz() {
+    var item = ITEMS[state.index];
+    var progressPct = Math.round((state.index / ITEMS.length) * 100);
+    var selected = state.answers[item.id];
+
+    var dotsHtml = "";
+    for (var v = 1; v <= 5; v++) {
+      dotsHtml += '<button class="dot-btn' + (selected === v ? " selected" : "") + '" data-value="' + v + '">' + v + "</button>";
+    }
+
+    var card = el(
+      '<div class="stage"><div class="card">' +
+      '<div class="progress-track"><div class="progress-fill" style="width:' + progressPct + '%"></div></div>' +
+      '<p class="step-count">Твердження ' + (state.index + 1) + ' із ' + ITEMS.length + '</p>' +
+      '<p class="statement serif">' + item.text + '</p>' +
+      '<div class="scale-row">' + dotsHtml + '</div>' +
+      '<div class="scale-labels"><span>Зовсім не про мене</span><span>Повністю про мене</span></div>' +
+      '<div class="quiz-nav">' +
+        '<button class="btn btn-ghost" id="back-btn" ' + (state.index === 0 ? "disabled style=\"visibility:hidden\"" : "") + '>← Назад</button>' +
+        '<span></span>' +
+      '</div>' +
+      '</div></div>'
+    );
+
+    card.querySelectorAll(".dot-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var val = parseInt(btn.getAttribute("data-value"), 10);
+        state.answers[item.id] = val;
+        setTimeout(function () {
+          if (state.index < ITEMS.length - 1) {
+            state.index += 1; render();
+          } else {
+            state.result = computeResult();
+            state.screen = "results"; state.saveStatus = "idle";
+            render();
+            saveResultToStorage(state.result);
+          }
+        }, 180);
+        render();
+      });
+    });
+
+    var backBtn = card.querySelector("#back-btn");
+    if (backBtn) {
+      backBtn.addEventListener("click", function () {
+        if (state.index > 0) { state.index -= 1; render(); }
+      });
+    }
+    return card;
+  }
+
+  function renderResults() {
+    var result = state.result;
+    var tier = totalTier(result.total);
+
+    var barsHtml = COMP_ORDER.map(function (key) {
+      var isStrong = result.strongest.indexOf(key) !== -1;
+      var isGrowth = result.growth.indexOf(key) !== -1 && !isStrong;
+      var pct = Math.round((result.sums[key] / 25) * 100);
+      var rowClass = isStrong ? "dominant" : (isGrowth ? "growth" : "");
+      return (
+        '<div class="bar-row ' + rowClass + '">' +
+          '<div class="bar-label"><span>' + COMP_NAMES[key] + '</span><span>' + result.sums[key] + ' / 25</span></div>' +
+          '<div class="bar-track"><div class="bar-fill" style="width:' + pct + '%"></div></div>' +
+        '</div>'
+      );
+    }).join("");
+
+    var strongLabel = result.strongest.map(function (k) { return COMP_NAMES[k]; }).join(" і ");
+    var strongDesc = result.strongest.map(function (k) { return COMP_DESC[k]; }).join(" ");
+    var growthLabel = result.growth.map(function (k) { return COMP_NAMES[k]; }).join(" і ");
+    var growthDesc = result.growth.map(function (k) { return COMP_DESC[k]; }).join(" ");
+
+    var saveNote = "";
+    if (state.saveStatus === "saving") saveNote = "Зберігаємо результат…";
+    else if (state.saveStatus === "saved") saveNote = "Результат збережено.";
+    else if (state.saveStatus === "failed") saveNote = "Результат порахований, але не вдалося зберегти для викладача.";
+
+    var plain = plainTextExport(result);
+
+    var card = el(
+      '<div class="stage"><div class="card">' +
+      (state.studentName ? '<p class="result-name">' + escHtml(state.studentName) + '</p>' : "") +
+      '<h1 class="title serif">Ваш профіль EQ</h1>' +
+      '<div style="margin-top:20px;">' + barsHtml + '</div>' +
+      '<div class="total-box">' +
+        '<span class="num">' + result.total + '</span><span class="den"> / 100</span>' +
+        '<div class="tier-label">' + tier.label + '</div>' +
+      '</div>' +
+      '<div class="profile-card">' +
+        '<div class="pc-label">Найсильніша сторона — ' + strongLabel + '</div>' +
+        '<p>' + strongDesc + '</p>' +
+        '<div class="pc-label">Зона розвитку — ' + growthLabel + '</div>' +
+        '<p>' + growthDesc + '</p>' +
+        '<p>' + tier.text + '</p>' +
+      '</div>' +
+      (saveNote ? '<p class="save-note">' + saveNote + '</p>' : "") +
+      '<div class="result-actions">' +
+        '<button class="btn btn-secondary" id="copy-btn">Скопіювати результат</button>' +
+        '<button class="btn btn-secondary" id="retake-btn">Пройти ще раз</button>' +
+      '</div>' +
+      '<textarea id="copy-fallback-area" class="copy-textarea" style="display:none;margin-top:12px;" readonly>' + escHtml(plain) + '</textarea>' +
+      '<button class="teacher-link" id="teacher-link">Перегляд результатів групи (для викладача)</button>' +
+      '</div></div>'
+    );
+
+    card.querySelector("#copy-btn").addEventListener("click", function (e) { copyToClipboard(plainTextExport(result), e.currentTarget); });
+    card.querySelector("#retake-btn").addEventListener("click", function () {
+      state.screen = "intro"; state.index = 0; state.answers = {}; state.result = null; render();
+    });
+    card.querySelector("#teacher-link").addEventListener("click", function () {
+      state.screen = "teacher"; render(); loadTeacherRows();
+    });
+    return card;
+  }
+
+  function renderTeacher() {
+    var rows = state.teacherRows;
+    var bodyHtml;
+    if (state.teacherLoading) {
+      bodyHtml = '<p class="empty-note">Завантаження результатів…</p>';
+    } else if (!rows || rows.length === 0) {
+      bodyHtml = '<p class="empty-note">Поки що ніхто не пройшов опитування за цим посиланням.</p>';
+    } else {
+      var trs = rows.map(function (r) {
+        return (
+          '<tr>' +
+            '<td>' + escHtml(r.name) + '</td>' +
+            '<td>' + r.sums.SA + '</td><td>' + r.sums.SR + '</td><td>' + r.sums.EM + '</td><td>' + r.sums.SS + '</td>' +
+            '<td><span class="tag">' + r.total + ' / 100</span></td>' +
+          '</tr>'
+        );
+      }).join("");
+      bodyHtml =
+        '<div class="table-scroll"><table class="results-table">' +
+          '<thead><tr><th>Студент</th><th>Самоусв.</th><th>Саморег.</th><th>Емпатія</th><th>Соц. навички</th><th>Всього</th></tr></thead>' +
+          '<tbody>' + trs + '</tbody>' +
+        '</table></div>';
+    }
+
+    var card = el(
+      '<div class="stage"><div class="card">' +
+      '<div class="teacher-header">' +
+        '<h1 class="title serif" style="margin:0;font-size:22px;">Результати групи</h1>' +
+        '<button class="icon-btn" id="refresh-btn">Оновити</button>' +
+      '</div>' +
+      bodyHtml +
+      '<div class="result-actions">' +
+        '<button class="btn btn-secondary" id="csv-btn"' + ((!rows || rows.length === 0) ? " disabled" : "") + '>Завантажити CSV</button>' +
+        '<button class="btn btn-secondary" id="back-to-quiz-btn">← Назад</button>' +
+      '</div>' +
+      '</div></div>'
+    );
+
+    card.querySelector("#refresh-btn").addEventListener("click", loadTeacherRows);
+    card.querySelector("#back-to-quiz-btn").addEventListener("click", function () {
+      state.screen = state.result ? "results" : "intro"; render();
+    });
+    var csvBtn = card.querySelector("#csv-btn");
+    if (csvBtn && rows && rows.length > 0) csvBtn.addEventListener("click", downloadCsv);
+    return card;
+  }
+
+  function render() {
+    app.innerHTML = "";
+    var view;
+    if (state.screen === "intro") view = renderIntro();
+    else if (state.screen === "quiz") view = renderQuiz();
+    else if (state.screen === "results") view = renderResults();
+    else view = renderTeacher();
+    app.appendChild(view);
+    window.scrollTo(0, 0);
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
