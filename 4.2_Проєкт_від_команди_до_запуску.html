@@ -66,10 +66,12 @@
   .check-mark { position: absolute; top: 10px; right: 10px; width: 20px; height: 20px; border-radius: 50%; background: var(--gold); color: #fff; display: none; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; }
   .candidate-card.selected .check-mark { display: flex; }
 
-  .person-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px,1fr)); gap: 8px; margin-bottom: 20px; }
-  .person-chip { display: flex; flex-direction: column; align-items: center; gap: 6px; border: 1.5px solid var(--line); border-radius: 12px; padding: 12px 8px; cursor: pointer; background: #fff; transition: all .15s ease; text-align: center; }
+  .person-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  @media (max-width: 560px) { .person-grid { grid-template-columns: 1fr; } }
+  .person-chip { position: relative; display: block; border: 1.5px solid var(--line); border-radius: 14px; padding: 14px; cursor: pointer; background: #fff; transition: all .15s ease; text-align: left; }
   .person-chip:hover { border-color: var(--gold); }
   .person-chip.selected { border-color: var(--gold); background: var(--gold-soft); }
+  .person-chip.selected .check-mark { display: flex; }
   .person-chip .p-name { font-size: 12px; font-weight: 700; }
 
   .autonomy-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
@@ -128,6 +130,34 @@
   .icon-btn { background: none; border: 1.5px solid var(--line); border-radius: 8px; padding: 7px 13px; font-size: 12.5px; color: var(--ink); cursor: pointer; }
   .icon-btn:hover { border-color: var(--gold); }
   .table-scroll { overflow-x: auto; }
+  .autonomy-btn .au-desc { display: block; font-size: 11.5px; color: var(--muted); margin-top: 3px; }
+  .fb-top { display: flex; gap: 16px; align-items: center; padding: 16px; border-radius: 14px; margin-bottom: 14px; }
+  .fb-top.fb-good { background: #DCEFE9; } .fb-top.fb-mid { background: var(--gold-soft); } .fb-top.fb-bad { background: #F6DCD4; }
+  .fb-score { flex-shrink: 0; width: 76px; height: 76px; border-radius: 50%; background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 3px solid var(--ink); }
+  .fb-score span { font-size: 30px; font-weight: 800; line-height: 1; } .fb-score small { font-size: 10px; color: var(--muted); font-weight: 700; margin-top: 2px; }
+  .fb-head { font-size: 17px; font-weight: 800; margin-bottom: 4px; } .fb-sub { font-size: 12.5px; line-height: 1.5; color: var(--ink-soft); }
+  .crit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  @media (max-width: 480px) { .crit-grid { grid-template-columns: 1fr; } .fb-top { flex-direction: column; text-align: center; } }
+  .crit { display: flex; gap: 10px; padding: 10px 12px; border-radius: 10px; font-size: 12px; line-height: 1.45; border: 1.5px solid var(--line); background: var(--surface); }
+  .crit-ico { font-weight: 800; font-size: 16px; width: 22px; flex-shrink: 0; text-align: center; }
+  .crit.ok { background: #DCEFE9; border-color: var(--green); } .crit.mid { background: var(--gold-soft); border-color: var(--gold); } .crit.no { background: #F6DCD4; border-color: var(--red); }
+  .fb-block { border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; font-size: 13px; line-height: 1.55; }
+  .fb-block ul { margin: 6px 0 0; padding-left: 18px; } .fb-block li { margin-bottom: 6px; }
+  .fb-title { font-weight: 800; font-size: 13px; }
+  .fb-pos { background: #EEF8F4; border-left: 4px solid var(--green); } .fb-pos .fb-title { color: #1F5245; }
+  .fb-neg { background: #FBEFEB; border-left: 4px solid var(--red); } .fb-neg .fb-title { color: #7A2E1A; }
+  .crit-grid-3 { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 560px) { .crit-grid-3 { grid-template-columns: 1fr; } }
+  .role-icon { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 17px; line-height: 1; flex-shrink: 0; border: 2px solid; }
+  .role-icon.action { background: #F6DCD4; border-color: #D9826A; }
+  .role-icon.people { background: #FBF1D6; border-color: #D7B25A; }
+  .role-icon.thought { background: #DCEFE9; border-color: #6FB8A2; }
+  .cand-cluster { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 999px; margin: 8px 0 4px; }
+  .cand-cluster.action { background: #F6DCD4; color: #7A2E1A; }
+  .cand-cluster.people { background: var(--gold-soft); color: #6B5314; }
+  .cand-cluster.thought { background: #DCEFE9; color: #1F5245; }
+  .fb-none { margin: 6px 0 0; color: var(--muted); }
+
 </style>
 </head>
 <body>
@@ -155,35 +185,35 @@
   ];
 
   var CANDIDATES = [
-    { id: "olena", name: "Олена", disc: "D", role: "Формувач (Shaper)", tag: "driven",
-      strengths: "Рішуча, наполеглива, любить виклики, штовхає команду вперед.",
-      weaknesses: "Нетерпляча, може ігнорувати думку повільніших колег, провокує конфлікти.",
+    { id: "olena", name: "Олена", disc: "D", role: "Генератор ідей (Plant)", cluster: "thought", tag: "driven",
+      strengths: "Рішуча й сміливо мислить: швидко пропонує радикальні, нестандартні ходи й не боїться ризикувати.",
+      weaknesses: "Нетерпляча, може ігнорувати думку повільніших колег і відкидати практичні обмеження.",
       needs: ["speed", "flexibility"] },
-    { id: "maksym", name: "Максим", disc: "I", role: "Дослідник ресурсів", tag: "volatile",
+    { id: "maksym", name: "Максим", disc: "I", role: "Дослідник ресурсів (Resource Investigator)", cluster: "people", tag: "volatile",
       strengths: "Комунікабельний, легко заводить зовнішні контакти й партнерства.",
       weaknesses: "Швидко втрачає інтерес до рутинної роботи, погано доводить справи до кінця.",
       needs: ["partnerships"] },
-    { id: "iryna", name: "Ірина", disc: "S", role: "Командний гравець", tag: "cautious",
+    { id: "iryna", name: "Ірина", disc: "S", role: "Командний гравець (Teamworker)", cluster: "people", tag: "cautious",
       strengths: "Дипломатична, згладжує конфлікти, підтримує командний дух.",
       weaknesses: "Уникає складних, непопулярних рішень, може стримувати відверту критику.",
       needs: ["harmony"] },
-    { id: "dmytro", name: "Дмитро", disc: "C", role: "Завершувач", tag: "cautious",
+    { id: "dmytro", name: "Дмитро", disc: "C", role: "Завершувач (Completer Finisher)", cluster: "action", tag: "cautious",
       strengths: "Уважний до деталей, ніколи не зриває дедлайни, перевіряє все двічі.",
       weaknesses: "Повільно ухвалює рішення, тривожиться через дрібні помилки.",
       needs: ["execution", "quality"] },
-    { id: "sofia", name: "Софія", disc: "I", role: "Генератор ідей (Plant)", tag: "volatile",
+    { id: "sofia", name: "Софія", disc: "I", role: "Генератор ідей (Plant)", cluster: "thought", tag: "volatile",
       strengths: "Креативна, пропонує нестандартні рішення проблем.",
       weaknesses: "Погано працює з рутиною й жорсткими дедлайнами, ігнорує практичні обмеження.",
       needs: ["creativity"] },
-    { id: "andriy", name: "Андрій", disc: "D", role: "Координатор", tag: "driven",
+    { id: "andriy", name: "Андрій", disc: "D", role: "Координатор (Coordinator)", cluster: "people", tag: "driven",
       strengths: "Бачить картину загалом, добре фасилітує наради, вміє делегувати.",
       weaknesses: "Не любить глибоко занурюватись у деталі виконання.",
       needs: ["flexibility", "partnerships"] },
-    { id: "maria", name: "Марія", disc: "C", role: "Аналітик-стратег", tag: "cautious",
+    { id: "maria", name: "Марія", disc: "C", role: "Аналітик-оцінювач (Monitor Evaluator)", cluster: "thought", tag: "cautious",
       strengths: "Критично мислить, зважує ризики, якісно оцінює варіанти.",
       weaknesses: "Повільна, надмірна критичність може демотивувати команду.",
       needs: ["riskAssessment"] },
-    { id: "bogdan", name: "Богдан", disc: "S", role: "Реалізатор", tag: "cautious",
+    { id: "bogdan", name: "Богдан", disc: "S", role: "Реалізатор (Implementer)", cluster: "action", tag: "cautious",
       strengths: "Дисциплінований, практичний, чітко виконує затверджений план.",
       weaknesses: "Погано адаптується до раптових змін курсу проєкту.",
       needs: ["execution"] }
@@ -191,22 +221,53 @@
 
   var TEAM_SIZE = 5;
 
+  // Кластери Белбіна й відповідний рівень автономії (навчальне спрощення)
+  var CLUSTERS = {
+    action: { label: "Дієвий", autonomy: 1, desc: "доводять справу до результату", why: "Люди дієвого кластера найкраще працюють за чітким планом і зрозумілими критеріями якості. Без структури вони розфокусовуються, а ясна інструкція дає їм найкращий результат." },
+    people: { label: "Соціальний", autonomy: 2, desc: "працюють через діалог і взаємодію", why: "Люди соціального кластера найкраще працюють, коли є живий діалог і регулярне погодження: вони пропонують рішення, а ви узгоджуєте результат." },
+    thought: { label: "Мисленнєвий", autonomy: 3, desc: "аналізують і генерують ідеї", why: "Людям мисленнєвого кластера потрібна свобода, щоб аналізувати й шукати нестандартні рішення. Жорстка інструкція знижує їхній внесок, тому найкраще вони працюють самостійно." }
+  };
+  var DISC_STYLE = { D: "рішучість і напористість", I: "вплив і комунікація", S: "стабільність і терпляче співробітництво", C: "аналітичність і точність" };
+
+  // Коло DISC: D → I → S → C → D. Сусідні типи підходять частково, протилежний — не підходить.
+  var DISC_WHEEL = ["D", "I", "S", "C"];
+  function discFit(personDisc, taskDisc) {
+    if (personDisc === taskDisc) return 2;
+    var diff = Math.abs(DISC_WHEEL.indexOf(personDisc) - DISC_WHEEL.indexOf(taskDisc));
+    return diff === 2 ? 0 : 1;
+  }
+  function discOpposite(d) { return DISC_WHEEL[(DISC_WHEEL.indexOf(d) + 2) % 4]; }
+
   var TASKS = [
-    { key: "competitors", icon: "legal", label: "Підготувати аналіз трьох головних конкурентів продукту.", need: "riskAssessment", needLabel: "критична оцінка ризиків / аналітика" },
-    { key: "partner_pitch", icon: "conference", label: "Провести презентацію продукту для потенційного партнера.", need: "partnerships", needLabel: "зовнішні партнерства й комунікація" },
-    { key: "social_post", icon: "idea", label: "Скласти чернетку допису в соцмережах про запуск продукту.", need: "creativity", needLabel: "креативність і нестандартні рішення" }
+    { key: "competitors", short: "Аналіз конкурентів", icon: "legal", disc: "C", label: "Підготувати аналіз трьох головних конкурентів продукту.",
+      discWhy: "Аналіз конкурентів потребує систематичності, точності й критичного ставлення до даних, а це сильні сторони типу C (сумлінність).",
+      partial: { S: "Тип S методичний і терплячий, добре працює з перевіркою даних, але рідше ставить під сумнів висновки.", D: "Тип D цілеспрямований і швидко бачить суть, але може поспішати з висновками, не перевіривши деталі." },
+      oppWhy: "Тип I більше зосереджений на спілкуванні, ніж на деталях, і може обирати цікаві факти замість ретельної перевірки даних." },
+    { key: "partner_pitch", short: "Презентація для партнера", icon: "conference", disc: "I", label: "Провести презентацію продукту для потенційного партнера.",
+      discWhy: "Презентація для партнера — це переконання й налагодження контакту, а це сильні сторони типу I (впливовість).",
+      partial: { D: "Тип D упевнений і переконливий, але може тиснути на партнера замість того, щоб налагоджувати контакт.", S: "Тип S створює довіру й уважно слухає, але менш енергійно «продає» ідею." },
+      oppWhy: "Тип C стриманий і зосереджений на фактах, тому йому важко швидко налагодити емоційний контакт і переконати партнера." },
+    { key: "launch_sprint", short: "Фінальний спринт запуску", icon: "alert", disc: "D", label: "Очолити фінальний спринт перед запуском: швидко ухвалювати рішення й тримати темп команди.",
+      discWhy: "Фінальний спринт вимагає рішучості, швидких рішень і готовності вести за собою, а це сильні сторони типу D (домінантність).",
+      partial: { I: "Тип I енергійний і мотивує команду, але менш послідовний у жорстких рішеннях і контролі темпу.", C: "Тип C може навести лад у процесах, але схильний ретельно зважувати, тому не завжди встигає ухвалювати рішення швидко." },
+      oppWhy: "Тип S цінує стабільність і спокійний темп, тому під тиском спринту йому складно швидко вирішувати й вести за собою." },
+    { key: "user_support", short: "Підтримка перших користувачів", icon: "idea", disc: "S", label: "Налагодити підтримку перших користувачів: відповідати на запити, збирати відгуки й підтримувати довірчі стосунки.",
+      discWhy: "Робота з користувачами потребує терпіння, уваги до людей і стабільності, а це сильні сторони типу S (стабільність).",
+      partial: { I: "Тип I відкритий до людей і легко спілкується, але може втрачати терпіння до рутини та повторюваних запитів.", C: "Тип C уважний до деталей і точний у відповідях, але менш теплий у стосунках з користувачами." },
+      oppWhy: "Тип D нетерплячий і прямолінійний, тому йому важко терпляче вислуховувати користувачів і підтримувати довірчі стосунки." }
   ];
+  var DELEG_MAX = TASKS.length * 4;
 
   var AUTONOMY_LEVELS = [
-    { level: 1, title: "Виконай точно за інструкцією", desc: "Найнижча автономія — ви даєте покроковий план." },
-    { level: 2, title: "Запропонуй варіанти, фінальне рішення ухвалюю я", desc: "Людина готує чернетку, ви затверджуєте." },
-    { level: 3, title: "Дій самостійно, регулярно інформуй про прогрес", desc: "Висока автономія з контрольними точками." },
-    { level: 4, title: "Повна автономія, звітуй лише за результатом", desc: "Найвища довіра, мінімум контролю." }
+    { level: 1, short: "Точно за інструкцією", title: "Точно за інструкцією", desc: "Ви даєте покроковий план, виконавець діє суворо за ним." },
+    { level: 2, short: "Середня автономія", title: "Середня автономія", desc: "Виконавець пропонує варіанти або чернетку, а фінальне рішення ухвалюєте ви." },
+    { level: 3, short: "Повна автономія", title: "Повна автономія", desc: "Виконавець діє самостійно, ви отримуєте звіт лише за результатом." }
   ];
+  function autonomyShort(l) { return AUTONOMY_LEVELS[l - 1].short; }
 
   var CRISES = [
-    { key: "reactive", title: "Реактивна криза", text: "За два тижні до запуску головний конкурент несподівано випускає дуже схожий продукт. Потрібно швидко ухвалити рішення й чітко, без затримок виконати новий план дій.", needs: ["speed", "execution"] },
-    { key: "proactive", title: "Проактивна криза", text: "Аналітика ринку показує, що вже за пів року очікується суттєва зміна споживчих уподобань, яка може знецінити поточний продукт. Криза ще не настала, але потрібно заздалегідь переосмислити стратегію позиціонування і розширити партнерства під нове бачення ринку.", needs: ["creativity", "partnerships"] }
+    { key: "reactive", title: "Реактивна криза", text: "За два тижні до запуску головний конкурент несподівано випускає дуже схожий продукт. Потрібно швидко ухвалити рішення й чітко, без затримок виконати новий план дій.", needs: ["speed", "execution"], why: "Криза вже настала, часу мало. Спочатку потрібно швидко ухвалити рішення (швидкість), а потім чітко й без відхилень виконати новий план (дисципліноване виконання)." },
+    { key: "proactive", title: "Проактивна криза", text: "Аналітика ринку показує, що вже за пів року очікується суттєва зміна споживчих уподобань, яка може знецінити поточний продукт. Криза ще не настала, але потрібно заздалегідь переосмислити стратегію позиціонування і розширити партнерства під нове бачення ринку.", needs: ["creativity", "partnerships"], why: "Криза ще не настала, тож є час на стратегію. Потрібно побачити майбутні зміни ринку й запропонувати нове позиціонування (креативність та візіонерство), а також розширити партнерства під нове бачення (зовнішні зв’язки)." }
   ];
 
   var dbPromise = (window.claude && window.claude.use) ? window.claude.use("db") : Promise.resolve(null);
@@ -215,6 +276,7 @@
     screen: "intro",
     studentName: "",
     selected: {},
+    order: null,
     teamResult: null,
     delegation: [],
     delegateDraft: { personId: null, autonomy: null },
@@ -230,8 +292,37 @@
   function el(html) { var t = document.createElement("template"); t.innerHTML = html.trim(); return t.content.firstElementChild; }
   function escHtml(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
   function selectedCount() { return Object.keys(state.selected).filter(function (k) { return state.selected[k]; }).length; }
-  function selectedCandidates() { return CANDIDATES.filter(function (c) { return state.selected[c.id]; }); }
+  function shuffled(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+  // Випадковий порядок кандидатів: створюється один раз за спробу й не змінюється під час гри
+  function orderedCandidates() {
+    if (!state.order) state.order = shuffled(CANDIDATES.map(function (c) { return c.id; }));
+    return state.order.map(function (id) { return CANDIDATES.filter(function (c) { return c.id === id; })[0]; });
+  }
+  function selectedCandidates() { return orderedCandidates().filter(function (c) { return state.selected[c.id]; }); }
   function teamMembers() { return state.teamResult.team; }
+
+  function liHtml(arr) { return arr.map(function (t) { return "<li>" + escHtml(t) + "</li>"; }).join(""); }
+  function fbBlocksHtml(pos, neg) {
+    return '<div class="fb-block fb-pos"><div class="fb-title">＋ Що спрацювало</div>' + (pos.length ? "<ul>" + liHtml(pos) + "</ul>" : '<p class="fb-none">Поки що нічого.</p>') + "</div>" +
+      '<div class="fb-block fb-neg"><div class="fb-title">− Що пішло не так</div>' + (neg.length ? "<ul>" + liHtml(neg) + "</ul>" : '<p class="fb-none">Зауважень немає.</p>') + "</div>";
+  }
+  function critHtml(cls, ico, title, lines) {
+    return '<div class="crit ' + cls + '"><span class="crit-ico">' + ico + "</span><div><b>" + title + "</b><br>" + lines.join("<br>") + "</div></div>";
+  }
+  var TEAM_MAX = 11;
+  var DISC_LACK = {
+    D: "немає напористого лідера, який веде команду вперед і ухвалює складні рішення",
+    I: "бракує енергії спілкування, зовнішніх контактів і генерації ідей",
+    S: "бракує стабільності, терпіння та підтримки командного духу",
+    C: "бракує аналітики, контролю якості й уваги до деталей"
+  };
 
   function analyzeTeam(team) {
     var needCoverage = {};
@@ -243,37 +334,119 @@
     var discPresent = Object.keys(discCounts);
     var diversity = discPresent.length;
     var cautiousCount = team.filter(function (c) { return c.tag === "cautious"; }).length;
-    var drivenCount = team.filter(function (c) { return c.tag === "driven"; }).length;
+    var drivers = team.filter(function (c) { return c.tag === "driven"; });
+    var drivenCount = drivers.length;
+    var teamIds = team.map(function (c) { return c.id; });
 
     var flags = [];
     var penalty = 0;
-    if (cautiousCount >= 4) { flags.push({ text: "Команда занадто обережна: " + cautiousCount + " з 5 — представники «безпечного» кластера.", positive: false }); penalty += 1; }
-    if (drivenCount === 0) { flags.push({ text: "Жоден із обраних не має вираженого напору (тип D).", positive: false }); penalty += 1; }
-    if (drivenCount === 2) { flags.push({ text: "Обрано одразу двох напористих лідерів — можливий конфлікт за лідерство.", positive: false }); penalty += 1; }
-    if (diversity === 4) flags.push({ text: "Команда охоплює всі чотири DISC-стилі — хороша різноманітність.", positive: true });
-    if (flags.length === 0) flags.push({ text: "Явних структурних ризиків не виявлено.", positive: true });
+    var pos = [], neg = [];
+
+    // Покриття потреб
+    if (coveredCount === NEEDS.length) pos.push("Команда закриває всі " + NEEDS.length + " потреб проєкту (+" + coveredCount + " б.): жодної кадрової прогалини.");
+    else pos.push("Закрито " + coveredCount + " з " + NEEDS.length + " потреб проєкту (+" + coveredCount + " б.).");
+    NEEDS.forEach(function (n) {
+      if (needCoverage[n.key].length === 0) {
+        var others = CANDIDATES.filter(function (c) { return teamIds.indexOf(c.id) === -1 && c.needs.indexOf(n.key) !== -1; }).map(function (c) { return c.name; });
+        neg.push("Не закрито потребу «" + n.label + "»: у команді ніхто не має якості — " + NEED_QUALITY_HINT[n.key] + ". Ця якість була у кандидатів, яких ви не обрали: " + others.join(", ") + ". Під час делегування й кризи ця прогалина може коштувати балів.");
+      }
+    });
+
+    // DISC-різноманітність
+    if (diversity === 4) {
+      pos.push("Представлені всі чотири DISC-стилі (+4 б.): команда бачить проблеми з різних боків і не залежить від одного стилю мислення.");
+      flags.push({ text: "Команда охоплює всі чотири DISC-стилі — хороша різноманітність.", positive: true });
+    } else {
+      pos.push("Представлено " + diversity + " з 4 DISC-стилів (+" + diversity + " б.).");
+      ["D", "I", "S", "C"].forEach(function (d) {
+        if (!discCounts[d]) {
+          var lostTasks = TASKS.filter(function (t) { return t.disc === d; }).map(function (t) { return "«" + t.short + "»"; }).join(", ");
+          neg.push("Немає жодного представника стилю " + d + ": " + DISC_LACK[d] + "." + (lostTasks ? " На фазі делегування завдання " + lostTasks + " не вдасться довірити ідеальному виконавцю: максимум 3 бали з 4, і лише якщо в команді є людина сусіднього типу." : ""));
+        }
+      });
+    }
+
+    // Штрафи та структурні ризики
+    if (cautiousCount >= 4) {
+      var txt = "Команда занадто обережна: " + cautiousCount + " з 5 — представники «безпечного» кластера (S і C).";
+      flags.push({ text: txt, positive: false }); penalty += 1;
+      neg.push(txt + " Штраф −1 б.: такі команди довго ухвалюють рішення, уникають ризику й слабо реагують на несподіванки.");
+    }
+    if (drivenCount === 0) {
+      flags.push({ text: "Жоден із обраних не має вираженого напору (тип D).", positive: false }); penalty += 1;
+      neg.push("Жоден із обраних не має вираженого напору (тип D). Штраф −1 б.: нікому вести команду вперед і брати відповідальність за швидкі рішення.");
+    }
+    if (drivenCount === 2) {
+      var names = drivers.map(function (c) { return c.name; }).join(" і ");
+      flags.push({ text: "Обрано одразу двох напористих лідерів — можливий конфлікт за лідерство.", positive: false }); penalty += 1;
+      neg.push("Обрано одразу двох напористих лідерів (" + names + "). Штраф −1 б.: можливий конфлікт за лідерство й розрив у напрямку руху команди.");
+    }
+    if (drivenCount === 1) pos.push("Є рівно один напористий лідер (" + drivers[0].name + "): команда має кому вести її вперед без конфлікту за лідерство.");
+    if (penalty === 0) {
+      pos.push("Штрафів немає: у складі команди не виявлено структурних ризиків.");
+      if (flags.length === 0) flags.push({ text: "Явних структурних ризиків не виявлено.", positive: true });
+    }
 
     var score = coveredCount + diversity - penalty;
-    return { needCoverage: needCoverage, coveredCount: coveredCount, discCounts: discCounts, discPresent: discPresent, diversity: diversity, flags: flags, score: score };
+    var headline = score >= 10 ? "Сильна збалансована команда" : score >= 8 ? "Добра команда з окремими прогалинами" : "Команда з серйозними прогалинами";
+    return { needCoverage: needCoverage, coveredCount: coveredCount, discCounts: discCounts, discPresent: discPresent, diversity: diversity, penalty: penalty, flags: flags, score: score, pos: pos, neg: neg, headline: headline };
   }
 
   function delegationOutcome(person, task, autonomy) {
-    var skillMatch = person.needs.indexOf(task.need) !== -1;
-    var score, key, text;
-    if (skillMatch && autonomy >= 3) {
-      score = 3; key = "best";
-      text = person.name + " чудово впорався(-лась) із завданням — компетенція збіглася з довірою, яку ви надали. Результат перевищив очікування.";
-    } else if (skillMatch && autonomy <= 2) {
-      score = 1; key = "micromanaged";
-      text = person.name + " мав(-ла) потрібні навички, але жорсткі рамки автономії стримували ініціативу. Завдання виконано, але без родзинки, на яку ця людина здатна.";
-    } else if (!skillMatch && autonomy <= 2) {
-      score = 1; key = "compensated";
-      text = "У " + person.name + " не було сильної компетенції в цій сфері, але чіткі інструкції компенсували брак досвіду. Результат прийнятний, хоча без блиску.";
+    var cl = CLUSTERS[person.cluster];
+    var ideal = cl.autonomy;
+    var fit = discFit(person.disc, task.disc);
+    var skillMatch = fit > 0;
+    var diff = Math.abs(autonomy - ideal);
+    var autoState = diff === 0 ? "ideal" : (diff === 1 ? "near" : "far");
+    var autoPts = autoState === "ideal" ? 2 : (autoState === "near" ? 1 : 0);
+    var score = fit === 0 ? 0 : fit + autoPts;
+    var key = fit === 0 ? "wrongPerson" : (fit === 1 ? "partial" : autoState);
+    var chosenName = autonomyShort(autonomy), idealName = autonomyShort(ideal);
+    var profile = person.name + " має роль «" + person.role + "» і належить до кластера «" + cl.label + "». " + cl.why;
+    var partialTypes = DISC_WHEEL.filter(function (d) { return discFit(d, task.disc) === 1; });
+    var pos = [], neg = [];
+
+    // Тип DISC
+    if (fit === 2) {
+      pos.push(person.name + " має тип DISC «" + person.disc + "», який ідеально відповідає завданню (+2 б.). " + task.discWhy);
+    } else if (fit === 1) {
+      pos.push("Тип DISC «" + person.disc + "» підходить завданню частково (+1 б.). " + task.partial[person.disc]);
+      neg.push("Ідеально підходив би тип «" + task.disc + "» (+2 б.). " + task.discWhy);
     } else {
-      score = 0; key = "worst";
-      text = person.name + " отримав(-ла) повну свободу дій у сфері, де не мав(-ла) достатньо компетенції. Результат вийшов слабким і потребував переробки.";
+      neg.push("Тип DISC «" + person.disc + "» абсолютно не підходить цьому завданню, тому за нього 0 балів незалежно від автономії. " + task.oppWhy);
+      neg.push("Ідеальним був би тип «" + task.disc + "», а частково підійшли б типи «" + partialTypes.join("» і «") + "».");
+      pos.push("Це не слабкість людини: її стиль (сильна сторона — " + DISC_STYLE[person.disc] + ") просто потрібен для завдань іншого типу.");
     }
-    return { score: score, key: key, text: text };
+
+    // Автономія
+    if (fit > 0) {
+      if (autoState === "ideal") {
+        pos.push("Рівень автономії «" + chosenName + "» ідеально підходить (+2 б.). " + profile);
+      } else {
+        var dir = autonomy > ideal ? "забагато" : "замало";
+        if (autoState === "near") {
+          pos.push("Рівень «" + chosenName + "» близький до оптимального (+1 б.), тому результат загалом хороший.");
+          neg.push("Оптимальним був рівень «" + idealName + "» (+2 б.): ви дали " + dir + " свободи. " + profile);
+        } else {
+          neg.push("Рівень «" + chosenName + "» далекий від оптимального («" + idealName + "», +0 б.): ви дали " + dir + " свободи. " + profile);
+        }
+        if (autonomy > ideal) neg.push("Без чітких рамок і контрольних точок ви ризикували дізнатися про відхилення вже наприкінці, коли виправляти пізно.");
+        else neg.push("Надто жорсткі рамки стримали ініціативу виконавця, тому результат вийшов без тієї якості, на яку ця людина здатна.");
+      }
+    } else {
+      neg.push("Для довідки: для людини з роллю «" + person.role + "» оптимальним був би рівень автономії «" + idealName + "». " + cl.why);
+      if (autonomy === 3) neg.push("Повна автономія для людини, чий стиль не відповідає завданню, посилила ризик: результат вийшов слабким і потребував переробки.");
+    }
+
+    var headline = score === 4 ? "Ідеальне делегування" : score === 3 ? "Добре, але можна точніше" : score > 0 ? "Є що покращити" : "Невдале делегування";
+    var text = headline + ": " + person.name + ", «" + chosenName + "» — " + score + " з 4.";
+    return {
+      score: score, key: key, text: text, headline: headline, pos: pos, neg: neg,
+      fit: fit, autoPts: autoPts,
+      skillMatch: skillMatch, autoState: autoState, chosenName: chosenName, idealName: idealName,
+      clusterLabel: cl.label, needDisc: task.disc, personDisc: person.disc
+    };
   }
 
   var NEED_QUALITY_HINT = {
@@ -306,68 +479,113 @@
     var matchCount = breakdown.filter(function (b) { return b.covered; }).length;
     var score = matchCount * 3;
 
-    // Note any pair member whose qualities were not relevant to this specific crisis
     var irrelevantPicks = pair.filter(function (p) {
       return crisis.needs.every(function (needKey) { return p.needs.indexOf(needKey) === -1; });
-    }).map(function (p) { return { name: p.name, needLabel: needLabelOf(p.needs[0]) }; });
+    }).map(function (p) { return { name: p.name, role: p.role, needLabel: p.needs.map(needLabelOf).join(", ") }; });
 
-    var summary;
+    var pos = [], neg = [];
+    breakdown.forEach(function (b) {
+      if (b.covered) pos.push("«" + b.label + "» закрито (+3 б.): цю якість забезпечує " + b.coveredBy.join(" і ") + ". Саме вона була потрібна: " + b.hint + ".");
+      else {
+        neg.push("«" + b.label + "» не закрито (0 б.). Була потрібна якість: " + b.hint + ".");
+        if (b.availableElsewhere && b.availableElsewhere.length) neg.push("Ця якість є у вашій команді: " + b.availableElsewhere.join(", ") + ". Але ви не обрали цю людину для вирішення кризи.");
+        else neg.push("У вашій команді загалом немає людини з такою якістю. Прогалина виникла ще на етапі формування команди.");
+      }
+    });
+    irrelevantPicks.forEach(function (p) {
+      neg.push("Обрана людина — " + p.name + ", роль «" + p.role + "», — не має жодної з якостей, потрібних для цієї кризи, тож це місце в парі використано неефективно. Сильні сторони цієї людини (" + p.needLabel + ") знадобилися б в іншій ситуації.");
+    });
+    if (irrelevantPicks.length === 0 && pair.length === 2 && matchCount === crisis.needs.length && pair[0].needs.some(function (n) { return crisis.needs.indexOf(n) !== -1 && pair[1].needs.indexOf(n) === -1; }) && pair[1].needs.some(function (n) { return crisis.needs.indexOf(n) !== -1 && pair[0].needs.indexOf(n) === -1; })) {
+      pos.push("Двоє обраних доповнюють одне одного: кожен закрив окрему потребу кризи.");
+    }
+
+    var summary, headline;
     if (matchCount === crisis.needs.length) {
+      headline = "Криза подолана впевнено";
       summary = "Обрана пара повністю покрила потрібні для цієї кризи якості — команда впоралася швидко й впевнено.";
     } else if (matchCount > 0) {
+      headline = "Криза подолана частково";
       summary = "Обрана пара закрила лише частину потрібних якостей — кризу вдалося стримати, але з відчутними труднощами й затримкою.";
     } else {
+      headline = "Криза подолана ціною великих втрат";
       summary = "У жодного з обраних не було якостей, потрібних саме для цієї кризи, — команда впоралася повільно й ціною значних зусиль.";
     }
 
-    return { score: score, summary: summary, breakdown: breakdown, irrelevantPicks: irrelevantPicks, covered: null };
+    return { score: score, summary: summary, headline: headline, why: crisis.why, title: crisis.title, pos: pos, neg: neg, breakdown: breakdown, irrelevantPicks: irrelevantPicks, pairNames: pair.map(function (p) { return p.name; }), covered: null };
   }
 
 
   function computeFinalVerdict(teamScore, delegationTotal, crisisScore) {
     var total = teamScore + delegationTotal + crisisScore;
     var tier;
-    if (total >= 16) tier = { key: "good", label: "Успішний запуск", cls: "tier-good",
+    if (total >= 23) tier = { key: "good", label: "Успішний запуск", cls: "tier-good",
       text: "Проєкт запущено вчасно й якісно. Сильна команда, влучне делегування і впевнене подолання кризи — саме так виглядає лідерство, що поєднує стратегічний добір людей із гнучким управлінням у моменті." };
-    else if (total >= 11) tier = { key: "mixed", label: "Запуск із проблемами", cls: "tier-mixed",
+    else if (total >= 17) tier = { key: "mixed", label: "Запуск із проблемами", cls: "tier-mixed",
       text: "Продукт вийшов на ринок, але шлях був нерівним — десь команді бракувало потрібної компетенції, десь делегування було неточним, десь криза далася важче, ніж могла б. Реалістичний результат для складного проєкту з обмеженим часом." };
     else tier = { key: "bad", label: "Провал запуску", cls: "tier-bad",
       text: "Накопичені прогалини — в складі команди, в делегуванні або в реакції на кризу — призвели до того, що запуск не досяг мети. Це показовий приклад того, як рішення на самому початку (кого взяти в команду) визначають, наскільки в принципі можливо впоратися з тим, що станеться далі." };
     return { total: total, tier: tier };
   }
 
+  var MAX_TOTAL = TEAM_MAX + DELEG_MAX + 6;
+
+  function buildFinalInsights() {
+    var team = state.teamResult.analysis;
+    var strong = [], weak = [];
+    strong.push("Команда: закрито " + team.coveredCount + " з " + NEEDS.length + " потреб проєкту, DISC-різноманітність " + team.diversity + " з 4.");
+    team.neg.forEach(function (t) { weak.push("Команда: " + t); });
+    state.delegation.forEach(function (d, i) {
+      var t = TASKS[i].short;
+      if (d.score === 4) strong.push("Делегування «" + t + "»: 4 з 4. Ідеальний тип DISC й ідеальна автономія («" + d.fb.idealName + "»).");
+      else weak.push("Делегування «" + t + "» (" + d.score + " з 4): " + d.fb.neg[0]);
+    });
+    var cr = state.crisisResult;
+    cr.pos.forEach(function (t) { strong.push("Криза: " + t); });
+    cr.neg.forEach(function (t) { weak.push("Криза: " + t); });
+
+    var ratios = [
+      { k: "team", v: team.score / TEAM_MAX },
+      { k: "delegation", v: state.delegation.reduce(function (s, d) { return s + d.score; }, 0) / DELEG_MAX },
+      { k: "crisis", v: cr.score / 6 }
+    ].sort(function (x, y) { return x.v - y.v; });
+    var LESSONS = {
+      team: "Склад команди визначає стелю результату. Перед формуванням перевіряйте, які потреби проєкту закриті, чи представлені різні стилі й чи немає надлишку однотипних людей.",
+      delegation: "Делегування — це два рішення: кому і скільки свободи. Помилка у виборі людини не компенсується автономією, а правильна людина потребує правильного рівня довіри.",
+      crisis: "У кризі обирайте людей під тип кризи: реактивна вимагає швидкості й дисципліни, проактивна — бачення та партнерств."
+    };
+    var lesson = ratios[0].v >= 1 ? "Ви впоралися з усіма трьома фазами без суттєвих втрат. Головне — повторити цей підхід у реальних проєктах: добирайте людей під потреби, відповідно до завдання обирайте рівень автономії, а в кризі ставте на релевантні якості." : LESSONS[ratios[0].k];
+    return { strong: strong, weak: weak, lesson: lesson };
+  }
+
   function plainTextExport() {
     var lines = [];
+    var team = state.teamResult.analysis;
     lines.push("Проєкт «Запуск нового цифрового продукту за 3 місяці» — повний цикл");
     if (state.studentName) lines.push("Студент: " + state.studentName);
     lines.push("");
-    lines.push("1. КОМАНДА (" + state.teamResult.analysis.score + " балів)");
-    teamMembers().forEach(function (c) { lines.push("- " + c.name + " (" + c.disc + ", " + c.role + ")"); });
+    lines.push("1. КОМАНДА (" + team.score + " з " + TEAM_MAX + " балів) — " + team.headline);
+    teamMembers().forEach(function (c) { lines.push("- " + c.name + " · " + c.disc + " · " + c.role); });
+    team.pos.forEach(function (t) { lines.push("  [+] " + t); });
+    team.neg.forEach(function (t) { lines.push("  [-] " + t); });
     lines.push("");
-    lines.push("2. ДЕЛЕГУВАННЯ ЗАВДАНЬ (" + state.delegation.reduce(function (s, d) { return s + d.score; }, 0) + " балів з 9)");
+    lines.push("2. ДЕЛЕГУВАННЯ ЗАВДАНЬ — " + state.delegation.reduce(function (s, d) { return s + d.score; }, 0) + " з " + DELEG_MAX + " балів");
     state.delegation.forEach(function (d, i) {
       var person = CANDIDATES.filter(function (c) { return c.id === d.personId; })[0];
-      lines.push("- " + TASKS[i].label + " → " + person.name + ", автономія рівня " + d.autonomy + " (" + d.score + " б.)");
+      lines.push("- " + TASKS[i].label + " → " + person.name + ", автономія: " + autonomyShort(d.autonomy) + " (" + d.score + " з 4, оптимально: " + d.fb.idealName + ")");
+      d.fb.pos.forEach(function (t) { lines.push("  [+] " + t); });
+      d.fb.neg.forEach(function (t) { lines.push("  [-] " + t); });
     });
     lines.push("");
+    var cr = state.crisisResult;
     lines.push("3. КРИЗА (" + CRISES[state.crisisIndex].title + "): " + CRISES[state.crisisIndex].text);
-    var pairNames = Object.keys(state.crisisSelected).filter(function (k) { return state.crisisSelected[k]; })
-      .map(function (id) { return CANDIDATES.filter(function (c) { return c.id === id; })[0].name; });
-    lines.push("Обрана пара: " + pairNames.join(", ") + " (" + state.crisisResult.score + " б. з 6)");
-    lines.push(state.crisisResult.summary);
-    state.crisisResult.breakdown.forEach(function (b) {
-      if (b.covered) {
-        lines.push("  [+] " + b.label + " — закрито завдяки " + b.coveredBy.join(" і ") + " (" + b.hint + ").");
-      } else {
-        var alt = b.availableElsewhere && b.availableElsewhere.length
-          ? "потрібна якість не в цієї пари — перевірте решту команди."
-          : "у команді взагалі немає такої якості.";
-        lines.push("  [-] " + b.label + " (потрібна: " + b.hint + ") — не закрито; " + alt);
-      }
-    });
+    lines.push("Обрана пара: " + cr.pairNames.join(", ") + " (" + cr.score + " з 6 балів) — " + cr.headline);
+    lines.push(cr.summary);
+    cr.pos.forEach(function (t) { lines.push("  [+] " + t); });
+    cr.neg.forEach(function (t) { lines.push("  [-] " + t); });
     lines.push("");
-    var v = computeFinalVerdict(state.teamResult.analysis.score, state.delegation.reduce(function (s, d) { return s + d.score; }, 0), state.crisisResult.score);
-    lines.push("ЗАГАЛЬНИЙ ВЕРДИКТ: " + v.tier.label + " (" + v.total + " балів)");
+    var v = computeFinalVerdict(team.score, state.delegation.reduce(function (s, d) { return s + d.score; }, 0), cr.score);
+    lines.push("ЗАГАЛЬНИЙ ВЕРДИКТ: " + v.tier.label + " (" + v.total + " з " + MAX_TOTAL + " балів)");
+    lines.push("Головний урок: " + buildFinalInsights().lesson);
     return lines.join("\n");
   }
 
@@ -436,7 +654,7 @@
       '<p class="kicker">Практичне заняття 4 · Бізнес-лідерство</p>' +
       '<h1 class="title serif">Проєкт: від команди до запуску</h1>' +
       '<div class="brief-box"><div class="b-label">Проєкт</div><p>«Запуск нового цифрового продукту на ринок за 3 місяці» — обмежений бюджет, потреба швидко реагувати на зворотний зв\'язок, стислі дедлайни.</p></div>' +
-      '<p class="lead">Повний цикл в одній грі: спершу ви сформуєте команду з 5 осіб, потім делегуватимете їй три реальні завдання проєкту, а посеред шляху вас чекає несподівана криза. У кінці — цілісний вердикт по всьому проєкту.</p>' +
+      '<p class="lead">Повний цикл в одній грі: спершу ви сформуєте команду з 5 осіб, потім делегуватимете їй чотири реальні завдання проєкту, а посеред шляху вас чекає несподівана криза. У кінці — цілісний вердикт по всьому проєкту.</p>' +
       '<label class="field-label">Ваше ім\'я (необов\'язково)</label>' +
       '<input type="text" class="text-input" id="name-input" placeholder="Наприклад, Олена К." value="' + state.studentName.replace(/"/g,'&quot;') + '" />' +
       '<button class="btn btn-primary" id="start-btn">Почати з формування команди →</button>' +
@@ -444,23 +662,37 @@
     );
     card.querySelector("#start-btn").addEventListener("click", function () {
       state.studentName = card.querySelector("#name-input").value.trim();
+      state.order = null;
       state.screen = "select"; render();
     });
     return card;
   }
 
+  var ROLE_ICONS = {
+    "Формувач (Shaper)": "🔥", "Реалізатор (Implementer)": "🔧", "Завершувач (Completer Finisher)": "✅",
+    "Координатор (Coordinator)": "🧭", "Командний гравець (Teamworker)": "🤝", "Дослідник ресурсів (Resource Investigator)": "🔎",
+    "Генератор ідей (Plant)": "💡", "Аналітик-оцінювач (Monitor Evaluator)": "⚖️", "Спеціаліст (Specialist)": "🎓"
+  };
+  function roleIconHtml(c) {
+    return '<div class="role-icon ' + c.cluster + '" title="' + c.role + '">' + (ROLE_ICONS[c.role] || "•") + '</div>';
+  }
+
+  function memberCardInner(c) {
+    return '<div class="check-mark">✓</div>' +
+      '<div class="cand-head"><div class="disc-badge ' + c.disc + '">' + c.disc + '</div>' + roleIconHtml(c) + '<div><div class="cand-name">' + c.name + '</div><div class="cand-role">' + c.role + '</div></div></div>' +
+      '<div class="cand-cluster ' + c.cluster + '">Кластер Белбіна: ' + CLUSTERS[c.cluster].label + '</div>' +
+      '<div class="cand-trait"><b>Сила:</b> ' + c.strengths + '</div>' +
+      '<div class="cand-trait"><b>Обмеження:</b> ' + c.weaknesses + '</div>';
+  }
+
   function renderSelect() {
     var count = selectedCount();
     var full = count >= TEAM_SIZE;
-    var cardsHtml = CANDIDATES.map(function (c) {
+    var cardsHtml = orderedCandidates().map(function (c) {
       var isSel = !!state.selected[c.id];
       var disabled = full && !isSel;
       return (
-        '<div class="candidate-card' + (isSel ? " selected" : "") + (disabled ? " disabled" : "") + '" data-id="' + c.id + '">' +
-          '<div class="check-mark">✓</div>' +
-          '<div class="cand-head"><div class="disc-badge ' + c.disc + '">' + c.disc + '</div><div><div class="cand-name">' + c.name + '</div><div class="cand-role">' + c.role + '</div></div></div>' +
-          '<div class="cand-trait"><b>Сила:</b> ' + c.strengths + '</div>' +
-          '<div class="cand-trait"><b>Обмеження:</b> ' + c.weaknesses + '</div>' +
+        '<div class="candidate-card' + (isSel ? " selected" : "") + (disabled ? " disabled" : "") + '" data-id="' + c.id + '">' + memberCardInner(c) +
         '</div>'
       );
     }).join("");
@@ -494,7 +726,7 @@
   function renderTeamResults() {
     var analysis = state.teamResult.analysis;
     var team = state.teamResult.team;
-    var rosterHtml = team.map(function (c) { return '<div class="roster-chip"><span class="disc-badge ' + c.disc + '">' + c.disc + '</span>' + c.name + ' — ' + c.role + '</div>'; }).join("");
+    var rosterHtml = team.map(function (c) { return '<div class="candidate-card" style="cursor:default;">' + memberCardInner(c).replace('<div class="check-mark">✓</div>', '') + '</div>'; }).join("");
     var needsHtml = NEEDS.map(function (n) {
       var names = analysis.needCoverage[n.key]; var covered = names.length > 0;
       return '<div class="need-item ' + (covered ? "covered" : "missing") + '"><span>' + (covered ? "✓" : "✕") + '</span><span>' + n.label + (covered ? " (" + names.join(", ") + ")" : "") + '</span></div>';
@@ -504,20 +736,29 @@
       var present = analysis.discPresent.indexOf(d) !== -1;
       return '<span class="disc-pill ' + (present ? "present" : "absent") + '">' + d + (present ? " · " + analysis.discCounts[d] : "") + '</span>';
     }).join("");
-    var flagsHtml = analysis.flags.map(function (f) { return '<li' + (f.positive ? ' class="positive"' : '') + '>' + escHtml(f.text) + '</li>'; }).join("");
+    var cls = analysis.score >= 10 ? "fb-good" : analysis.score >= 8 ? "fb-mid" : "fb-bad";
+    var covCls = analysis.coveredCount === NEEDS.length ? "ok" : analysis.coveredCount >= 6 ? "mid" : "no";
+    var divCls = analysis.diversity === 4 ? "ok" : analysis.diversity === 3 ? "mid" : "no";
+    var penCls = analysis.penalty === 0 ? "ok" : "no";
 
     var card = el(
       '<div class="stage-wrap"><div class="card">' +
-      '<p class="kicker">Фаза 1 з 3 · Результат формування команди</p>' +
-      '<h1 class="title serif">Ваша команда сформована</h1>' +
-      '<div class="roster-row">' + rosterHtml + '</div>' +
+      '<p class="kicker">Фаза 1 з 3 · Оцінка формування команди</p>' +
+      '<div class="fb-top ' + cls + '"><div class="fb-score"><span>' + analysis.score + '</span><small>з ' + TEAM_MAX + ' балів</small></div>' +
+        '<div><div class="fb-head">' + escHtml(analysis.headline) + '</div><div class="fb-sub">Бал = закриті потреби + різноманітність DISC − штрафи</div></div></div>' +
+      '<div class="crit-grid crit-grid-3">' +
+        critHtml(covCls, covCls === "ok" ? "✓" : covCls === "mid" ? "≈" : "✕", "Потреби проєкту", ["Закрито " + analysis.coveredCount + " з " + NEEDS.length, "+" + analysis.coveredCount + " б."]) +
+        critHtml(divCls, divCls === "ok" ? "✓" : divCls === "mid" ? "≈" : "✕", "DISC-різноманітність", ["Стилів: " + analysis.diversity + " з 4", "+" + analysis.diversity + " б."]) +
+        critHtml(penCls, penCls === "ok" ? "✓" : "✕", "Структурні ризики", [analysis.penalty === 0 ? "Штрафів немає" : "Штрафів: " + analysis.penalty, analysis.penalty === 0 ? "0 б." : "−" + analysis.penalty + " б."]) +
+      '</div>' +
+      '<b style="font-size:13px;">Ваша команда</b>' +
+      '<div class="candidate-grid" style="margin-top:10px;">' + rosterHtml + '</div>' +
       '<b style="font-size:13px;">Покриття потреб проєкту (' + analysis.coveredCount + ' з ' + NEEDS.length + ')</b>' +
       '<div class="needs-grid" style="margin-top:10px;">' + needsHtml + '</div>' +
       '<b style="font-size:13px;">DISC-різноманітність (' + analysis.diversity + ' з 4)</b>' +
       '<div class="disc-diversity-row" style="margin-top:10px;">' + discHtml + '</div>' +
-      '<b style="font-size:13px;">Спостереження</b>' +
-      '<ul class="flag-list" style="margin-top:10px;">' + flagsHtml + '</ul>' +
-      '<div class="note-box">Ця команда — саме та, з ким ви працюватимете далі. Прогалини, які ви бачите зараз, дадуться взнаки під час делегування завдань і кризи.</div>' +
+      fbBlocksHtml(analysis.pos, analysis.neg) +
+      '<div class="note-box"><b>Як нараховуються бали:</b> +1 за кожну закриту потребу проєкту (максимум 8), +1 за кожен представлений DISC-стиль (максимум 4), −1 за кожен структурний ризик (забагато обережних, немає напористого лідера або двоє лідерів одразу). Ця команда — саме та, з ким ви працюватимете далі: прогалини дадуться взнаки під час делегування й кризи.</div>' +
       '<button class="btn btn-primary" id="continue-btn">Перейти до делегування завдань →</button>' +
       '</div></div>'
     );
@@ -536,12 +777,12 @@
 
     var personsHtml = team.map(function (p) {
       var sel = draft.personId === p.id;
-      return '<div class="person-chip' + (sel ? " selected" : "") + '" data-id="' + p.id + '"><div class="disc-badge ' + p.disc + '">' + p.disc + '</div><div class="p-name">' + p.name + '</div></div>';
+      return '<div class="person-chip' + (sel ? " selected" : "") + '" data-id="' + p.id + '">' + memberCardInner(p) + '</div>';
     }).join("");
 
     var autonomyHtml = AUTONOMY_LEVELS.map(function (a) {
       var sel = draft.autonomy === a.level;
-      return '<button class="autonomy-btn' + (sel ? " selected" : "") + '" data-level="' + a.level + '"><b>Рівень ' + a.level + '</b>' + a.title + '</button>';
+      return '<button class="autonomy-btn' + (sel ? " selected" : "") + '" data-level="' + a.level + '"><b>Рівень ' + a.level + '</b>' + a.title + '<span class="au-desc">' + a.desc + '</span></button>';
     }).join("");
 
     var progressPct = Math.round((taskIndex / TASKS.length) * 100);
@@ -552,6 +793,7 @@
       '<div class="progress-track"><div class="progress-fill" style="width:' + progressPct + '%"></div></div>' +
       '<div class="scene-icon-wrap">' + ICONS[task.icon] + '</div>' +
       '<p class="scene-text serif">' + task.label + '</p>' +
+      '<div class="note-box"><b>Як обирати:</b> тип DISC підказує, кому підходить завдання. Коло DISC: D → I → S → C → D. Ідеальний тип дає 2 бали, сусідні в колі підходять частково (1 бал), а протилежний (D↔S, I↔C) не підходить зовсім: 0 за все завдання. Кластер Белбіна на картці підказує, скільки свободи дати виконавцю. Кластери: <b>дієвий</b> — доводять справу до результату; <b>соціальний</b> — працюють через діалог і взаємодію; <b>мисленнєвий</b> — аналізують і генерують ідеї.</div>' +
       '<label class="field-label">Кому доручите?</label>' +
       '<div class="person-grid">' + personsHtml + '</div>' +
       '<label class="field-label">Який рівень автономії дасте?</label>' +
@@ -570,7 +812,7 @@
       if (!draft.personId || !draft.autonomy) return;
       var person = team.filter(function (p) { return p.id === draft.personId; })[0];
       var outcome = delegationOutcome(person, task, draft.autonomy);
-      state.delegation.push({ taskIndex: taskIndex, personId: person.id, autonomy: draft.autonomy, score: outcome.score, outcomeKey: outcome.key, text: outcome.text });
+      state.delegation.push({ taskIndex: taskIndex, personId: person.id, autonomy: draft.autonomy, score: outcome.score, outcomeKey: outcome.key, text: outcome.text, fb: outcome });
       state.delegateDraft = { personId: null, autonomy: null };
       state.screen = "delegateConsequence"; render();
     });
@@ -579,15 +821,33 @@
 
   function renderDelegateConsequence() {
     var last = state.delegation[state.delegation.length - 1];
+    var fb = last.fb;
+    var task = TASKS[last.taskIndex];
+    var person = teamMembers().filter(function (p) { return p.id === last.personId; })[0];
     var isLastTask = state.delegation.length >= TASKS.length;
+    var cls = last.score === 4 ? "fb-good" : last.score === 0 ? "fb-bad" : "fb-mid";
+
+    function li(arr) { return arr.map(function (t) { return '<li>' + escHtml(t) + '</li>'; }).join(""); }
+    var skillCls = fb.fit === 2 ? "ok" : fb.fit === 1 ? "mid" : "no";
+    var skillIco = fb.fit === 2 ? "✓" : fb.fit === 1 ? "≈" : "✕";
+    var skillTxt = fb.fit === 2 ? "Ідеальний тип (потрібен " + fb.needDisc + ")<br>+2 б."
+      : fb.fit === 1 ? "Частково: потрібен " + fb.needDisc + ", у виконавця " + fb.personDisc + "<br>+1 б."
+      : "Протилежний тип: потрібен " + fb.needDisc + ", у виконавця " + fb.personDisc + "<br>0 за все завдання";
+    var skillRow = '<div class="crit ' + skillCls + '"><span class="crit-ico">' + skillIco + '</span><div><b>Тип DISC</b><br>' + skillTxt + '</div></div>';
+    var autoIco = !fb.skillMatch ? "–" : (fb.autoState === "ideal" ? "✓" : (fb.autoState === "near" ? "≈" : "✕"));
+    var autoCls = !fb.skillMatch ? "na" : (fb.autoState === "ideal" ? "ok" : (fb.autoState === "near" ? "mid" : "no"));
+    var autoTxt = !fb.skillMatch ? "Не враховується" : (fb.autoState === "ideal" ? "Ідеальна" : (fb.autoState === "near" ? "Близька до ідеальної" : "Далека від ідеальної"));
+    var autoRow = '<div class="crit ' + autoCls + '"><span class="crit-ico">' + autoIco + '</span><div><b>Автономія</b><br>Ваш вибір: ' + fb.chosenName + '<br>Кластер виконавця: ' + fb.clusterLabel + '<br>Оптимально: ' + fb.idealName + '<br>' + autoTxt + (fb.skillMatch ? " (+" + fb.autoPts + " б.)" : "") + '</div></div>';
 
     var card = el(
       '<div class="stage-wrap"><div class="card">' +
-      '<div class="consequence-box">' +
-        '<div class="cq-label">Результат делегування</div>' +
-        '<p>' + escHtml(last.text) + '</p>' +
-        '<span class="score-chip">+' + last.score + ' з 3 балів</span>' +
-      '</div>' +
+      '<p class="kicker">Фаза 2 з 3 · Оцінка завдання ' + (last.taskIndex + 1) + ' із ' + TASKS.length + '</p>' +
+      '<div class="fb-top ' + cls + '"><div class="fb-score"><span>' + last.score + '</span><small>з 4 балів</small></div>' +
+        '<div><div class="fb-head">' + escHtml(fb.headline) + '</div><div class="fb-sub">' + escHtml(task.label) + '<br>Виконавець: <b>' + escHtml(person.name) + '</b> · ' + escHtml(fb.chosenName) + '</div></div></div>' +
+      '<div class="crit-grid">' + skillRow + autoRow + '</div>' +
+      '<div class="fb-block fb-pos"><div class="fb-title">＋ Що спрацювало</div><ul>' + li(fb.pos) + '</ul></div>' +
+      '<div class="fb-block fb-neg"><div class="fb-title">− Що пішло не так</div>' + (fb.neg.length ? '<ul>' + li(fb.neg) + '</ul>' : '<p class="fb-none">Зауважень немає.</p>') + '</div>' +
+      '<div class="note-box"><b>Як нараховуються бали:</b> тип DISC дає 2 бали (ідеальний), 1 бал (сусідній у колі D → I → S → C) або 0 (протилежний: D↔S, I↔C). Автономія дає ще 2 бали (ідеальна), 1 бал (сусідній рівень) або 0 (далека). Якщо тип DISC протилежний, за все завдання 0 балів. Оптимальна автономія визначається кластером Белбіна виконавця: дієвий — за інструкцією, соціальний — середня, мисленнєвий — повна. Це навчальне спрощення.</div>' +
       '<button class="btn btn-primary" id="continue-btn">' + (isLastTask ? "Підсумок фази делегування →" : "Наступне завдання →") + '</button>' +
       '</div></div>'
     );
@@ -603,16 +863,26 @@
     var rowsHtml = state.delegation.map(function (d, i) {
       var person = team.filter(function (p) { return p.id === d.personId; })[0];
       return (
-        '<tr><td>' + TASKS[i].label + '</td><td>' + person.name + '</td><td>Рівень ' + d.autonomy + '</td><td>' + d.score + '/3</td></tr>'
+        '<tr><td>' + TASKS[i].label + '</td><td>' + person.name + '</td><td>' + autonomyShort(d.autonomy) + '</td><td>' + d.score + '/4</td></tr>'
       );
     }).join("");
 
+    var wrongN = state.delegation.filter(function (d) { return d.fb.fit === 0; }).length;
+    var partialN = state.delegation.filter(function (d) { return d.fb.fit === 1; }).length;
+    var autoN = state.delegation.filter(function (d) { return d.fb.skillMatch && d.fb.autoState !== "ideal"; }).length;
+    var insight = { good: totalScore === DELEG_MAX, lines: [] };
+    if (totalScore === DELEG_MAX) insight.lines.push("Ви влучно підібрали і виконавців, і рівень автономії в усіх чотирьох завданнях.");
+    if (wrongN > 0) insight.lines.push("У " + wrongN + " із " + TASKS.length + " завдань обрано виконавця з протилежним типом DISC. Це найдорожча помилка: вона дає 0 балів за все завдання, за будь-якої автономії.");
+    if (partialN > 0) insight.lines.push("У " + partialN + " із " + TASKS.length + " завдань обрано виконавця із сусіднім типом DISC (частково підходить): це дало лише 1 бал із 2 за тип.");
+    if (autoN > 0) insight.lines.push("У " + autoN + " із " + TASKS.length + " завдань автономія не збіглася з оптимальною. Орієнтир за Белбіном: дієвий кластер — за інструкцією, соціальний — середня автономія, мисленнєвий — повна автономія. Це навчальне спрощення, а в реальності враховуйте ще й досвід людини та складність завдання.");
+    if (insight.lines.length === 0) insight.lines.push("Підсумок: делегування збалансоване.");
     var card = el(
       '<div class="stage-wrap"><div class="card">' +
       '<p class="kicker">Фаза 2 з 3 · Підсумок делегування</p>' +
-      '<h1 class="title serif" style="font-size:22px;">Усі три завдання розподілено</h1>' +
+      '<h1 class="title serif" style="font-size:22px;">Усі чотири завдання розподілено</h1>' +
       '<table class="summary-table"><thead><tr><th>Завдання</th><th>Кому</th><th>Автономія</th><th>Бал</th></tr></thead><tbody>' + rowsHtml + '</tbody></table>' +
-      '<div class="score-breakdown"><div class="score-box"><div class="sb-value">' + totalScore + ' / 9</div><div class="sb-label">Бал делегування</div></div></div>' +
+      '<div class="score-breakdown"><div class="score-box"><div class="sb-value">' + totalScore + ' / ' + DELEG_MAX + '</div><div class="sb-label">Бал делегування</div></div></div>' +
+      '<div class="fb-block ' + (insight.good ? "fb-pos" : "fb-neg") + '"><div class="fb-title">Що варто запам’ятати</div><ul>' + liHtml(insight.lines) + '</ul></div>' +
       '<div class="note-box">Далі на команду очікує несподівана криза — і вирішувати її доведеться вже не всім п\'ятьом, а лише двом обраним вами людям.</div>' +
       '<button class="btn btn-primary" id="continue-btn">До кризи →</button>' +
       '</div></div>'
@@ -634,7 +904,7 @@
     var personsHtml = team.map(function (p) {
       var sel = !!state.crisisSelected[p.id];
       var disabled = full && !sel;
-      return '<div class="person-chip' + (sel ? " selected" : "") + (disabled ? " disabled" : "") + '" data-id="' + p.id + '" style="' + (disabled ? "opacity:.4;cursor:not-allowed;" : "") + '"><div class="disc-badge ' + p.disc + '">' + p.disc + '</div><div class="p-name">' + p.name + '</div></div>';
+      return '<div class="person-chip' + (sel ? " selected" : "") + (disabled ? " disabled" : "") + '" data-id="' + p.id + '" style="' + (disabled ? "opacity:.4;cursor:not-allowed;" : "") + '">' + memberCardInner(p) + '</div>';
     }).join("");
 
     var card = el(
@@ -670,48 +940,20 @@
 
   function renderCrisisConsequence() {
     var r = state.crisisResult;
-
-    var breakdownHtml = r.breakdown.map(function (b) {
-      if (b.covered) {
-        return (
-          '<div class="need-item covered" style="align-items:flex-start;">' +
-            '<span>✓</span>' +
-            '<span><b>' + b.label + '</b> — закрито завдяки ' + b.coveredBy.join(" і ") + '. Саме ця якість (' + b.hint + ') і була потрібна тут.</span>' +
-          '</div>'
-        );
-      }
-      var altText = b.availableElsewhere && b.availableElsewhere.length
-        ? "Ця якість (" + b.hint + ") нікому з обраної пари не притаманна. Погляньте на решту членів команди, яких ви не обрали для вирішення цієї кризи, — можливо, потрібна якість є в когось із них."
-        : "У вашій команді загалом немає нікого з такою якістю — це прогалина, яка тягнеться ще з формування команди на початку.";
-      return (
-        '<div class="need-item missing" style="align-items:flex-start;">' +
-          '<span>✕</span>' +
-          '<span><b>' + b.label + '</b> (потрібна: ' + b.hint + ') — не закрито. ' + altText + '</span>' +
-        '</div>'
-      );
+    var cls = r.score === 6 ? "fb-good" : r.score === 0 ? "fb-bad" : "fb-mid";
+    var critsHtml = r.breakdown.map(function (b) {
+      return critHtml(b.covered ? "ok" : "no", b.covered ? "✓" : "✕", escHtml(b.label), [b.covered ? "Закрито: " + escHtml(b.coveredBy.join(" і ")) : "Не закрито обраною парою", b.covered ? "+3 б." : "0 б."]);
     }).join("");
-
-    var irrelevantHtml = "";
-    if (r.irrelevantPicks.length > 0) {
-      irrelevantHtml = (
-        '<div class="note-box">' +
-          r.irrelevantPicks.map(function (p) {
-            return "<b>" + p.name + "</b> має цінні якості (" + p.needLabel + "), але для цієї конкретної кризи вони не знадобилися — можливо, варто було обрати іншу людину з команди.";
-          }).join("<br>") +
-        '</div>'
-      );
-    }
 
     var card = el(
       '<div class="stage-wrap"><div class="card">' +
-      '<div class="consequence-box">' +
-        '<div class="cq-label">Як команда впоралася — і чому</div>' +
-        '<p>' + escHtml(r.summary) + '</p>' +
-        '<span class="score-chip">+' + r.score + ' з 6 балів</span>' +
-      '</div>' +
-      '<b style="font-size:13px;">Розбір по кожній потрібній якості</b>' +
-      '<div class="needs-grid" style="margin-top:10px;grid-template-columns:1fr;">' + breakdownHtml + '</div>' +
-      irrelevantHtml +
+      '<p class="kicker">Фаза 3 з 3 · Оцінка рішення кризи</p>' +
+      '<div class="fb-top ' + cls + '"><div class="fb-score"><span>' + r.score + '</span><small>з 6 балів</small></div>' +
+        '<div><div class="fb-head">' + escHtml(r.headline) + '</div><div class="fb-sub">' + escHtml(r.title) + '<br>Обрана пара: <b>' + escHtml(r.pairNames.join(" і ")) + '</b></div></div></div>' +
+      '<div class="note-box"><b>Що потрібно було в цій кризі:</b> ' + escHtml(r.why) + '</div>' +
+      '<div class="crit-grid">' + critsHtml + '</div>' +
+      fbBlocksHtml(r.pos, r.neg) +
+      '<div class="note-box"><b>Як нараховуються бали:</b> криза вимагає двох якостей, і кожна закрита обраною парою дає 3 бали. Разом можливо 0, 3 або 6 балів.</div>' +
       '<button class="btn btn-primary" id="continue-btn" style="margin-top:6px;">Фінальний вердикт проєкту →</button>' +
       '</div></div>'
     );
@@ -727,6 +969,7 @@
     var crisisScore = state.crisisResult.score;
     var verdict = computeFinalVerdict(teamScore, delegationScore, crisisScore);
     var plain = plainTextExport();
+    var insights = buildFinalInsights();
 
     var saveNote = "";
     if (state.saveStatus === "saving") saveNote = "Зберігаємо результат…";
@@ -737,14 +980,17 @@
       '<div class="stage-wrap"><div class="card">' +
       '<div class="scene-icon-wrap">' + ICONS.trophy + '</div>' +
       '<p class="kicker" style="text-align:center;">' + (state.studentName ? escHtml(state.studentName) : "Проєкт завершено") + '</p>' +
-      '<div style="text-align:center;"><span class="ending-tier ' + (verdict.tier.key === "good" ? "tier-good" : verdict.tier.key === "mixed" ? "tier-mixed" : "tier-bad") + '">Загальний бал: ' + verdict.total + '</span></div>' +
+      '<div style="text-align:center;"><span class="ending-tier ' + (verdict.tier.key === "good" ? "tier-good" : verdict.tier.key === "mixed" ? "tier-mixed" : "tier-bad") + '">Загальний бал: ' + verdict.total + ' з ' + MAX_TOTAL + '</span></div>' +
       '<h1 class="title serif" style="text-align:center;">' + verdict.tier.label + '</h1>' +
       '<div class="score-breakdown">' +
-        '<div class="score-box"><div class="sb-value">' + teamScore + '</div><div class="sb-label">Команда</div></div>' +
-        '<div class="score-box"><div class="sb-value">' + delegationScore + ' / 9</div><div class="sb-label">Делегування</div></div>' +
+        '<div class="score-box"><div class="sb-value">' + teamScore + ' / ' + TEAM_MAX + '</div><div class="sb-label">Команда</div></div>' +
+        '<div class="score-box"><div class="sb-value">' + delegationScore + ' / ' + DELEG_MAX + '</div><div class="sb-label">Делегування</div></div>' +
         '<div class="score-box"><div class="sb-value">' + crisisScore + ' / 6</div><div class="sb-label">Криза</div></div>' +
       '</div>' +
       '<p class="lead">' + verdict.tier.text + '</p>' +
+      '<div class="fb-block fb-pos"><div class="fb-title">＋ Сильні сторони вашого проєкту</div><ul>' + liHtml(insights.strong) + '</ul></div>' +
+      (insights.weak.length ? '<div class="fb-block fb-neg"><div class="fb-title">− Зони росту</div><ul>' + liHtml(insights.weak) + '</ul></div>' : '') +
+      '<div class="note-box"><b>Головний урок:</b> ' + escHtml(insights.lesson) + '</div>' +
       (saveNote ? '<p class="save-note">' + saveNote + '</p>' : "") +
       '<div class="result-actions">' +
         '<button class="btn btn-secondary" id="copy-btn">Скопіювати результат</button>' +
@@ -757,7 +1003,7 @@
 
     card.querySelector("#copy-btn").addEventListener("click", function (e) { copyToClipboard(plainTextExport(), e.currentTarget); });
     card.querySelector("#retry-btn").addEventListener("click", function () {
-      state.screen = "intro"; state.selected = {}; state.teamResult = null; state.delegation = [];
+      state.screen = "intro"; state.selected = {}; state.order = null; state.teamResult = null; state.delegation = [];
       state.crisisSelected = {}; state.crisisResult = null; render();
     });
     card.querySelector("#teacher-link").addEventListener("click", function () { state.screen = "teacher"; render(); loadTeacherRows(); });
@@ -771,7 +1017,7 @@
     else if (!rows || rows.length === 0) bodyHtml = '<p class="empty-note">Поки що ніхто не пройшов гру за цим посиланням.</p>';
     else {
       var trs = rows.map(function (r) {
-        return '<tr><td>' + escHtml(r.name) + '</td><td>' + escHtml(r.team.join(", ")) + '</td><td>' + r.teamScore + '</td><td>' + r.delegationScore + '/9</td><td>' + r.crisisScore + '/6</td><td>' + r.total + '</td><td><span class="tag">' + escHtml(r.tier) + '</span></td></tr>';
+        return '<tr><td>' + escHtml(r.name) + '</td><td>' + escHtml(r.team.join(", ")) + '</td><td>' + r.teamScore + '/'+TEAM_MAX+'</td><td>' + r.delegationScore + '/' + DELEG_MAX + '</td><td>' + r.crisisScore + '/6</td><td>' + r.total + '</td><td><span class="tag">' + escHtml(r.tier) + '</span></td></tr>';
       }).join("");
       bodyHtml = '<div class="table-scroll"><table class="results-table"><thead><tr><th>Студент</th><th>Команда</th><th>Кмд.</th><th>Дел.</th><th>Криза</th><th>Всього</th><th>Вердикт</th></tr></thead><tbody>' + trs + '</tbody></table></div>';
     }

@@ -108,6 +108,59 @@
   .icon-btn { background: none; border: 1.5px solid var(--line); border-radius: 8px; padding: 7px 13px; font-size: 12.5px; color: var(--ink); cursor: pointer; }
   .icon-btn:hover { border-color: var(--gold); }
   .table-scroll { overflow-x: auto; }
+
+  /* Phase 2: Belbin roles */
+  .disc-tag { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ink-soft); background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 5px 12px 5px 6px; margin: -6px 0 14px; }
+  .role-icon { width: 38px; height: 38px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 19px; line-height: 1; flex-shrink: 0; border: 2px solid; }
+  .role-icon.action { background: #F6DCD4; border-color: #D9826A; }
+  .role-icon.people { background: #FBF1D6; border-color: #D7B25A; }
+  .role-icon.thought { background: #DCEFE9; border-color: #6FB8A2; }
+  .role-icon.sm { width: 24px; height: 24px; font-size: 13px; border-width: 1.5px; vertical-align: middle; margin: 0 5px 0 0; }
+  .role-line { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+  .role-line .role-icon.sm { margin: 0; }
+  .role-line-sm { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 2px; }
+  .role-line-sm .role-icon.sm { margin: 0 2px 0 0; }
+  .role-cell { display: inline-flex; align-items: center; white-space: nowrap; }
+  .role-primer-item { display: flex; gap: 12px; align-items: center; }
+  .role-choice-btn { display: flex; gap: 12px; align-items: center; }
+  .role-en { font-size: 11px; font-weight: 500; color: var(--muted); }
+  .role-cluster-title { font-size: 11.5px; font-weight: 700; letter-spacing: 0.2px; margin: 14px 0 8px; padding: 5px 10px; border-radius: 8px; display: inline-block; }
+  .role-cluster-title.action { background: #F6DCD4; color: #7A2E1A; }
+  .role-cluster-title.people { background: var(--gold-soft); color: #6B5314; }
+  .role-cluster-title.thought { background: #DCEFE9; color: #1F5245; }
+  .role-primer-item { font-size: 12px; line-height: 1.45; color: var(--muted); padding: 6px 2px; border-bottom: 1px solid var(--line); }
+  .role-primer-item b { color: var(--ink); }
+  .role-primer { margin-bottom: 20px; }
+  .role-choice-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
+  .role-choice-btn { text-align: left; padding: 11px 14px; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; cursor: pointer; transition: all 0.15s ease; }
+  .role-choice-btn:hover { border-color: var(--gold); background: var(--gold-soft); }
+  .role-choice-btn .rc-title { font-weight: 700; font-size: 13.5px; color: var(--ink); }
+  .role-choice-btn .rc-sub { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  .consequence-box.partial { background: #A8741A; }
+  .review-item.partial { border-left-color: var(--gold); }
+  .result-icon.mid { color: #A8741A; }
+  .score-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  .score-pair .score-box { text-align: center; padding: 14px 8px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); }
+  .score-pair .sb-value { font-size: 26px; font-weight: 800; color: var(--ink); }
+  .score-pair .sb-label { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+
+  /* Markers, review, insights */
+  .marker-row { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .marker-label { font-size: 11px; font-weight: 700; opacity: 0.9; margin-right: 2px; }
+  .marker-chip { font-size: 11.5px; padding: 3px 10px; border-radius: 20px; background: rgba(255,255,255,0.2); color: #fff; }
+  .marker-row.dark .marker-label { color: var(--muted); opacity: 1; }
+  .marker-row.dark .marker-chip { background: var(--gold-soft); color: #7A5A16; }
+  .review-item { border: 1px solid var(--line); border-left: 4px solid var(--red); border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; background: #fff; }
+  .review-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; margin-bottom: 6px; }
+  .review-head span { font-size: 11.5px; color: var(--muted); }
+  .review-item p { font-size: 12.5px; line-height: 1.55; color: var(--ink-soft); margin: 0; }
+  .review-ok { margin-bottom: 18px; padding: 12px 14px; border-radius: 10px; background: #DCEFE9; color: #1F5245; font-size: 13px; }
+  .insight-box { margin-bottom: 18px; padding: 14px 16px; border-radius: 12px; background: var(--gold-soft); border: 1px solid #E5CE9B; }
+  .insight-box.good { background: #DCEFE9; border-color: #B5D9CE; }
+  .insight-box .ib-title { font-size: 11px; font-weight: 700; letter-spacing: 0.3px; color: #7A5A16; margin-bottom: 6px; }
+  .insight-box.good .ib-title { color: #1F5245; }
+  .insight-box p { font-size: 13px; line-height: 1.55; color: var(--ink); margin: 0 0 6px; }
+  .insight-box p:last-child { margin-bottom: 0; }
 </style>
 </head>
 <body>
@@ -125,30 +178,127 @@
 
   var CANDIDATES = [
     { id: "olena", name: "Олена", correct: "D",
-      description: "На нарадах Олена рідко чекає, поки всі висловляться, — вона одразу пропонує рішення й наполягає на швидких діях. Коли обговорення затягується, відкрито каже: «Досить говорити, час діяти». Не любить, коли хтось ставить під сумнів її підхід, і легко вступає в суперечку, обстоюючи свою позицію. У кризових ситуаціях бере відповідальність на себе, навіть якщо це означає діяти без повного погодження команди.",
-      explanation: "Прямі формулювання, нетерпіння до довгих обговорень, готовність сперечатися й діяти без повного консенсусу — класичні маркери типу D: орієнтація на результат і контроль, а не на процес чи згоду групи." },
+      role: "Генератор ідей (Plant)", cluster: "thought",
+      strengths: "Рішуча й сміливо мислить: швидко пропонує радикальні, нестандартні ходи й не боїться ризикувати.",
+      weaknesses: "Нетерпляча, може ігнорувати думку повільніших колег і відкидати практичні обмеження.",
+      description: "На нарадах Олена одразу висуває сміливі, нестандартні ходи й наполягає, щоб їх впровадили негайно: рідко чекає, поки всі висловляться, а коли обговорення затягується, відкрито каже: «Досить говорити, час діяти». Вона не боїться ризикувати, але нетерпляча до повільніших колег — їхні сумніви та практичні обмеження часто відкидає й легко вступає в суперечку, обстоюючи свою позицію. У кризових ситуаціях бере відповідальність на себе, навіть якщо це означає діяти без повного погодження команди.",
+      markers: ["«Досить говорити, час діяти»", "сміливі, радикальні ідеї", "відкидає заперечення й обмеження", "бере відповідальність без погодження"],
+      explanation: "Прямі формулювання, нетерпіння до довгих обговорень, готовність сперечатися й діяти без повного консенсусу — маркери типу D: орієнтація на результат і контроль, а не на процес чи згоду групи. Сміливі ідеї тут слугують швидкому результату, а не самому натхненню, як у типу I." },
     { id: "maksym", name: "Максим", correct: "I",
-      description: "Максим — душа компанії: на будь-якому заході за кілька хвилин знайомиться з половиною присутніх і легко домовляється про майбутню зустріч. Обожнює презентувати ідеї перед аудиторією та отримувати схвальні відгуки. Водночас часто забуває заповнити звіт вчасно чи довести до кінця рутинне завдання, бо його увагу вже захопила нова ідея. Погано переносить одноманітну, самотню роботу за комп'ютером без спілкування.",
+      role: "Дослідник ресурсів (Resource Investigator)", cluster: "people",
+      strengths: "Комунікабельний, легко заводить зовнішні контакти й партнерства.",
+      weaknesses: "Швидко втрачає інтерес до рутинної роботи, погано доводить справи до кінця.",
+      description: "Максим — душа компанії: на будь-якому заході за кілька хвилин знайомиться з половиною присутніх, обмінюється контактами й легко домовляється про співпрацю чи майбутню зустріч. Обожнює презентувати ідеї перед аудиторією та отримувати схвальні відгуки. Водночас швидко втрачає інтерес до рутинної роботи: часто забуває заповнити звіт вчасно чи довести до кінця нудне завдання, бо його увагу вже захопила нова можливість. Погано переносить одноманітну, самотню роботу за комп'ютером без спілкування.",
+      markers: ["легко знайомиться й домовляється про співпрацю", "любить презентувати й отримувати схвалення", "втрачає інтерес до рутини", "не доводить справи до кінця"],
       explanation: "Легкість у знайомствах, любов до публічних виступів і визнання, поряд із слабкою дисципліною в рутинних завданнях — типовий профіль I: енергія й товариськість важливіші за системність." },
     { id: "iryna", name: "Ірина", correct: "S",
-      description: "Ірина рідко першою висловлює свою думку на нараді, але уважно слухає кожного і часто саме вона помічає, що хтось із колег засмучений чи перевантажений. Уникає прямих конфліктів навіть тоді, коли не згодна з рішенням, і намагається знайти компроміс, який влаштує всіх. Дуже цінує стабільність у команді й важко переживає раптові зміни планів чи складу проєкту.",
+      role: "Командний гравець (Teamworker)", cluster: "people",
+      strengths: "Дипломатична, згладжує конфлікти, підтримує командний дух.",
+      weaknesses: "Уникає складних, непопулярних рішень, може стримувати відверту критику.",
+      description: "Ірина рідко першою висловлює свою думку на нарадах, але уважно слухає кожного й часто саме вона помічає, що хтось із колег засмучений чи перевантажений. Дипломатично згладжує напругу й підтримує добрий настрій у команді, шукаючи компроміс, який влаштує всіх. Уникає прямих конфліктів і складних, непопулярних рішень навіть тоді, коли не згодна, тому відверту критику часто стримує. Дуже цінує стабільність і важко переживає раптові зміни планів чи складу проєкту.",
+      markers: ["помічає настрій колег", "згладжує конфлікти й підтримує дух команди", "уникає непопулярних рішень", "важко переживає зміни"],
       explanation: "Уважність до емоцій колег, уникнення конфлікту навіть ціною власної думки, важке переживання змін — це стрижневі риси типу S: цінність гармонії та стабільності понад усе." },
     { id: "dmytro", name: "Дмитро", correct: "C",
-      description: "Дмитро завжди готує детальний план перед початком будь-якої роботи і кілька разів перевіряє розрахунки, перш ніж показати їх іншим. Вважає за краще спиратися на дані й факти, а не на інтуїцію чи припущення, і може годинами шукати першоджерело статистики, яку хтось згадав побіжно. Некомфортно почувається, коли рішення ухвалюють поспіхом, без достатнього аналізу.",
+      role: "Завершувач (Completer Finisher)", cluster: "action",
+      strengths: "Уважний до деталей, ніколи не зриває дедлайни, перевіряє все двічі.",
+      weaknesses: "Повільно ухвалює рішення, тривожиться через дрібні помилки.",
+      description: "Дмитро завжди готує детальний план перед початком будь-якої роботи й кілька разів перевіряє розрахунки, перш ніж показати їх іншим, тому майже ніколи не зриває дедлайни. Вважає за краще спиратися на дані й факти, а не на інтуїцію чи припущення, і може годинами шукати першоджерело статистики, яку хтось згадав побіжно. Рішення ухвалює повільно, а через дрібні помилки сильно тривожиться. Некомфортно почувається, коли рішення приймають поспіхом, без достатнього аналізу.",
+      markers: ["детальний план і подвійна перевірка", "не зриває дедлайни", "спирається на дані й факти", "повільно вирішує, тривожиться через помилки"],
       explanation: "Схильність до ретельної перевірки, опора на факти й дані замість інтуїції, дискомфорт від поспішних рішень без аналізу — чіткі ознаки типу C: точність і якість важливіші за швидкість." },
     { id: "sofia", name: "Софія", correct: "I",
-      description: "Софія постійно пропонує нові, часом несподівані ідеї на нарадах — від зміни дизайну продукту до незвичного формату презентації. Легко надихається новою концепцією, але швидко втрачає інтерес, коли доходить до втілення деталей і бюрократичних узгоджень. Любить обговорювати можливості вголос, у групі, і отримує енергію від жвавого мозкового штурму. Дедлайни й чіткі рамки сприймає як щось, що заважає творчості.",
-      explanation: "Потік нових ідей, енергія від групового обговорення й швидка втрата інтересу до деталей виконання — це той самий поведінковий патерн, що й у Максима: тип I, орієнтований на натхнення, а не на структуру." },
+      role: "Генератор ідей (Plant)", cluster: "thought",
+      strengths: "Креативна, пропонує нестандартні рішення проблем.",
+      weaknesses: "Погано працює з рутиною й жорсткими дедлайнами, ігнорує практичні обмеження.",
+      description: "Софія постійно пропонує нові, часом несподівані ідеї на нарадах — від зміни дизайну продукту до незвичного формату презентації. Легко надихається новою концепцією, але швидко втрачає інтерес, коли доходить до втілення деталей і бюрократичних узгоджень. Любить обговорювати можливості вголос, у групі, і отримує енергію від жвавого мозкового штурму. Дедлайни й чіткі рамки сприймає як щось, що заважає творчості, а практичні обмеження, як-от бюджет чи терміни, часто ігнорує.",
+      markers: ["потік нових ідей", "енергія від групового мозкового штурму", "втрата інтересу до деталей", "ігнорує практичні обмеження й дедлайни"],
+      explanation: "Потік нових ідей, енергія від групового обговорення й швидка втрата інтересу до деталей виконання — характерні маркери типу I: Софія орієнтована на натхнення й можливості, а не на структуру та дедлайни." },
     { id: "andriy", name: "Андрій", correct: "D",
-      description: "Андрій добре бачить картину проєкту загалом і не боїться змінити початковий план, якщо вважає новий підхід ефективнішим — навіть якщо це означає суперечку з тим, хто пропонував старий варіант. На нарадах бере ініціативу модерувати обговорення й підштовхує команду швидше переходити від слів до дій. Не любить довго занурюватися в дрібні деталі виконання, довіряючи це іншим, поки загальний напрямок під контролем.",
-      explanation: "Готовність сперечатися заради ефективнішого рішення, ініціативність у підштовхуванні команди до дій і фокус на напрямку, а не на деталях — це той самий напористий, орієнтований на контроль профіль, що й у Олени: тип D." },
+      role: "Координатор (Coordinator)", cluster: "people",
+      strengths: "Бачить картину загалом, добре фасилітує наради, вміє делегувати.",
+      weaknesses: "Не любить глибоко занурюватись у деталі виконання.",
+      description: "Андрій добре бачить картину проєкту загалом і не боїться змінити початковий план, якщо вважає новий підхід ефективнішим — навіть якщо це означає суперечку з тим, хто пропонував старий варіант. На нарадах бере ініціативу модерувати обговорення, вміло розподіляє завдання між колегами й підштовхує команду швидше переходити від слів до дій. Не любить глибоко занурюватися в дрібні деталі виконання, довіряючи це іншим, поки загальний напрямок під контролем.",
+      markers: ["бачить картину загалом", "готовий змінити план попри суперечку", "модерує наради й делегує", "не любить дрібні деталі"],
+      explanation: "Готовність сперечатися заради ефективнішого рішення, ініціативність у підштовхуванні команди до дій і фокус на напрямку, а не на деталях — маркери типу D: орієнтація на результат і контроль над ходом справи." },
     { id: "maria", name: "Марія", correct: "C",
-      description: "Марія перш ніж підтримати будь-яку ідею ставить кілька уточнювальних запитань про ризики та можливі наслідки, і часто саме вона на нараді вказує на слабке місце в плані, яке інші не помітили. Ретельно документує кожен крок аналізу, щоб рішення можна було легко пояснити пізніше. Уникає категоричних тверджень без достатніх доказів і насторожено ставиться до занадто оптимістичних прогнозів.",
-      explanation: "Систематичні уточнювальні запитання, увага до ризиків і документування кожного кроку, скептицизм щодо необґрунтованого оптимізму — знову тип C: аналітичність і обережність понад ентузіазм." },
+      role: "Аналітик-оцінювач (Monitor Evaluator)", cluster: "thought",
+      strengths: "Критично мислить, зважує ризики, якісно оцінює варіанти.",
+      weaknesses: "Повільна, надмірна критичність може демотивувати команду.",
+      description: "Марія, перш ніж підтримати будь-яку ідею, ставить кілька уточнювальних запитань про ризики та можливі наслідки й зважує всі варіанти; часто саме вона на нараді вказує на слабке місце в плані, яке інші не помітили. Ретельно документує кожен крок аналізу, щоб рішення можна було легко пояснити пізніше. Уникає категоричних тверджень без достатніх доказів, насторожено ставиться до занадто оптимістичних прогнозів і ухвалює рішення повільно, а її надмірна критичність інколи демотивує колег.",
+      markers: ["запитання про ризики й наслідки", "зважує варіанти, бачить слабкі місця", "документує кожен крок", "повільна, критичність демотивує"],
+      explanation: "Систематичні уточнювальні запитання, увага до ризиків і документування кожного кроку, скептицизм щодо необґрунтованого оптимізму — маркери типу C: аналітичність і обережність важливіші за ентузіазм." },
     { id: "bogdan", name: "Богдан", correct: "S",
-      description: "Богдан методично виконує кожен пункт затвердженого плану крок за кроком і рідко відхиляється від узгодженого підходу навіть під тиском часу. Коли керівництво раптово змінює напрямок проєкту, йому потрібен час, щоб перелаштуватися, — різкі повороти вибивають його з колії. Цінує чіткі, передбачувані процеси й охоче бере на себе повторювані, рутинні завдання, які інших дратують.",
-      explanation: "Методичність, дискомфорт від раптових змін напрямку та любов до передбачуваних, рутинних процесів — ті самі маркери стабільності й терпіння, що й в Ірини: тип S." }
+      role: "Реалізатор (Implementer)", cluster: "action",
+      strengths: "Дисциплінований, практичний, чітко виконує затверджений план.",
+      weaknesses: "Погано адаптується до раптових змін курсу проєкту.",
+      description: "Богдан дисциплінований і практичний: методично виконує кожен пункт затвердженого плану крок за кроком і рідко відхиляється від узгодженого підходу навіть під тиском часу. Коли керівництво раптово змінює напрямок проєкту, йому потрібен час, щоб перелаштуватися, — різкі повороти вибивають його з колії. Цінує чіткі, передбачувані процеси й охоче бере на себе повторювані, рутинні завдання, які інших дратують.",
+      markers: ["методично виконує затверджений план", "дисциплінований і практичний", "важко адаптується до змін курсу", "охоче бере рутину"],
+      explanation: "Методичність, дискомфорт від раптових змін напрямку та любов до передбачуваних, рутинних процесів — маркери типу S: стабільність, терпіння та надійність у виконанні." }
   ];
+
+
+  var CLUSTER_META = {
+    action: { label: "Дієвий кластер", short: "доводять справу до результату" },
+    people: { label: "Соціальний кластер", short: "працюють через взаємодію та діалог" },
+    thought: { label: "Мисленнєвий кластер", short: "аналізують і генерують ідеї" }
+  };
+  var CLUSTER_ORDER = ["action", "people", "thought"];
+  var ROLES = [
+    { name: "Формувач (Shaper)", icon: "🔥", cluster: "action", short: "Рушійна сила: працює під тиском, долає перешкоди, може бути різким." },
+    { name: "Реалізатор (Implementer)", icon: "🔧", cluster: "action", short: "Дисциплінований і практичний, перетворює плани на конкретні дії." },
+    { name: "Завершувач (Completer Finisher)", icon: "✅", cluster: "action", short: "Прискіпливий до деталей, перевіряє якість і дотримується термінів." },
+    { name: "Координатор (Coordinator)", icon: "🧭", cluster: "people", short: "Прояснює цілі, делегує завдання, модерує обговорення." },
+    { name: "Командний гравець (Teamworker)", icon: "🤝", cluster: "people", short: "Дипломатичний, згладжує конфлікти, підтримує командний дух." },
+    { name: "Дослідник ресурсів (Resource Investigator)", icon: "🔎", cluster: "people", short: "Комунікабельний, шукає зовнішні контакти й нові можливості." },
+    { name: "Генератор ідей (Plant)", icon: "💡", cluster: "thought", short: "Креативний, пропонує нестандартні рішення." },
+    { name: "Аналітик-оцінювач (Monitor Evaluator)", icon: "⚖️", cluster: "thought", short: "Тверезо зважує варіанти, критично оцінює ризики." },
+    { name: "Спеціаліст (Specialist)", icon: "🎓", cluster: "thought", short: "Глибокий експерт у вузькій галузі, дає рідкісні знання." }
+  ];
+  var ROLE_MAX = CANDIDATES.length * 2;
+
+  var ROLE_INFO = {
+    olena: { explanation: "Сміливі, нестандартні ходи й готовність ризикувати — прояви Генератора ідей. Практичні обмеження вона відкидає — типове слабке місце цієї ролі. Типова помилка — обрати Формувача через напористість, але в описі головне власні радикальні ідеї, а не тиск на команду заради темпу.",
+      markers: ["пропонує сміливі, нестандартні ходи", "не боїться ризикувати", "відкидає практичні обмеження"] },
+    maksym: { explanation: "Знайомства, обмін контактами, домовленості про співпрацю й захоплення новими можливостями — ознаки Дослідника ресурсів. Швидка втрата інтересу до рутини — його типове слабке місце.",
+      markers: ["знайомиться й обмінюється контактами", "домовляється про співпрацю", "захоплюється новими можливостями", "втрачає інтерес до рутини"] },
+    iryna: { explanation: "Підтримка командного духу, згладжування напруги й дипломатичний пошук компромісу — ознаки Командного гравця. Уникання непопулярних рішень та стримування відвертої критики — типове слабке місце цієї ролі.",
+      markers: ["помічає настрій колег", "згладжує напругу, шукає компроміс", "підтримує добрий настрій у команді", "уникає непопулярних рішень"] },
+    dmytro: { explanation: "Детальний план, подвійна перевірка, дотримання дедлайнів і тривога через дрібні помилки — класичні ознаки Завершувача. Повільне ухвалення рішень — його типове слабке місце.",
+      markers: ["детальний план і перевірка двічі", "майже не зриває дедлайни", "тривожиться через дрібні помилки", "повільно ухвалює рішення"] },
+    sofia: { explanation: "Потік несподіваних ідей, нестандартні формати та небажання рахуватися з практичними обмеженнями — ознаки Генератора ідей. Складнощі з рутиною й дедлайнами — типове слабке місце цієї ролі.",
+      markers: ["постійно пропонує нові, несподівані ідеї", "незвичні формати й рішення", "ігнорує практичні обмеження", "рутина й бюрократія нудні"] },
+    andriy: { explanation: "Бачення проєкту загалом, модерація нарад і розподіл завдань між колегами — ознаки Координатора. Небажання заглиблюватися в деталі — його типове слабке місце. Типова помилка — обрати Формувача через ініціативність, але Андрій не тисне на людей, а організовує їхню роботу.",
+      markers: ["бачить картину загалом", "модерує обговорення", "розподіляє завдання між колегами", "не занурюється в деталі"] },
+    maria: { explanation: "Тверезе зважування варіантів, увага до ризиків і слабких місць, повільне та виважене рішення — ознаки Аналітика-оцінювача. Надмірна критичність, що демотивує колег, — типове слабке місце цієї ролі.",
+      markers: ["зважує всі варіанти", "питає про ризики й наслідки", "бачить слабкі місця плану", "критичність демотивує колег"] },
+    bogdan: { explanation: "Дисципліна, практичність, методичне виконання затвердженого плану й готовність до рутини — ознаки Реалізатора. Труднощі з раптовими змінами курсу — його типове слабке місце.",
+      markers: ["виконує затверджений план крок за кроком", "дисциплінований і практичний", "бере рутинні завдання", "важко перелаштовується після змін"] }
+  };
+
+  function roleByName(n) { return ROLES.filter(function (r) { return r.name === n; })[0]; }
+  function roleIconHtml(roleName, small) {
+    var r = roleByName(roleName);
+    return '<span class="role-icon ' + r.cluster + (small ? " sm" : "") + '" title="' + roleMain(roleName) + '">' + r.icon + '</span>';
+  }
+  function roleMain(n) { return n.replace(/\s*\(.*\)\s*$/, ""); }
+  function roleEn(n) { var m = n.match(/\((.*)\)/); return m ? m[1] : ""; }
+  function rolePoints(cand, chosenName) {
+    if (chosenName === cand.role) return 2;
+    var r = roleByName(chosenName);
+    return r && r.cluster === cand.cluster ? 1 : 0;
+  }
+  function roleScoreCount() { return state.roleAnswers.reduce(function (s, a) { return s + a.points; }, 0); }
+
+  function tierForRoles(score, total) {
+    var pct = score / total;
+    if (pct >= 0.8) return { label: "Впевнене розуміння ролей за Белбіним",
+      text: "Ви добре розпізнаєте командні ролі за поведінкою. Це допоможе в наступній грі: роль визначає кластер, а кластер підказує, скільки автономії давати виконавцю." };
+    if (pct >= 0.55) return { label: "Непогано, є що уточнити",
+      text: "Загалом ви орієнтуєтеся в ролях, але частину з них плутаєте. Зверніть увагу передусім на кластери: навіть якщо точну роль визначити важко, правильний кластер уже дає основу для рішення." };
+    return { label: "Варто повторити ролі за Белбіним",
+      text: "Поки що ролі за описом розпізнаються складно. Це нормально для початку: спершу відрізняйте три кластери (дієвий, соціальний, мисленнєвий), а потім уточнюйте роль усередині кластера за словами-маркерами." };
+  }
+
+  var CLUSTER_TIP = "Орієнтир: дієві ролі доводять справу до результату, соціальні працюють через взаємодію та діалог, мисленнєві аналізують і генерують ідеї. Спершу визначте кластер, а потім уточнюйте роль усередині нього за слабкими місцями та словами-маркерами.";
 
   var STORAGE_PREFIX = "disc-recognition-quiz:";
 
@@ -159,6 +309,10 @@
     index: 0,
     answers: [],       // { candidateId, chosen, correct, isCorrect }
     lastAnswer: null,
+    roleOrder: [],
+    roleIndex: 0,
+    roleAnswers: [],   // { candidateId, chosen, correct, points, exact }
+    lastRoleAnswer: null,
     saveStatus: "idle",
     teacherRows: null,
     teacherLoading: false
@@ -185,20 +339,27 @@
     if (pct >= 0.625) return { label: "Непогане розуміння, є прогалини", cls: "mixed",
       text: "Більшість профілів ви визначили правильно, але кілька стилів усе ще плутаються. Варто ще раз звернути увагу на різницю між типами, які найчастіше плутають (наприклад, D і C — обидва рішучі, але по-різному; I і S — обидва товариські, але по-різному)." };
     return { label: "Варто повторити теорію DISC", cls: "bad",
-      text: "Поки що складно з першого прочитання визначити стиль за поведінкою. Це нормально на старті — поверніться до опису чотирьох стилів і зверніть увагу на конкретні слова-маркери в описах (наприклад, «уникає конфлікту», «любить деталі», «бере ініціативу», «надихається новою ідeєю»)." };
+      text: "Поки що складно з першого прочитання визначити стиль за поведінкою. Це нормально на старті — поверніться до опису чотирьох стилів і зверніть увагу на конкретні слова-маркери в описах (наприклад, «уникає конфлікту», «любить деталі», «бере ініціативу», «надихається новою ідеєю»)." };
   }
 
   function plainTextExport() {
     var lines = [];
-    lines.push("Тренажер розпізнавання DISC-стилів — результати");
+    lines.push("Тренажер розпізнавання DISC-стилів і ролей за Белбіним — результати");
     if (state.studentName) lines.push("Студент: " + state.studentName);
     lines.push("");
-    lines.push("Результат: " + scoreCount() + " з " + CANDIDATES.length);
-    lines.push("");
+    lines.push("Фаза 1 · DISC: " + scoreCount() + " з " + CANDIDATES.length);
     state.answers.forEach(function (a) {
-      var cand = CANDIDATES.filter(function (c) { return c.id === a.candidateId; })[0];
+      var cand = candById(a.candidateId);
       lines.push((a.isCorrect ? "[правильно] " : "[неправильно] ") + cand.name + " — ваша відповідь: " + a.chosen + ", правильна: " + a.correct);
     });
+    if (state.roleAnswers.length) {
+      lines.push("");
+      lines.push("Фаза 2 · Ролі за Белбіним: " + roleScoreCount() + " з " + ROLE_MAX);
+      state.roleAnswers.forEach(function (a) {
+        var cand = candById(a.candidateId);
+        lines.push((a.points === 2 ? "[точно] " : a.points === 1 ? "[той самий кластер] " : "[неправильно] ") + cand.name + " (" + cand.correct + ") — ваша відповідь: " + roleMain(a.chosen) + ", правильна: " + roleMain(a.correct) + " (" + a.points + " б.)");
+      });
+    }
     return lines.join("\n");
   }
 
@@ -211,6 +372,9 @@
       score: scoreCount(),
       total: CANDIDATES.length,
       answers: state.answers,
+      roleScore: roleScoreCount(),
+      roleTotal: ROLE_MAX,
+      roleAnswers: state.roleAnswers,
       timestamp: Date.now()
     };
     window.storage.set(key, JSON.stringify(payload), true).then(function (r) {
@@ -237,10 +401,22 @@
   function csvEscape(t) { return '"' + String(t).replace(/"/g, '""') + '"'; }
   function downloadCsv() {
     var rows = state.teacherRows || [];
-    var header = ["Ім'я", "Бал", "З", "Дата"];
+    var header = ["Ім'я", "DISC бал", "DISC з", "Ролі бал", "Ролі з", "Дата"]
+      .concat(CANDIDATES.map(function (c) { return "DISC: " + c.name + " (" + c.correct + ")"; }))
+      .concat(CANDIDATES.map(function (c) { return "Роль: " + c.name + " (" + roleMain(c.role) + ")"; }));
     var lines = [header.map(csvEscape).join(";")];
     rows.forEach(function (r) {
-      lines.push([csvEscape(r.name), r.score, r.total, csvEscape(new Date(r.timestamp).toLocaleString("uk-UA"))].join(";"));
+      var cells = CANDIDATES.map(function (c) {
+        var a = (r.answers || []).filter(function (x) { return x.candidateId === c.id; })[0];
+        if (!a) return csvEscape("");
+        return csvEscape(a.isCorrect ? "✓" : "✕ (обрано " + a.chosen + ")");
+      });
+      var roleCells = CANDIDATES.map(function (c) {
+        var a = (r.roleAnswers || []).filter(function (x) { return x.candidateId === c.id; })[0];
+        if (!a) return csvEscape("");
+        return csvEscape(a.points === 2 ? "✓" : (a.points === 1 ? "≈ (обрано " : "✕ (обрано ") + (a.points === 2 ? "" : roleMain(a.chosen) + ")"));
+      });
+      lines.push([csvEscape(r.name), r.score, r.total, r.roleScore != null ? r.roleScore : "", r.roleTotal != null ? r.roleTotal : "", csvEscape(new Date(r.timestamp).toLocaleString("uk-UA"))].concat(cells).concat(roleCells).join(";"));
     });
     var blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8;" });
     var url = URL.createObjectURL(blob);
@@ -262,6 +438,85 @@
     }
   }
 
+  var PAIR_TIPS = {
+    "D|I": "Обидва типи активні й упевнені, але спрямовані на різне: D — на результат і контроль, I — на людей, визнання та натхнення. Питання-перевірка: людині важливіше досягти мети чи справити враження й налагодити контакти?",
+    "D|S": "Це контраст темпу й стилю: D діє швидко й прямо, не боїться суперечки, а S діє спокійно й шукає компроміс. Питання-перевірка: людина йде на конфлікт заради результату чи уникає його заради гармонії?",
+    "D|C": "Обидва типи орієнтовані на результат, але D ухвалює рішення швидко, спираючись на впевненість, а C — після ретельного аналізу й перевірки. Питання-перевірка: людина поспішає діяти чи прагне спершу все перевірити?",
+    "I|S": "Обидва типи тепло ставляться до людей, але I енергійний і шукає уваги, нових контактів і змін, а S спокійний, уважний слухач, який цінує стабільність. Питання-перевірка: людина любить публічність і новизну чи передбачуваність і підтримку?",
+    "I|C": "I орієнтований на людей та ідеї й швидко втрачає інтерес до деталей, а C зосереджений на фактах, точності й якості. Питання-перевірка: людина надихається ідеєю чи перевіряє її на слабкі місця?",
+    "S|C": "Обидва типи обережні й методичні, але S керується стосунками й гармонією в команді, а C — даними й якістю рішення. Питання-перевірка: людину більше турбує настрій колег чи точність фактів?"
+  };
+
+  function pairKey(a, b) { return [a, b].sort(function (x, y) { return DISC_ORDER.indexOf(x) - DISC_ORDER.indexOf(y); }).join("|"); }
+
+  // Підрахунок плутанини: ключ "правильний>обраний"
+  function confusionOf(answerLists) {
+    var counts = {}, wrong = 0;
+    answerLists.forEach(function (list) {
+      (list || []).forEach(function (a) {
+        if (a.isCorrect) return;
+        var k = a.correct + ">" + a.chosen;
+        counts[k] = (counts[k] || 0) + 1; wrong += 1;
+      });
+    });
+    var top = null;
+    Object.keys(counts).forEach(function (k) { if (!top || counts[k] > counts[top]) top = k; });
+    return { counts: counts, wrong: wrong, top: top };
+  }
+
+  function candById(id) { return CANDIDATES.filter(function (c) { return c.id === id; })[0]; }
+
+  function mistakesReviewHtml() {
+    var wrong = state.answers.filter(function (a) { return !a.isCorrect; });
+    if (wrong.length === 0) return '<div class="review-ok">Помилок немає: усі профілі розпізнано правильно.</div>';
+    return '<label class="field-label">Розбір помилок</label>' + wrong.map(function (a) {
+      var c = candById(a.candidateId);
+      return '<div class="review-item">' +
+        '<div class="review-head"><b>' + c.name + '</b><span>ваша відповідь <span class="mini-badge ' + a.chosen + '">' + a.chosen + '</span> → правильно <span class="mini-badge ' + a.correct + '">' + a.correct + '</span></span></div>' +
+        '<p>' + escHtml(c.explanation) + '</p>' +
+        '<div class="marker-row dark"><span class="marker-label">Маркери в описі:</span>' + c.markers.map(function (m) { return '<span class="marker-chip">' + escHtml(m) + '</span>'; }).join("") + '</div>' +
+      '</div>';
+    }).join("");
+  }
+
+  function personalConclusionHtml() {
+    var conf = confusionOf([state.answers]);
+    if (conf.wrong === 0) {
+      return '<div class="insight-box good"><div class="ib-title">Персональний висновок</div><p>Ви не переплутали жодну пару стилів. Наступний крок — спробувати розпізнавати змішані профілі, де поруч із домінантним проявляється другий стиль.</p></div>';
+    }
+    var parts = conf.top.split(">");
+    var tip = PAIR_TIPS[pairKey(parts[0], parts[1])];
+    return '<div class="insight-box"><div class="ib-title">Персональний висновок</div>' +
+      '<p>Найчастіше ви приймали <b>' + DISC_META[parts[0]].name + ' (' + parts[0] + ')</b> за <b>' + DISC_META[parts[1]].name + ' (' + parts[1] + ')</b>: ' + conf.counts[conf.top] + ' із ' + conf.wrong + ' помилок.</p>' +
+      '<p>' + tip + '</p></div>';
+  }
+
+  function teacherStatsHtml(rows) {
+    var withAnswers = rows.filter(function (r) { return r.answers && r.answers.length; });
+    if (withAnswers.length === 0) return "";
+    var stats = CANDIDATES.map(function (c) {
+      var n = 0, ok = 0, wrongChoices = {};
+      withAnswers.forEach(function (r) {
+        r.answers.forEach(function (a) {
+          if (a.candidateId !== c.id) return;
+          n += 1; if (a.isCorrect) ok += 1; else wrongChoices[a.chosen] = (wrongChoices[a.chosen] || 0) + 1;
+        });
+      });
+      var topWrong = null;
+      Object.keys(wrongChoices).forEach(function (k) { if (!topWrong || wrongChoices[k] > wrongChoices[topWrong]) topWrong = k; });
+      return { cand: c, n: n, ok: ok, pct: n ? Math.round(ok / n * 100) : 0, topWrong: topWrong };
+    }).sort(function (a, b) { return a.pct - b.pct; });
+    var trs = stats.map(function (st) {
+      return '<tr><td>' + st.cand.name + '</td><td><span class="mini-badge ' + st.cand.correct + '">' + st.cand.correct + '</span></td><td>' + st.pct + '% (' + st.ok + '/' + st.n + ')</td><td>' +
+        (st.topWrong ? '<span class="mini-badge ' + st.topWrong + '">' + st.topWrong + '</span>' : "—") + '</td></tr>';
+    }).join("");
+    var conf = confusionOf(withAnswers.map(function (r) { return r.answers; }));
+    var confText = conf.top ? "Найчастіша плутанина групи: " + DISC_META[conf.top.split(">")[0]].name + " (" + conf.top.split(">")[0] + ") сприймають як " + DISC_META[conf.top.split(">")[1]].name + " (" + conf.top.split(">")[1] + ") — " + conf.counts[conf.top] + " разів." : "Помилок у групі немає.";
+    return '<label class="field-label" style="margin-top:22px;">Де група помиляється (від найскладнішого)</label>' +
+      '<div class="table-scroll"><table class="results-table"><thead><tr><th>Кандидат</th><th>Правильно</th><th>Вірних</th><th>Часта помилка</th></tr></thead><tbody>' + trs + '</tbody></table></div>' +
+      '<div class="note-box" style="margin-top:12px;">' + confText + '</div>';
+  }
+
   function renderIntro() {
     var primerHtml = DISC_ORDER.map(function (d) {
       var m = DISC_META[d];
@@ -272,12 +527,12 @@
       '<div class="stage-wrap"><div class="card">' +
       '<p class="kicker">Практичне заняття 4 · Бізнес-лідерство</p>' +
       '<h1 class="title serif">Розпізнай DISC-стиль</h1>' +
-      '<p class="lead">Перш ніж формувати команду за готовими бейджами DISC, спробуйте визначити стиль самостійно — за детальним описом поведінки кандидата, без підказок.</p>' +
+      '<p class="lead">Перш ніж формувати команду за готовими бейджами DISC, спробуйте визначити стиль самостійно — за детальним описом поведінки кандидата, без підказок. Гра складається з двох фаз: у фазі 1 ви розпізнаєте стиль DISC, у фазі 2 визначаєте командну роль за Белбіним.</p>' +
       '<label class="field-label">Нагадування моделі DISC</label>' +
       '<div class="primer-grid">' + primerHtml + '</div>' +
       '<label class="field-label">Ваше ім\'я (необов\'язково)</label>' +
       '<input type="text" class="text-input" id="name-input" placeholder="Наприклад, Олена К." value="' + state.studentName.replace(/"/g,'&quot;') + '" />' +
-      '<button class="btn btn-primary" id="start-btn">Почати (8 кандидатів) →</button>' +
+      '<button class="btn btn-primary" id="start-btn">Почати фазу 1 (8 кандидатів) →</button>' +
       '</div></div>'
     );
     card.querySelector("#start-btn").addEventListener("click", function () {
@@ -285,6 +540,7 @@
       state.order = shuffle(CANDIDATES.map(function (c) { return c.id; }));
       state.index = 0;
       state.answers = [];
+      state.roleAnswers = []; state.roleIndex = 0; state.saveStatus = "idle";
       state.screen = "quiz";
       render();
     });
@@ -343,8 +599,9 @@
         '<div class="cq-label">' + (a.isCorrect ? "Правильно!" : "Неправильно") + '</div>' +
         '<div class="cq-your">Ваша відповідь: ' + DISC_META[a.chosen].name + ' (' + a.chosen + ')' + (a.isCorrect ? "" : " · Правильна відповідь: " + DISC_META[a.correct].name + " (" + a.correct + ")") + '</div>' +
         '<p>' + escHtml(cand.explanation) + '</p>' +
+        '<div class="marker-row"><span class="marker-label">Маркери в описі:</span>' + cand.markers.map(function (m) { return '<span class="marker-chip">' + escHtml(m) + '</span>'; }).join("") + '</div>' +
       '</div>' +
-      '<button class="btn btn-primary" id="continue-btn">' + (isLast ? "Дивитися підсумок →" : "Наступний кандидат →") + '</button>' +
+      '<button class="btn btn-primary" id="continue-btn">' + (isLast ? "Підсумок фази 1 →" : "Наступний кандидат →") + '</button>' +
       '</div></div>'
     );
 
@@ -352,7 +609,6 @@
       if (isLast) {
         state.screen = "results";
         render();
-        saveResultToStorage();
       } else {
         state.index += 1;
         state.screen = "quiz";
@@ -369,7 +625,7 @@
     var tier = tierFor(score, total);
 
     var rowsHtml = state.answers.map(function (a) {
-      var cand = CANDIDATES.filter(function (c) { return c.id === a.candidateId; })[0];
+      var cand = candById(a.candidateId);
       return (
         '<tr>' +
           '<td>' + cand.name + '</td>' +
@@ -380,19 +636,166 @@
       );
     }).join("");
 
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<p class="kicker" style="text-align:center;">' + (state.studentName ? escHtml(state.studentName) + " · " : "") + 'Фаза 1 з 2 завершена</p>' +
+      '<div class="score-big"><span class="num">' + score + '</span><span class="den"> / ' + total + '</span></div>' +
+      '<table class="results-recap"><thead><tr><th>Кандидат</th><th>Ваша відповідь</th><th>Правильно</th><th></th></tr></thead><tbody>' + rowsHtml + '</tbody></table>' +
+      mistakesReviewHtml() +
+      personalConclusionHtml() +
+      '<div class="tier-card"><div class="t-label">Підсумок фази 1</div><div class="t-title">' + tier.label + '</div><p>' + tier.text + '</p></div>' +
+      '<div class="note-box">Далі: фаза 2. Ті самі 8 кандидатів, але тип DISC уже позначений, а вам потрібно визначити командну роль за моделлю Белбіна. Результат буде збережено після завершення обох фаз.</div>' +
+      '<button class="btn btn-primary" id="phase2-btn">Перейти до фази 2: ролі за Белбіним →</button>' +
+      '</div></div>'
+    );
+    card.querySelector("#phase2-btn").addEventListener("click", function () { state.screen = "roleIntro"; render(); });
+    return card;
+  }
+
+  // ---------- Фаза 2: ролі за Белбіним ----------
+  function discTagHtml(d) {
+    return '<div class="disc-tag"><span class="mini-badge ' + d + '">' + d + '</span><span>Тип DISC: <b>' + DISC_META[d].name + ' (' + d + ')</b></span></div>';
+  }
+
+  function renderRoleIntro() {
+    var primer = CLUSTER_ORDER.map(function (cl) {
+      var items = ROLES.filter(function (r) { return r.cluster === cl; }).map(function (r) {
+        return '<div class="role-primer-item">' + roleIconHtml(r.name) + '<div><b>' + roleMain(r.name) + '</b> <span class="role-en">' + roleEn(r.name) + '</span><br>' + r.short + '</div></div>';
+      }).join("");
+      return '<div class="role-cluster-title ' + cl + '">' + CLUSTER_META[cl].label + ' · ' + CLUSTER_META[cl].short + '</div>' + items;
+    }).join("");
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<p class="kicker">Фаза 2 з 2 · Ролі за Белбіним</p>' +
+      '<h1 class="title serif">Яку роль у команді виконує кожен?</h1>' +
+      '<p class="lead">Тепер ті самі 8 кандидатів, але тип DISC вже позначений. Прочитайте опис і визначте основну командну роль за моделлю Белбіна. Точна роль дає 2 бали, інша роль із того ж кластера — 1 бал.</p>' +
+      '<label class="field-label">Нагадування: ролі за Белбіним</label>' +
+      '<div class="role-primer">' + primer + '</div>' +
+      '<button class="btn btn-primary" id="start-roles-btn">Почати фазу 2 (8 кандидатів) →</button>' +
+      '</div></div>'
+    );
+    card.querySelector("#start-roles-btn").addEventListener("click", function () {
+      state.roleOrder = shuffle(CANDIDATES.map(function (c) { return c.id; }));
+      state.roleIndex = 0; state.roleAnswers = [];
+      state.screen = "roleQuiz"; render();
+    });
+    return card;
+  }
+
+  function renderRoleQuiz() {
+    var cand = candById(state.roleOrder[state.roleIndex]);
+    var progressPct = Math.round((state.roleIndex / state.roleOrder.length) * 100);
+    var groups = CLUSTER_ORDER.map(function (cl) {
+      var btns = ROLES.map(function (r, idx) { return { r: r, idx: idx }; }).filter(function (x) { return x.r.cluster === cl; }).map(function (x) {
+        return '<button class="role-choice-btn ' + cl + '" data-idx="' + x.idx + '">' + roleIconHtml(x.r.name) + '<div><div class="rc-title">' + roleMain(x.r.name) + ' <span class="role-en">' + roleEn(x.r.name) + '</span></div><div class="rc-sub">' + x.r.short + '</div></div></button>';
+      }).join("");
+      return '<div class="role-cluster-title ' + cl + '">' + CLUSTER_META[cl].label + '</div><div class="role-choice-grid">' + btns + '</div>';
+    }).join("");
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<div class="progress-track"><div class="progress-fill" style="width:' + progressPct + '%"></div></div>' +
+      '<p class="step-count">Фаза 2 · Кандидат ' + (state.roleIndex + 1) + ' із ' + state.roleOrder.length + '</p>' +
+      '<div class="cand-name-big serif">' + cand.name + '</div>' +
+      discTagHtml(cand.correct) +
+      '<div class="desc-box"><p>' + cand.description + '</p></div>' +
+      '<label class="field-label">Яка командна роль за Белбіним переважає?</label>' +
+      groups +
+      '</div></div>'
+    );
+    card.querySelectorAll(".role-choice-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var role = ROLES[parseInt(btn.getAttribute("data-idx"), 10)];
+        var points = rolePoints(cand, role.name);
+        var answer = { candidateId: cand.id, chosen: role.name, correct: cand.role, points: points, exact: points === 2 };
+        state.roleAnswers.push(answer); state.lastRoleAnswer = answer;
+        state.screen = "roleFeedback"; render();
+      });
+    });
+    return card;
+  }
+
+  function roleMarkersHtml(cand, dark) {
+    return '<div class="marker-row' + (dark ? " dark" : "") + '"><span class="marker-label">Маркери в описі:</span>' + ROLE_INFO[cand.id].markers.map(function (m) { return '<span class="marker-chip">' + escHtml(m) + '</span>'; }).join("") + '</div>';
+  }
+
+  function renderRoleFeedback() {
+    var a = state.lastRoleAnswer;
+    var cand = candById(a.candidateId);
+    var chosenRole = roleByName(a.chosen);
+    var isLast = state.roleIndex >= state.roleOrder.length - 1;
+    var cls = a.points === 2 ? "correct" : a.points === 1 ? "partial" : "incorrect";
+    var label = a.points === 2 ? "Точна роль! +2 бали" : a.points === 1 ? "Той самий кластер, але інша роль: +1 бал" : "Неправильно: 0 балів";
+    var yours = '<div class="role-line">Ваша відповідь: ' + roleIconHtml(a.chosen, true) + '<b>' + roleMain(a.chosen) + '</b> (' + CLUSTER_META[chosenRole.cluster].label.toLowerCase() + ')</div>' +
+      (a.exact ? "" : '<div class="role-line">Правильна роль: ' + roleIconHtml(a.correct, true) + '<b>' + roleMain(a.correct) + '</b> (' + CLUSTER_META[cand.cluster].label.toLowerCase() + ')</div>');
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<div class="consequence-box ' + cls + '">' +
+        '<div class="cq-label">' + label + '</div>' +
+        '<div class="cq-your">' + yours + '</div>' +
+        '<p>' + escHtml(ROLE_INFO[cand.id].explanation) + '</p>' +
+        roleMarkersHtml(cand, false) +
+      '</div>' +
+      '<button class="btn btn-primary" id="continue-btn">' + (isLast ? "Дивитися підсумок →" : "Наступний кандидат →") + '</button>' +
+      '</div></div>'
+    );
+    card.querySelector("#continue-btn").addEventListener("click", function () {
+      if (isLast) { state.screen = "final"; render(); saveResultToStorage(); }
+      else { state.roleIndex += 1; state.screen = "roleQuiz"; render(); }
+    });
+    return card;
+  }
+
+  function roleMistakesHtml() {
+    var wrong = state.roleAnswers.filter(function (a) { return a.points < 2; });
+    if (wrong.length === 0) return '<div class="review-ok">Усі ролі визначено точно.</div>';
+    return '<label class="field-label">Розбір помилок у ролях</label>' + wrong.map(function (a) {
+      var c = candById(a.candidateId);
+      return '<div class="review-item ' + (a.points === 1 ? "partial" : "") + '">' +
+        '<div class="review-head"><b>' + c.name + '</b><span class="role-line-sm">' + roleIconHtml(a.chosen, true) + roleMain(a.chosen) + ' → ' + roleIconHtml(a.correct, true) + '<b>' + roleMain(a.correct) + '</b> · ' + a.points + ' б.</span></div>' +
+        '<p>' + escHtml(ROLE_INFO[c.id].explanation) + '</p>' + roleMarkersHtml(c, true) + '</div>';
+    }).join("");
+  }
+
+  function roleConclusionHtml() {
+    var exact = state.roleAnswers.filter(function (a) { return a.points === 2; }).length;
+    var near = state.roleAnswers.filter(function (a) { return a.points === 1; }).length;
+    var far = state.roleAnswers.filter(function (a) { return a.points === 0; });
+    var n = CANDIDATES.length;
+    if (exact === n) return '<div class="insight-box good"><div class="ib-title">Персональний висновок (ролі)</div><p>Ви точно визначили всі ролі. У наступній грі використовуйте кластер ролі, щоб вирішувати, скільки автономії давати виконавцю.</p></div>';
+    var text = '<p>Точно визначено ролей: <b>' + exact + ' із ' + n + '</b>; у правильному кластері, але з іншою роллю: <b>' + near + '</b>; кластер визначено хибно: <b>' + far.length + '</b>.</p>';
+    if (far.length > 0) {
+      text += '<p>Хибний кластер у кандидатів: ' + far.map(function (a) { return candById(a.candidateId).name; }).join(", ") + '. Саме кластер найважливіший для наступної гри.</p>';
+    } else {
+      text += '<p>Кластери ви визначаєте правильно, залишилося уточнити нюанси між ролями всередині кластера.</p>';
+    }
+    return '<div class="insight-box"><div class="ib-title">Персональний висновок (ролі)</div>' + text + '<p>' + CLUSTER_TIP + '</p></div>';
+  }
+
+  function renderFinalResults() {
+    var dScore = scoreCount(), dTotal = CANDIDATES.length;
+    var rScore = roleScoreCount();
+    var tier = tierForRoles(rScore, ROLE_MAX);
+    var rowsHtml = state.roleAnswers.map(function (a) {
+      var c = candById(a.candidateId);
+      return '<tr><td>' + c.name + '</td><td><span class="mini-badge ' + c.correct + '">' + c.correct + '</span></td><td><span class="role-cell">' + roleIconHtml(a.chosen, true) + roleMain(a.chosen) + '</span></td><td><span class="role-cell">' + roleIconHtml(a.correct, true) + roleMain(a.correct) + '</span></td><td><span class="result-icon ' + (a.points === 2 ? "ok" : a.points === 1 ? "mid" : "no") + '">' + a.points + '</span></td></tr>';
+    }).join("");
     var plain = plainTextExport();
     var saveNote = "";
     if (state.saveStatus === "saving") saveNote = "Зберігаємо результат…";
     else if (state.saveStatus === "saved") saveNote = "Результат збережено.";
     else if (state.saveStatus === "failed") saveNote = "Результат сформовано, але не вдалося зберегти для викладача.";
-
     var card = el(
       '<div class="stage-wrap"><div class="card">' +
       (state.studentName ? '<p class="kicker" style="text-align:center;">' + escHtml(state.studentName) + '</p>' : "") +
-      '<div class="score-big"><span class="num">' + score + '</span><span class="den"> / ' + total + '</span></div>' +
-      '<table class="results-recap"><thead><tr><th>Кандидат</th><th>Ваша відповідь</th><th>Правильно</th><th></th></tr></thead><tbody>' + rowsHtml + '</tbody></table>' +
-      '<div class="tier-card"><div class="t-label">Підсумок</div><div class="t-title">' + tier.label + '</div><p>' + tier.text + '</p></div>' +
-      '<div class="note-box">Наступний крок: спробуйте гру «Формування ідеальної команди» або повний цикл «Проєкт: від команди до запуску» — там ці ж 8 кандидатів уже з готовими DISC-бейджами.</div>' +
+      '<div class="score-pair">' +
+        '<div class="score-box"><div class="sb-value">' + dScore + ' / ' + dTotal + '</div><div class="sb-label">Фаза 1 · DISC</div></div>' +
+        '<div class="score-box"><div class="sb-value">' + rScore + ' / ' + ROLE_MAX + '</div><div class="sb-label">Фаза 2 · Ролі за Белбіним</div></div>' +
+      '</div>' +
+      '<table class="results-recap"><thead><tr><th>Кандидат</th><th>DISC</th><th>Ваша роль</th><th>Правильна роль</th><th>Бали</th></tr></thead><tbody>' + rowsHtml + '</tbody></table>' +
+      roleMistakesHtml() +
+      roleConclusionHtml() +
+      '<div class="tier-card"><div class="t-label">Підсумок фази 2</div><div class="t-title">' + tier.label + '</div><p>' + tier.text + '</p></div>' +
+      '<div class="note-box">Наступний крок: гра «Проєкт: від команди до запуску». Там ці ж 8 кандидатів із готовими DISC-бейджами та ролями. Тип DISC підказує, кому доручити завдання, а кластер ролі — скільки автономії дати виконавцю: дієвий кластер — точно за інструкцією, соціальний — середня автономія, мисленнєвий — повна автономія. Це навчальне спрощення моделі.</div>' +
       (saveNote ? '<p class="save-note">' + saveNote + '</p>' : "") +
       '<div class="result-actions">' +
         '<button class="btn btn-secondary" id="copy-btn">Скопіювати результат</button>' +
@@ -402,14 +805,34 @@
       '<button class="teacher-link" id="teacher-link">Перегляд результатів групи (для викладача)</button>' +
       '</div></div>'
     );
-
     card.querySelector("#copy-btn").addEventListener("click", function (e) { copyToClipboard(plainTextExport(), e.currentTarget); });
     card.querySelector("#retry-btn").addEventListener("click", function () {
-      state.screen = "intro"; state.answers = []; state.index = 0; render();
+      state.screen = "intro"; state.answers = []; state.index = 0; state.roleAnswers = []; state.roleIndex = 0; state.saveStatus = "idle"; render();
     });
     card.querySelector("#teacher-link").addEventListener("click", function () { state.screen = "teacher"; render(); loadTeacherRows(); });
-
     return card;
+  }
+
+  function teacherRoleStatsHtml(rows) {
+    var withRoles = rows.filter(function (r) { return r.roleAnswers && r.roleAnswers.length; });
+    if (withRoles.length === 0) return "";
+    var stats = CANDIDATES.map(function (c) {
+      var n = 0, sum = 0, exact = 0, wrongChoices = {};
+      withRoles.forEach(function (r) {
+        r.roleAnswers.forEach(function (a) {
+          if (a.candidateId !== c.id) return;
+          n += 1; sum += a.points; if (a.points === 2) exact += 1; else wrongChoices[a.chosen] = (wrongChoices[a.chosen] || 0) + 1;
+        });
+      });
+      var topWrong = null;
+      Object.keys(wrongChoices).forEach(function (k) { if (!topWrong || wrongChoices[k] > wrongChoices[topWrong]) topWrong = k; });
+      return { cand: c, n: n, exactPct: n ? Math.round(exact / n * 100) : 0, avg: n ? (sum / n).toFixed(1) : "0.0", topWrong: topWrong };
+    }).sort(function (a, b) { return a.exactPct - b.exactPct; });
+    var trs = stats.map(function (st) {
+      return '<tr><td>' + st.cand.name + '</td><td><span class="role-cell">' + roleIconHtml(st.cand.role, true) + roleMain(st.cand.role) + '</span></td><td>' + st.exactPct + '%</td><td>' + st.avg + ' / 2</td><td>' + (st.topWrong ? '<span class="role-cell">' + roleIconHtml(st.topWrong, true) + roleMain(st.topWrong) + '</span>' : "—") + '</td></tr>';
+    }).join("");
+    return '<label class="field-label" style="margin-top:22px;">Фаза 2: де група помиляється в ролях (від найскладнішого)</label>' +
+      '<div class="table-scroll"><table class="results-table"><thead><tr><th>Кандидат</th><th>Правильна роль</th><th>Точно</th><th>Середній бал</th><th>Часта помилка</th></tr></thead><tbody>' + trs + '</tbody></table></div>';
   }
 
   function renderTeacher() {
@@ -419,9 +842,9 @@
     else if (!rows || rows.length === 0) bodyHtml = '<p class="empty-note">Поки що ніхто не пройшов тренажер за цим посиланням.</p>';
     else {
       var trs = rows.map(function (r) {
-        return '<tr><td>' + escHtml(r.name) + '</td><td>' + r.score + ' / ' + r.total + '</td><td>' + new Date(r.timestamp).toLocaleString("uk-UA") + '</td></tr>';
+        return '<tr><td>' + escHtml(r.name) + '</td><td>' + r.score + ' / ' + r.total + '</td><td>' + (r.roleScore != null ? r.roleScore + ' / ' + r.roleTotal : '—') + '</td><td>' + new Date(r.timestamp).toLocaleString("uk-UA") + '</td></tr>';
       }).join("");
-      bodyHtml = '<div class="table-scroll"><table class="results-table"><thead><tr><th>Студент</th><th>Бал</th><th>Дата</th></tr></thead><tbody>' + trs + '</tbody></table></div>';
+      bodyHtml = '<div class="table-scroll"><table class="results-table"><thead><tr><th>Студент</th><th>DISC</th><th>Ролі</th><th>Дата</th></tr></thead><tbody>' + trs + '</tbody></table></div>' + teacherStatsHtml(rows) + teacherRoleStatsHtml(rows);
     }
     var card = el(
       '<div class="stage-wrap"><div class="card">' +
@@ -431,7 +854,7 @@
       '</div></div>'
     );
     card.querySelector("#refresh-btn").addEventListener("click", loadTeacherRows);
-    card.querySelector("#back-btn").addEventListener("click", function () { state.screen = state.answers.length > 0 ? "results" : "intro"; render(); });
+    card.querySelector("#back-btn").addEventListener("click", function () { state.screen = state.roleAnswers.length >= CANDIDATES.length ? "final" : "intro"; render(); });
     var csvBtn = card.querySelector("#csv-btn");
     if (csvBtn && rows && rows.length > 0) csvBtn.addEventListener("click", downloadCsv);
     return card;
@@ -444,6 +867,10 @@
     else if (state.screen === "quiz") view = renderQuiz();
     else if (state.screen === "feedback") view = renderFeedback();
     else if (state.screen === "results") view = renderResults();
+    else if (state.screen === "roleIntro") view = renderRoleIntro();
+    else if (state.screen === "roleQuiz") view = renderRoleQuiz();
+    else if (state.screen === "roleFeedback") view = renderRoleFeedback();
+    else if (state.screen === "final") view = renderFinalResults();
     else view = renderTeacher();
     app.appendChild(view);
     window.scrollTo(0, 0);
