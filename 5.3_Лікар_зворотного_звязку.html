@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Лікар зворотного зв'язку</title>
+<style>
+  :root {
+    --ink: #1E2761; --ink-soft: #384080; --surface: #F3F6FC; --card: #FFFFFF;
+    --gold: #C9962C; --gold-soft: #F3E4C6; --muted: #5B6685; --line: #DDE4F5;
+    --red: #B3492F; --green: #2E7D6B;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; min-height: 100%; background: var(--surface);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+  }
+  .serif { font-family: Cambria, Georgia, "Times New Roman", serif; }
+  #app { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 32px 18px; }
+  .stage-wrap { width: 100%; max-width: 700px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 36px 34px; box-shadow: 0 18px 40px -24px rgba(30,39,97,0.35); }
+  @media (max-width: 480px) { .card { padding: 24px 18px; } }
+
+  .kicker { font-size: 13px; color: var(--muted); margin: 0 0 10px; }
+  h1.title { font-size: 26px; line-height: 1.25; margin: 0 0 14px; font-weight: 700; }
+  p.lead { font-size: 15px; line-height: 1.6; color: var(--muted); margin: 0 0 22px; }
+  label.field-label { display: block; font-size: 13px; color: var(--ink-soft); margin-bottom: 6px; font-weight: 600; }
+  input.text-input {
+    width: 100%; padding: 12px 14px; border-radius: 10px; border: 1.5px solid var(--line);
+    font-size: 15px; color: var(--ink); background: var(--surface); margin-bottom: 20px;
+  }
+  input.text-input:focus { outline: none; border-color: var(--gold); }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 13px 24px; border-radius: 10px; border: none; font-size: 14.5px; font-weight: 600;
+    cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .btn-primary { background: var(--ink); color: #fff; width: 100%; }
+  .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 10px 20px -12px rgba(30,39,97,0.6); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-secondary { background: var(--surface); color: var(--ink); border: 1.5px solid var(--line); }
+  .note-box { margin: 0 0 20px; padding: 12px 14px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+
+  .primer-row { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+  .primer-item { display: flex; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); align-items: flex-start; }
+  .primer-badge { width: 30px; height: 30px; border-radius: 50%; background: var(--ink); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; flex-shrink: 0; }
+  .primer-item b { display: block; font-size: 12.5px; color: var(--ink); margin-bottom: 2px; }
+  .primer-item span { font-size: 11.5px; color: var(--muted); line-height: 1.4; }
+
+  .progress-track { height: 5px; background: var(--line); border-radius: 4px; overflow: hidden; margin-bottom: 22px; }
+  .progress-fill { height: 100%; background: var(--gold); border-radius: 4px; transition: width 0.4s ease; }
+  .step-count { font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+
+  .bad-example-box { background: #F6DCD4; border: 1px solid #E8B9A8; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; }
+  .bad-example-box .be-label { font-size: 11px; font-weight: 700; color: #7A2E1A; margin-bottom: 6px; letter-spacing: 0.2px; }
+  .bad-example-box p { font-size: 14px; font-style: italic; color: #7A2E1A; margin: 0; }
+  .context-box { font-size: 12.5px; color: var(--muted); line-height: 1.5; margin-bottom: 22px; padding: 0 2px; }
+
+  .slot-block { margin-bottom: 22px; }
+  .slot-title { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 700; margin-bottom: 10px; }
+  .slot-badge { width: 24px; height: 24px; border-radius: 50%; background: var(--gold); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 11.5px; flex-shrink: 0; }
+  .option-list { display: flex; flex-direction: column; gap: 8px; }
+  .option-btn {
+    text-align: left; padding: 12px 14px; border-radius: 10px; border: 1.5px solid var(--line);
+    background: #fff; cursor: pointer; font-size: 13px; line-height: 1.45; color: var(--ink-soft); transition: all 0.15s ease;
+  }
+  .option-btn:hover { border-color: var(--gold); }
+  .option-btn.selected { border-color: var(--gold); background: var(--gold-soft); color: var(--ink); }
+
+  .assembled-box { background: var(--ink); color: #fff; border-radius: 14px; padding: 18px 20px; margin-bottom: 18px; }
+  .assembled-box .ab-label { font-size: 11px; color: var(--gold-soft); font-weight: 700; margin-bottom: 10px; letter-spacing: 0.3px; }
+  .assembled-box p { font-size: 13.5px; line-height: 1.6; color: #DCE1F5; margin: 0 0 6px; }
+  .assembled-box b { color: var(--gold-soft); }
+
+  .quality-row { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+  .quality-item { padding: 10px 12px; border-radius: 10px; font-size: 12.5px; line-height: 1.45; }
+  .quality-item.good { background: #DCEFE9; color: #1F5245; }
+  .quality-item.medium { background: var(--gold-soft); color: #7A5A16; }
+  .quality-item.poor { background: #F6DCD4; color: #7A2E1A; }
+  .quality-item b { display: block; margin-bottom: 3px; }
+  .score-chip { display: inline-block; font-size: 11.5px; padding: 3px 10px; border-radius: 20px; font-weight: 700; background: var(--gold); color: var(--ink); margin-top: 4px; }
+
+  .score-big { text-align: center; margin-bottom: 4px; }
+  .score-big .num { font-size: 40px; font-weight: 800; color: var(--ink); }
+  .score-big .den { font-size: 16px; color: var(--muted); }
+  table.results-recap { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px; }
+  table.results-recap th { text-align: left; font-size: 10.5px; color: var(--muted); font-weight: 600; padding: 7px 6px; border-bottom: 2px solid var(--line); }
+  table.results-recap td { padding: 8px 6px; border-bottom: 1px solid var(--line); text-align: center; }
+  table.results-recap td:first-child { text-align: left; }
+  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
+  .dot.good { background: var(--green); } .dot.medium { background: var(--gold); } .dot.poor { background: var(--red); }
+
+  .tier-card { margin-top: 4px; padding: 20px 22px; border-radius: 14px; background: var(--ink); color: #fff; margin-bottom: 20px; }
+  .tier-card .t-label { font-size: 11px; color: var(--gold-soft); font-weight: 700; margin-bottom: 8px; letter-spacing: 0.3px; }
+  .tier-card .t-title { font-size: 19px; font-weight: 700; margin-bottom: 8px; }
+  .tier-card p { font-size: 13.5px; line-height: 1.55; color: #DCE1F5; margin: 0; }
+
+  .save-note { font-size: 12.5px; color: var(--muted); margin-top: 14px; text-align: center; }
+  .result-actions { display: flex; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
+  .result-actions .btn { flex: 1; min-width: 140px; }
+  .teacher-link { display: block; text-align: center; margin-top: 20px; font-size: 12.5px; color: var(--muted); text-decoration: underline; cursor: pointer; background: none; border: none; }
+
+  .teacher-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+  table.results-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.results-table th { text-align: left; font-size: 10.5px; color: var(--muted); font-weight: 600; padding: 7px 6px; border-bottom: 2px solid var(--line); }
+  table.results-table td { padding: 8px 6px; border-bottom: 1px solid var(--line); }
+  .tag { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; background: var(--gold-soft); color: #7A5A16; }
+  .empty-note { text-align: center; color: var(--muted); font-size: 13.5px; padding: 30px 0; }
+  .icon-btn { background: none; border: 1.5px solid var(--line); border-radius: 8px; padding: 7px 13px; font-size: 12.5px; color: var(--ink); cursor: pointer; }
+  .icon-btn:hover { border-color: var(--gold); }
+  .table-scroll { overflow-x: auto; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+(function () {
+  var SLOT_META = {
+    S: { label: "Situation — ситуація", badge: "S", hint: "Коли й де саме це відбулося — конкретний факт, який можна перевірити." },
+    B: { label: "Behavior — поведінка", badge: "B", hint: "Що конкретно людина зробила чи сказала — дія, а не оцінка характеру." },
+    I: { label: "Impact — вплив", badge: "I", hint: "Який був конкретний наслідок для команди, клієнта чи результату." }
+  };
+  var SLOT_ORDER = ["S", "B", "I"];
+
+  var QUALITY_NOTES = {
+    S: {
+      good: "Конкретний час і факт — це можна перевірити, тут немає узагальнень на кшталт «завжди» чи «постійно».",
+      medium: "Уже без слів «завжди/постійно», але все ще бракує конкретного часу чи факту.",
+      poor: "Це узагальнення й/або оцінка, а не опис конкретного випадку — саме така фраза і є вихідною проблемою."
+    },
+    B: {
+      good: "Описує конкретну дію, яку можна спостерігати, — не оцінку характеру чи ставлення.",
+      medium: "Ближче до дії, ніж оригінал, але ще звучить як загальна характеристика, а не конкретна дія.",
+      poor: "Це оцінка особистості чи ставлення («несерйозно», «не поважаєш») — саме цього і варто уникати в SBI."
+    },
+    I: {
+      good: "Називає конкретний, вимірюваний наслідок для команди, клієнта чи результату.",
+      medium: "Вказує на наслідок, але розмито, без конкретики (без цифр, часу, людей).",
+      poor: "Це оцінка чи погроза без реального опису наслідку."
+    }
+  };
+
+  var QUALITY_POINTS = { good: 2, medium: 1, poor: 0 };
+
+  var CASES = [
+    {
+      id: "c1",
+      badExample: "Ти постійно все псуєш, треба серйозніше ставитись до роботи.",
+      context: "Молодший розробник кілька разів здав код, який не пройшов автоматизовані тести перед деплоєм.",
+      options: {
+        S: [
+          { text: "Цього тижня двічі поспіль — у вівторок і четвер — код, який ти здав, не пройшов автоматизовані тести перед деплоєм.", quality: "good" },
+          { text: "Останнім часом у тебе регулярно виникають проблеми з якістю коду, і це вже кілька разів впливало на хід рев'ю в команді.", quality: "medium" },
+          { text: "Ти постійно здаєш неякісний код, і, чесно кажучи, складається враження, що тобі просто байдуже, що про це думає вся команда.", quality: "poor" }
+        ],
+        B: [
+          { text: "Тести показали відсутність обробки помилок у двох функціях, і ти не запустив локальні тести перед відправкою pull request.", quality: "good" },
+          { text: "Ти не перевірив код достатньо ретельно перед здачею, хоча зазвичай у нас прийнято хоча б раз пройтися тестами самостійно.", quality: "medium" },
+          { text: "Ти несерйозно ставишся до роботи, і, вочевидь, тобі просто не вистачає відповідальності, щоб виконувати завдання як слід.", quality: "poor" }
+        ],
+        I: [
+          { text: "Через це команді довелося відкласти реліз на день і витратити додаткові 3 години на виправлення.", quality: "good" },
+          { text: "Це створює додаткову роботу для команди, і через це ми постійно відстаємо від початкового графіка релізів.", quality: "medium" },
+          { text: "Це просто неприпустимо, і я не розумію, як можна так ставитися до спільної роботи всієї команди.", quality: "poor" }
+        ]
+      }
+    },
+    {
+      id: "c2",
+      badExample: "Ти взагалі не вмієш працювати в команді.",
+      context: "Співробітник двічі не повідомив колег про зміни у спільному документі, через що виникли дублікати правок.",
+      options: {
+        S: [
+          { text: "На цьому тижні двічі — у понеділок і в середу — ти вносив зміни у спільний документ проєкту, не повідомивши команду в чаті.", quality: "good" },
+          { text: "Останнім часом виникають проблеми з комунікацією щодо спільних документів, і це вже кілька разів спричиняло плутанину серед учасників команди.", quality: "medium" },
+          { text: "Ти взагалі не вмієш працювати в команді, і, здається, тобі просто байдуже, як твої дії впливають на роботу інших людей.", quality: "poor" }
+        ],
+        B: [
+          { text: "Ти редагував розділи, над якими вже працювали інші, не залишивши коментаря чи повідомлення про це.", quality: "good" },
+          { text: "Ти не попередив колег про свої зміни, хоча в нас заведено принаймні коротко писати про це в чаті команди.", quality: "medium" },
+          { text: "Ти не думаєш про інших, і складається враження, що тобі просто не цікаво, як твоя поведінка позначається на команді.", quality: "poor" }
+        ],
+        I: [
+          { text: "Через це двоє колег втратили близько години, відновлюючи свої версії правок, які були випадково перезаписані.", quality: "good" },
+          { text: "Це заплутує роботу над документом для всіх, і команді доводиться витрачати зайвий час на з'ясування деталей.", quality: "medium" },
+          { text: "Так більше не може тривати, і, чесно кажучи, мені вже важко довіряти тобі спільні документи команди.", quality: "poor" }
+        ]
+      }
+    },
+    {
+      id: "c3",
+      badExample: "Твої презентації завжди занадто довгі й нудні.",
+      context: "На презентації для керівництва колега перевищив відведені 15 хвилин удвічі, і кілька слайдів містили технічні деталі, не потрібні цій аудиторії.",
+      options: {
+        S: [
+          { text: "На вчорашній презентації для керівництва твій виступ тривав 32 хвилини замість запланованих 15.", quality: "good" },
+          { text: "Останні кілька презентацій виходили значно довшими за заплановане, і це вже помітили кілька керівників відділів.", quality: "medium" },
+          { text: "Твої презентації завжди занадто довгі й нудні, і, чесно кажучи, людям важко всидіти до кінця твого виступу.", quality: "poor" }
+        ],
+        B: [
+          { text: "Ти включив 8 слайдів із детальними технічними метриками, хоча аудиторія складалася з нетехнічних керівників.", quality: "good" },
+          { text: "Ти не адаптував зміст презентації під аудиторію, хоча зазвичай для керівництва варто готувати коротший, спрощений варіант.", quality: "medium" },
+          { text: "Ти не вмієш готувати презентації, і, здається, тобі бракує розуміння, як взагалі варто подавати матеріал аудиторії.", quality: "poor" }
+        ],
+        I: [
+          { text: "Через це двоє керівників вийшли з наради раніше, а фінальне рішення довелося переносити на наступний тиждень.", quality: "good" },
+          { text: "Це вплинуло на сприйняття інформації аудиторією, і частина присутніх так і не зрозуміла головну ідею.", quality: "medium" },
+          { text: "Це виглядало непрофесійно, і мені було ніяково за те, як це сприйняло наше керівництво.", quality: "poor" }
+        ]
+      }
+    },
+    {
+      id: "c4",
+      badExample: "Ти ніколи не приходиш вчасно, це неповага до команди.",
+      context: "Співробітник запізнився на щоденний статус-мітинг тричі за останні два тижні, кожного разу на 10–15 хвилин.",
+      options: {
+        S: [
+          { text: "За останні два тижні ти запізнився на щоденний статус-мітинг тричі — на 10–15 хвилин щоразу.", quality: "good" },
+          { text: "Останнім часом ти часто запізнюєшся на ранкові зустрічі, і це вже почало впливати на початок обговорень.", quality: "medium" },
+          { text: "Ти ніколи не приходиш вчасно, і, здається, тобі просто байдуже, що про це думає решта команди.", quality: "poor" }
+        ],
+        B: [
+          { text: "Ти заходив у дзвінок вже після того, як команда почала обговорення поточних завдань.", quality: "good" },
+          { text: "Ти не встигав до початку зустрічі, хоча тобі, як і всім, заздалегідь надсилають нагадування про час.", quality: "medium" },
+          { text: "Ти не поважаєш час інших людей, і, вочевидь, вважаєш, що твій розклад важливіший за розклад команди.", quality: "poor" }
+        ],
+        I: [
+          { text: "Через це команді доводилося або повторювати вже сказане для тебе, або ти пропускав важливі рішення щодо своїх завдань.", quality: "good" },
+          { text: "Це порушує хід зустрічі для всіх, і частині команди доводиться витрачати час на повторення вже сказаного.", quality: "medium" },
+          { text: "Це просто неповага до команди, і мені вже складно пояснювати іншим, чому так відбувається знову і знову.", quality: "poor" }
+        ]
+      }
+    },
+    {
+      id: "c5",
+      badExample: "У тебе жахливе ставлення до клієнтів.",
+      context: "Клієнт поскаржився, що менеджер з продажу відповів різко на його третій запит про статус замовлення за один день.",
+      options: {
+        S: [
+          { text: "Вчора клієнт написав скаргу після того, як ти відповів на його третій за день запит про статус замовлення.", quality: "good" },
+          { text: "Нещодавно надійшла скарга від клієнта на спілкування з тобою, і це вже другий подібний випадок за місяць.", quality: "medium" },
+          { text: "У тебе жахливе ставлення до клієнтів, і, чесно кажучи, мене це вже давно турбує більше, ніж варто було б.", quality: "poor" }
+        ],
+        B: [
+          { text: "У відповіді ти написав: «Я вже казав, зачекайте», без пояснення причини затримки чи нового терміну.", quality: "good" },
+          { text: "Ти відповів клієнту коротко і без пояснень, хоча зазвичай у таких ситуаціях прийнято хоча б коротко уточнити деталі.", quality: "medium" },
+          { text: "Ти був грубим, і, здається, тобі зовсім байдуже, як твій тон впливає на сприйняття компанії клієнтами.", quality: "poor" }
+        ],
+        I: [
+          { text: "Клієнт написав, що розглядає можливість відмовитися від замовлення через цю відповідь, і це вже друга подібна скарга цього кварталу.", quality: "good" },
+          { text: "Це негативно вплинуло на враження клієнта про компанію, і таких випадків останнім часом стає помітно більше.", quality: "medium" },
+          { text: "Так ти відлякуєш клієнтів, і мені вже не раз доводилося залагоджувати наслідки подібного спілкування з ними.", quality: "poor" }
+        ]
+      }
+    },
+    {
+      id: "c6",
+      badExample: "Ти взагалі не слухаєш, що тобі кажуть.",
+      context: "На нараді керівник тричі повторив інструкцію щодо формату звіту, а співробітник здав звіт у старому форматі.",
+      options: {
+        S: [
+          { text: "На нараді в понеділок я тричі уточнив формат нового щотижневого звіту, а вчора ти здав звіт у старому форматі.", quality: "good" },
+          { text: "Останній звіт, який ти здав, не відповідав обговореному формату, хоча ми нещодавно детально говорили про ці зміни.", quality: "medium" },
+          { text: "Ти взагалі не слухаєш, що тобі кажуть, і, здається, інформація просто проходить повз тебе під час нарад.", quality: "poor" }
+        ],
+        B: [
+          { text: "Звіт не містив розділу з ключовими метриками, який ми детально обговорювали на нараді.", quality: "good" },
+          { text: "Ти не врахував обговорені зміни у звіті, хоча ми окремо проговорювали кожен новий розділ формату.", quality: "medium" },
+          { text: "Ти неуважний, і, вочевидь, тобі просто важко зосередитися на тому, що відбувається під час наших нарад.", quality: "poor" }
+        ],
+        I: [
+          { text: "Мені довелося повертати звіт на доопрацювання, і це затримало подання керівництву на день.", quality: "good" },
+          { text: "Це створює додаткову роботу з переробки, і я змушений перевіряти кожен звіт додатково пильно.", quality: "medium" },
+          { text: "Так більше не піде, і мені вже складно розраховувати на те, що формат буде дотриманий наступного разу.", quality: "poor" }
+        ]
+      }
+    }
+  ];
+
+  var STORAGE_PREFIX = "sbi-doctor:";
+  var MAX_PER_CASE = 6;
+  var MAX_TOTAL = CASES.length * MAX_PER_CASE;
+
+  var state = {
+    screen: "intro",
+    studentName: "",
+    caseIndex: 0,
+    picks: { S: null, B: null, I: null },
+    shuffledOptions: null,
+    answers: [],
+    lastCaseResult: null,
+    saveStatus: "idle",
+    teacherRows: null,
+    teacherLoading: false
+  };
+
+  var app = document.getElementById("app");
+  function el(html) { var t = document.createElement("template"); t.innerHTML = html.trim(); return t.content.firstElementChild; }
+  function escHtml(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  function shuffle(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+    }
+    return a;
+  }
+  function prepareCaseOptions(caseIndex) {
+    var c = CASES[caseIndex];
+    state.shuffledOptions = {
+      S: shuffle(c.options.S),
+      B: shuffle(c.options.B),
+      I: shuffle(c.options.I)
+    };
+  }
+
+  function totalScore() { return state.answers.reduce(function (s, a) { return s + a.score; }, 0); }
+
+  function tierFor(total) {
+    var pct = total / MAX_TOTAL;
+    if (pct >= 0.83) return { label: "Впевнене володіння моделлю SBI", text: "Ви послідовно обирали конкретні, поведінкові й вимірювані формулювання — саме так і виглядає якісний зворотний зв'язок, який не ображає, а допомагає змінити поведінку." };
+    if (pct >= 0.5) return { label: "Непогано, але формулювання ще часто розмиті", text: "Частину разів ви обирали конкретні формулювання, але подекуди підходили ближче до оцінки особистості чи розмитих фраз, ніж до фактів і дій. Зверніть увагу саме на ті випадки, де ви обрали «середній» чи «слабкий» варіант." };
+    return { label: "Поки складно відрізнити факт від оцінки", text: "Найчастіша помилка в зворотному зв'язку — оцінювати особистість («ти несерйозний») замість опису конкретної дії й наслідку. Спробуйте пройти ще раз, звертаючи увагу на пояснення після кожного кейсу." };
+  }
+
+  function plainTextExport() {
+    var lines = [];
+    lines.push("Тренажер «Лікар зворотного зв'язку» — результати");
+    if (state.studentName) lines.push("Студент: " + state.studentName);
+    lines.push("");
+    lines.push("Результат: " + totalScore() + " з " + MAX_TOTAL);
+    lines.push("");
+    state.answers.forEach(function (a, i) {
+      var c = CASES.filter(function (x) { return x.id === a.caseId; })[0];
+      lines.push((i + 1) + ". Оригінал: «" + c.badExample + "»");
+      lines.push("   S: " + a.picks.S.text);
+      lines.push("   B: " + a.picks.B.text);
+      lines.push("   I: " + a.picks.I.text);
+      lines.push("   Бал: " + a.score + " / " + MAX_PER_CASE);
+      lines.push("");
+    });
+    return lines.join("\n");
+  }
+
+  function saveResultToStorage() {
+    if (!window.storage) return;
+    state.saveStatus = "saving";
+    var key = STORAGE_PREFIX + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
+    var payload = {
+      name: state.studentName || "Анонім",
+      score: totalScore(), total: MAX_TOTAL,
+      perCase: state.answers.map(function (a) { return { caseId: a.caseId, score: a.score, qualities: { S: a.picks.S.quality, B: a.picks.B.quality, I: a.picks.I.quality } }; }),
+      timestamp: Date.now()
+    };
+    window.storage.set(key, JSON.stringify(payload), true).then(function (r) {
+      state.saveStatus = r ? "saved" : "failed"; render();
+    }).catch(function () { state.saveStatus = "failed"; render(); });
+  }
+
+  function loadTeacherRows() {
+    state.teacherLoading = true; render();
+    if (!window.storage) { state.teacherRows = []; state.teacherLoading = false; render(); return; }
+    window.storage.list(STORAGE_PREFIX, true).then(function (listRes) {
+      var keys = (listRes && listRes.keys) || [];
+      if (keys.length === 0) { state.teacherRows = []; state.teacherLoading = false; render(); return; }
+      var promises = keys.map(function (k) {
+        return window.storage.get(k, true).then(function (r) { try { return JSON.parse(r.value); } catch (e) { return null; } }).catch(function () { return null; });
+      });
+      Promise.all(promises).then(function (rows) {
+        rows = rows.filter(Boolean).sort(function (a, b) { return b.timestamp - a.timestamp; });
+        state.teacherRows = rows; state.teacherLoading = false; render();
+      });
+    }).catch(function () { state.teacherRows = []; state.teacherLoading = false; render(); });
+  }
+
+  function csvEscape(t) { return '"' + String(t).replace(/"/g, '""') + '"'; }
+  function downloadCsv() {
+    var rows = state.teacherRows || [];
+    var header = ["Ім'я", "Бал", "З", "Дата"];
+    var lines = [header.map(csvEscape).join(";")];
+    rows.forEach(function (r) {
+      lines.push([csvEscape(r.name), r.score, r.total, csvEscape(new Date(r.timestamp).toLocaleString("uk-UA"))].join(";"));
+    });
+    var blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a"); a.href = url; a.download = "sbi-doctor-results.csv";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  }
+
+  function copyToClipboard(text, btn) {
+    function ok() { btn.textContent = "Скопійовано ✓"; setTimeout(function () { btn.textContent = "Скопіювати результат"; }, 1800); }
+    function fail() { var ta = document.getElementById("copy-fallback-area"); if (ta) { ta.style.display = "block"; ta.focus(); ta.select(); } }
+    if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(ok).catch(fail); }
+    else {
+      try {
+        var temp = document.createElement("textarea"); temp.value = text; temp.style.position = "fixed"; temp.style.opacity = "0";
+        document.body.appendChild(temp); temp.focus(); temp.select();
+        var success = document.execCommand("copy"); document.body.removeChild(temp);
+        if (success) ok(); else fail();
+      } catch (e) { fail(); }
+    }
+  }
+
+  function renderIntro() {
+    var primerHtml = SLOT_ORDER.map(function (k) {
+      var m = SLOT_META[k];
+      return '<div class="primer-item"><div class="primer-badge">' + m.badge + '</div><div><b>' + m.label + '</b><span>' + m.hint + '</span></div></div>';
+    }).join("");
+
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<p class="kicker">Практичне заняття 5 · Бізнес-лідерство</p>' +
+      '<h1 class="title serif">Лікар зворотного зв\'язку</h1>' +
+      '<p class="lead">Вам покажуть 6 прикладів невдалого фідбеку. Ваше завдання — «вилікувати» кожен, зібравши якісну версію за моделлю SBI з готових варіантів формулювань.</p>' +
+      '<div class="primer-row">' + primerHtml + '</div>' +
+      '<label class="field-label">Ваше ім\'я (необов\'язково)</label>' +
+      '<input type="text" class="text-input" id="name-input" placeholder="Наприклад, Олена К." value="' + state.studentName.replace(/"/g,'&quot;') + '" />' +
+      '<button class="btn btn-primary" id="start-btn">Почати (6 кейсів) →</button>' +
+      '</div></div>'
+    );
+    card.querySelector("#start-btn").addEventListener("click", function () {
+      state.studentName = card.querySelector("#name-input").value.trim();
+      state.caseIndex = 0; state.answers = []; state.picks = { S: null, B: null, I: null };
+      prepareCaseOptions(state.caseIndex);
+      state.screen = "case"; render();
+    });
+    return card;
+  }
+
+  function renderCase() {
+    var c = CASES[state.caseIndex];
+    var progressPct = Math.round((state.caseIndex / CASES.length) * 100);
+
+    var slotsHtml = SLOT_ORDER.map(function (slotKey) {
+      var meta = SLOT_META[slotKey];
+      var opts = state.shuffledOptions[slotKey];
+      var optsHtml = opts.map(function (o, idx) {
+        var sel = state.picks[slotKey] === idx;
+        return '<button class="option-btn' + (sel ? " selected" : "") + '" data-slot="' + slotKey + '" data-idx="' + idx + '">' + o.text + '</button>';
+      }).join("");
+      return (
+        '<div class="slot-block">' +
+          '<div class="slot-title"><span class="slot-badge">' + meta.badge + '</span>' + meta.label + '</div>' +
+          '<div class="option-list">' + optsHtml + '</div>' +
+        '</div>'
+      );
+    }).join("");
+
+    var allPicked = state.picks.S !== null && state.picks.B !== null && state.picks.I !== null;
+
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<div class="progress-track"><div class="progress-fill" style="width:' + progressPct + '%"></div></div>' +
+      '<p class="step-count">Кейс ' + (state.caseIndex + 1) + ' із ' + CASES.length + '</p>' +
+      '<div class="bad-example-box"><div class="be-label">Оригінальний (невдалий) фідбек</div><p>«' + c.badExample + '»</p></div>' +
+      '<div class="context-box">' + c.context + '</div>' +
+      slotsHtml +
+      '<button class="btn btn-primary" id="assemble-btn" ' + (allPicked ? "" : "disabled") + '>Скласти SBI-фідбек →</button>' +
+      '</div></div>'
+    );
+
+    card.querySelectorAll(".option-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var slot = btn.getAttribute("data-slot");
+        var idx = parseInt(btn.getAttribute("data-idx"), 10);
+        state.picks[slot] = idx;
+        render();
+      });
+    });
+    var assembleBtn = card.querySelector("#assemble-btn");
+    if (assembleBtn) {
+      assembleBtn.addEventListener("click", function () {
+        if (state.picks.S === null || state.picks.B === null || state.picks.I === null) return;
+        var picks = {
+          S: state.shuffledOptions.S[state.picks.S],
+          B: state.shuffledOptions.B[state.picks.B],
+          I: state.shuffledOptions.I[state.picks.I]
+        };
+        var score = QUALITY_POINTS[picks.S.quality] + QUALITY_POINTS[picks.B.quality] + QUALITY_POINTS[picks.I.quality];
+        var answer = { caseId: c.id, picks: picks, score: score };
+        state.answers.push(answer);
+        state.lastCaseResult = answer;
+        state.screen = "caseFeedback"; render();
+      });
+    }
+    return card;
+  }
+
+  function renderCaseFeedback() {
+    var a = state.lastCaseResult;
+    var isLast = state.caseIndex >= CASES.length - 1;
+
+    var qualityHtml = SLOT_ORDER.map(function (slotKey) {
+      var pick = a.picks[slotKey];
+      var meta = SLOT_META[slotKey];
+      var note = QUALITY_NOTES[slotKey][pick.quality];
+      return (
+        '<div class="quality-item ' + pick.quality + '"><b>' + meta.badge + ' — ' + meta.label.split(" — ")[1] + '</b>' + note + '</div>'
+      );
+    }).join("");
+
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<div class="assembled-box">' +
+        '<div class="ab-label">Ваш SBI-фідбек</div>' +
+        '<p><b>S:</b> ' + escHtml(a.picks.S.text) + '</p>' +
+        '<p><b>B:</b> ' + escHtml(a.picks.B.text) + '</p>' +
+        '<p><b>I:</b> ' + escHtml(a.picks.I.text) + '</p>' +
+        '<span class="score-chip">' + a.score + ' з ' + MAX_PER_CASE + ' балів</span>' +
+      '</div>' +
+      qualityHtml +
+      '<button class="btn btn-primary" id="continue-btn">' + (isLast ? "Дивитися підсумок →" : "Наступний кейс →") + '</button>' +
+      '</div></div>'
+    );
+
+    card.querySelector("#continue-btn").addEventListener("click", function () {
+      if (isLast) { state.screen = "results"; render(); saveResultToStorage(); }
+      else {
+        state.caseIndex += 1; state.picks = { S: null, B: null, I: null };
+        prepareCaseOptions(state.caseIndex);
+        state.screen = "case"; render();
+      }
+    });
+    return card;
+  }
+
+  function renderResults() {
+    var total = totalScore();
+    var tier = tierFor(total);
+
+    var rowsHtml = state.answers.map(function (a, i) {
+      function dotHtml(q) { return '<span class="dot ' + q + '"></span>'; }
+      return (
+        '<tr>' +
+          '<td>Кейс ' + (i + 1) + '</td>' +
+          '<td>' + dotHtml(a.picks.S.quality) + '</td>' +
+          '<td>' + dotHtml(a.picks.B.quality) + '</td>' +
+          '<td>' + dotHtml(a.picks.I.quality) + '</td>' +
+          '<td>' + a.score + ' / ' + MAX_PER_CASE + '</td>' +
+        '</tr>'
+      );
+    }).join("");
+
+    var plain = plainTextExport();
+    var saveNote = "";
+    if (state.saveStatus === "saving") saveNote = "Зберігаємо результат…";
+    else if (state.saveStatus === "saved") saveNote = "Результат збережено.";
+    else if (state.saveStatus === "failed") saveNote = "Результат сформовано, але не вдалося зберегти для викладача.";
+
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      (state.studentName ? '<p class="kicker" style="text-align:center;">' + escHtml(state.studentName) + '</p>' : "") +
+      '<div class="score-big"><span class="num">' + total + '</span><span class="den"> / ' + MAX_TOTAL + '</span></div>' +
+      '<table class="results-recap"><thead><tr><th>Кейс</th><th>S</th><th>B</th><th>I</th><th>Бал</th></tr></thead><tbody>' + rowsHtml + '</tbody></table>' +
+      '<div class="tier-card"><div class="t-label">Підсумок</div><div class="t-title">' + tier.label + '</div><p>' + tier.text + '</p></div>' +
+      (saveNote ? '<p class="save-note">' + saveNote + '</p>' : "") +
+      '<div class="result-actions">' +
+        '<button class="btn btn-secondary" id="copy-btn">Скопіювати результат</button>' +
+        '<button class="btn btn-secondary" id="retry-btn">Спробувати ще раз</button>' +
+      '</div>' +
+      '<textarea id="copy-fallback-area" style="display:none;margin-top:12px;width:100%;min-height:110px;padding:10px;border-radius:10px;border:1.5px solid var(--line);font-size:11.5px;color:var(--muted);background:var(--surface);" readonly>' + escHtml(plain) + '</textarea>' +
+      '<button class="teacher-link" id="teacher-link">Перегляд результатів групи (для викладача)</button>' +
+      '</div></div>'
+    );
+
+    card.querySelector("#copy-btn").addEventListener("click", function (e) { copyToClipboard(plainTextExport(), e.currentTarget); });
+    card.querySelector("#retry-btn").addEventListener("click", function () {
+      state.screen = "intro"; state.answers = []; state.caseIndex = 0; state.picks = { S: null, B: null, I: null }; render();
+    });
+    card.querySelector("#teacher-link").addEventListener("click", function () { state.screen = "teacher"; render(); loadTeacherRows(); });
+    return card;
+  }
+
+  function renderTeacher() {
+    var rows = state.teacherRows;
+    var bodyHtml;
+    if (state.teacherLoading) bodyHtml = '<p class="empty-note">Завантаження результатів…</p>';
+    else if (!rows || rows.length === 0) bodyHtml = '<p class="empty-note">Поки що ніхто не пройшов тренажер за цим посиланням.</p>';
+    else {
+      var trs = rows.map(function (r) {
+        return '<tr><td>' + escHtml(r.name) + '</td><td>' + r.score + ' / ' + r.total + '</td><td>' + new Date(r.timestamp).toLocaleString("uk-UA") + '</td></tr>';
+      }).join("");
+      bodyHtml = '<div class="table-scroll"><table class="results-table"><thead><tr><th>Студент</th><th>Бал</th><th>Дата</th></tr></thead><tbody>' + trs + '</tbody></table></div>';
+    }
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<div class="teacher-header"><h1 class="title serif" style="margin:0;font-size:22px;">Результати групи</h1><button class="icon-btn" id="refresh-btn">Оновити</button></div>' +
+      bodyHtml +
+      '<div class="result-actions"><button class="btn btn-secondary" id="csv-btn"' + ((!rows || rows.length === 0) ? " disabled" : "") + '>Завантажити CSV</button><button class="btn btn-secondary" id="back-btn">← Назад</button></div>' +
+      '</div></div>'
+    );
+    card.querySelector("#refresh-btn").addEventListener("click", loadTeacherRows);
+    card.querySelector("#back-btn").addEventListener("click", function () { state.screen = state.answers.length > 0 ? "results" : "intro"; render(); });
+    var csvBtn = card.querySelector("#csv-btn");
+    if (csvBtn && rows && rows.length > 0) csvBtn.addEventListener("click", downloadCsv);
+    return card;
+  }
+
+  function render() {
+    app.innerHTML = "";
+    var view;
+    if (state.screen === "intro") view = renderIntro();
+    else if (state.screen === "case") view = renderCase();
+    else if (state.screen === "caseFeedback") view = renderCaseFeedback();
+    else if (state.screen === "results") view = renderResults();
+    else view = renderTeacher();
+    app.appendChild(view);
+    window.scrollTo(0, 0);
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>

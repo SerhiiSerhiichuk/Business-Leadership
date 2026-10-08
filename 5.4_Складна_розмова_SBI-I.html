@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Складна розмова: SBI-I</title>
+<style>
+  :root {
+    --ink: #1E2761; --ink-soft: #384080; --surface: #F3F6FC; --card: #FFFFFF;
+    --gold: #C9962C; --gold-soft: #F3E4C6; --muted: #5B6685; --line: #DDE4F5;
+    --red: #B3492F; --green: #2E7D6B;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; min-height: 100%; background: var(--surface);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+  }
+  .serif { font-family: Cambria, Georgia, "Times New Roman", serif; }
+  #app { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 32px 18px; }
+  .stage-wrap { width: 100%; max-width: 660px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 36px 34px; box-shadow: 0 18px 40px -24px rgba(30,39,97,0.35); }
+  @media (max-width: 480px) { .card { padding: 24px 18px; } }
+
+  .kicker { font-size: 13px; color: var(--muted); margin: 0 0 10px; }
+  h1.title { font-size: 26px; line-height: 1.25; margin: 0 0 14px; font-weight: 700; }
+  p.lead { font-size: 15px; line-height: 1.6; color: var(--muted); margin: 0 0 22px; }
+  label.field-label { display: block; font-size: 13px; color: var(--ink-soft); margin-bottom: 6px; font-weight: 600; }
+  input.text-input {
+    width: 100%; padding: 12px 14px; border-radius: 10px; border: 1.5px solid var(--line);
+    font-size: 15px; color: var(--ink); background: var(--surface); margin-bottom: 20px;
+  }
+  input.text-input:focus { outline: none; border-color: var(--gold); }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 13px 24px; border-radius: 10px; border: none; font-size: 14.5px; font-weight: 600;
+    cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .btn-primary { background: var(--ink); color: #fff; width: 100%; }
+  .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 10px 20px -12px rgba(30,39,97,0.6); }
+  .btn-secondary { background: var(--surface); color: var(--ink); border: 1.5px solid var(--line); }
+  .note-box { margin: 0 0 20px; padding: 12px 14px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+
+  /* DISC primer */
+  .primer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+  @media (max-width: 480px) { .primer-grid { grid-template-columns: 1fr; } }
+  .primer-item { display: flex; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); align-items: flex-start; }
+  .primer-letter { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; color: #fff; flex-shrink: 0; }
+  .primer-letter.D { background: var(--red); } .primer-letter.I { background: var(--gold); } .primer-letter.S { background: var(--green); } .primer-letter.C { background: var(--ink); }
+  .primer-text { font-size: 11.5px; line-height: 1.4; color: var(--muted); }
+  .primer-text b { color: var(--ink); }
+
+  /* Quiz */
+  .progress-track { height: 5px; background: var(--line); border-radius: 4px; overflow: hidden; margin-bottom: 22px; }
+  .progress-fill { height: 100%; background: var(--gold); border-radius: 4px; transition: width 0.4s ease; }
+  .step-count { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .cand-name-big { font-size: 20px; font-weight: 700; margin-bottom: 14px; }
+  .desc-box { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; margin-bottom: 22px; }
+  .desc-box p { font-size: 14px; line-height: 1.65; margin: 0; color: var(--ink-soft); }
+  .disc-choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 480px) { .disc-choice-grid { grid-template-columns: 1fr; } }
+  .disc-choice-btn {
+    display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 12px;
+    border: 1.5px solid var(--line); background: #fff; cursor: pointer; transition: all 0.15s ease; text-align: left;
+  }
+  .disc-choice-btn:hover { border-color: var(--gold); background: var(--gold-soft); }
+  .disc-choice-btn .dc-badge { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; color: #fff; flex-shrink: 0; }
+  .disc-choice-btn .dc-badge.D { background: var(--red); } .disc-choice-btn .dc-badge.I { background: var(--gold); } .disc-choice-btn .dc-badge.S { background: var(--green); } .disc-choice-btn .dc-badge.C { background: var(--ink); }
+  .disc-choice-btn .dc-title { font-weight: 700; font-size: 13.5px; }
+  .disc-choice-btn .dc-sub { font-size: 11px; color: var(--muted); }
+
+  /* Consequence */
+  .consequence-box { border-radius: 14px; padding: 18px 20px; margin-bottom: 20px; color: #fff; }
+  .consequence-box.correct { background: var(--green); }
+  .consequence-box.incorrect { background: var(--red); }
+  .consequence-box .cq-label { font-size: 11px; font-weight: 700; margin-bottom: 8px; letter-spacing: 0.3px; opacity: 0.85; }
+  .consequence-box p { font-size: 13.5px; line-height: 1.55; margin: 0; }
+  .consequence-box .cq-your { font-size: 12px; margin-bottom: 8px; opacity: 0.9; }
+
+  /* Results */
+  table.results-recap { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-bottom: 20px; }
+  table.results-recap th { text-align: left; font-size: 11px; color: var(--muted); font-weight: 600; padding: 7px 6px; border-bottom: 2px solid var(--line); }
+  table.results-recap td { padding: 8px 6px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  .mini-badge { width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 11px; color: #fff; }
+  .mini-badge.D { background: var(--red); } .mini-badge.I { background: var(--gold); } .mini-badge.S { background: var(--green); } .mini-badge.C { background: var(--ink); }
+  .result-icon { font-weight: 800; }
+  .result-icon.ok { color: var(--green); } .result-icon.no { color: var(--red); }
+
+  .tier-card { margin-top: 4px; padding: 20px 22px; border-radius: 14px; background: var(--ink); color: #fff; margin-bottom: 20px; }
+  .tier-card .t-label { font-size: 11px; color: var(--gold-soft); font-weight: 700; margin-bottom: 8px; letter-spacing: 0.3px; }
+  .tier-card .t-title { font-size: 19px; font-weight: 700; margin-bottom: 8px; }
+  .tier-card p { font-size: 13.5px; line-height: 1.55; color: #DCE1F5; margin: 0; }
+  .score-big { text-align: center; margin-bottom: 4px; }
+  .score-big .num { font-size: 40px; font-weight: 800; color: var(--ink); }
+  .score-big .den { font-size: 16px; color: var(--muted); }
+
+  .save-note { font-size: 12.5px; color: var(--muted); margin-top: 14px; text-align: center; }
+  .result-actions { display: flex; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
+  .result-actions .btn { flex: 1; min-width: 140px; }
+  .teacher-link { display: block; text-align: center; margin-top: 20px; font-size: 12.5px; color: var(--muted); text-decoration: underline; cursor: pointer; background: none; border: none; }
+
+  .teacher-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+  table.results-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.results-table th { text-align: left; font-size: 10.5px; color: var(--muted); font-weight: 600; padding: 7px 6px; border-bottom: 2px solid var(--line); }
+  table.results-table td { padding: 8px 6px; border-bottom: 1px solid var(--line); }
+  .tag { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; background: var(--gold-soft); color: #7A5A16; }
+  .empty-note { text-align: center; color: var(--muted); font-size: 13.5px; padding: 30px 0; }
+  .icon-btn { background: none; border: 1.5px solid var(--line); border-radius: 8px; padding: 7px 13px; font-size: 12.5px; color: var(--ink); cursor: pointer; }
+  .icon-btn:hover { border-color: var(--gold); }
+  .table-scroll { overflow-x: auto; }
+
+
+
+  .fb-hint { font-size: 12px; color: var(--muted); font-style: italic; margin: 4px 0 0; }
+  .next-box { margin: 20px 0 14px; padding: 16px 18px; border-radius: 14px; background: var(--gold-soft); border: 1px solid #E5CE9B; }
+  .next-box .nb-title { font-size: 15px; font-weight: 800; margin-bottom: 4px; }
+  .next-box p { font-size: 13px; line-height: 1.55; color: var(--ink-soft); margin: 0 0 12px; }
+  .next-box .result-actions { margin-top: 0; }
+  .deep { margin: 6px 0 18px; border: 1.5px solid var(--line); border-radius: 14px; background: #fff; }
+  .deep > summary { cursor: pointer; font-weight: 700; font-size: 14px; padding: 14px 18px; color: var(--ink); list-style: none; }
+  .deep > summary::-webkit-details-marker { display: none; }
+  .deep > summary::before { content: "▸ "; color: var(--gold); }
+  .deep[open] > summary::before { content: "▾ "; }
+  .deep-body { padding: 0 16px 16px; }
+  .deep-lead { font-size: 12.5px; color: var(--muted); line-height: 1.55; margin: 0 0 14px; }
+
+  /* ---------- Stepper & roadmap ---------- */
+  .stepper { display: flex; align-items: center; margin-bottom: 14px; }
+  .st-item { display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 40px; }
+  .st-ico { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; border: 2px solid var(--line); background: var(--surface); filter: grayscale(1); opacity: 0.55; }
+  .st-lab { font-size: 10px; font-weight: 700; color: var(--muted); }
+  .st-item.done .st-ico { filter: none; opacity: 1; background: #DCEFE9; border-color: #6FB8A2; }
+  .st-item.cur .st-ico { filter: none; opacity: 1; background: var(--gold-soft); border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,150,44,0.25); }
+  .st-item.cur .st-lab { color: var(--ink); }
+  .st-line { flex: 1; height: 2px; background: var(--line); margin: 0 2px 14px; min-width: 6px; }
+  .roadmap { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 18px; }
+  @media (max-width: 560px) { .roadmap { grid-template-columns: 1fr; } }
+  .rm-item { display: flex; gap: 10px; align-items: center; padding: 9px 11px; border-radius: 10px; border: 1.5px solid var(--line); background: #fff; }
+  .rm-ico { width: 36px; height: 36px; border-radius: 50%; background: var(--surface); border: 2px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+  .rm-name { font-weight: 700; font-size: 12.5px; } .rm-desc { font-size: 11.5px; color: var(--muted); line-height: 1.4; }
+
+  /* ---------- SBI-I icons ---------- */
+  .el-S { --ic-bg: #E6EAF8; --ic-bd: #7C8BC9; } .el-B { --ic-bg: #FBF1D6; --ic-bd: #D7B25A; } .el-I { --ic-bg: #DCEFE9; --ic-bd: #6FB8A2; }
+  .el-N { --ic-bg: #EADFF5; --ic-bd: #A98BD1; } .el-frame { --ic-bg: #E3F0FA; --ic-bd: #78AEDB; } .el-E { --ic-bg: #FBE3EA; --ic-bd: #E08BA4; }
+  .el-Q { --ic-bg: #E0F2F1; --ic-bd: #5FB5AE; } .el-A { --ic-bg: #E7F3D9; --ic-bd: #8DBB5A; } .el-F { --ic-bg: #EEE9DD; --ic-bd: #B6A472; }
+  .lv-bad { --ic-bg: #F6DCD4; --ic-bd: #D9826A; } .lv-soft { --ic-bg: #FBEBD6; --ic-bd: #E2A867; }
+  .el-list { display: grid; gap: 8px; margin-bottom: 18px; }
+  .el-card { display: flex; gap: 14px; padding: 12px 14px; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; }
+  .el-ico, .t-ico, .mp-ico, .r-ico, .fi-ico { background: var(--ic-bg); border: 2px solid var(--ic-bd); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .el-ico { width: 46px; height: 46px; font-size: 22px; }
+  .el-name { font-weight: 800; font-size: 13.5px; margin-bottom: 3px; }
+  .el-def { font-size: 12.5px; line-height: 1.5; color: var(--ink-soft); }
+  .el-ex { font-size: 12px; line-height: 1.5; color: var(--muted); font-style: italic; margin-top: 4px; }
+  .flaw-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-bottom: 16px; }
+  @media (max-width: 560px) { .flaw-grid { grid-template-columns: 1fr 1fr; } }
+  .flaw-item { display: flex; align-items: center; gap: 8px; font-size: 11.5px; font-weight: 600; padding: 6px 9px; border-radius: 10px; border: 1.5px solid; }
+  .flaw-item.bad { background: #FCF1EE; border-color: #E8B5A4; color: #7A2E1A; } .flaw-item.soft { background: #FEF6EA; border-color: #EBC995; color: #6B4A12; }
+  .fi-ico { width: 26px; height: 26px; font-size: 14px; border-width: 1.5px; }
+  .flaw-item.bad .fi-ico { --ic-bg: #F6DCD4; --ic-bd: #D9826A; } .flaw-item.soft .fi-ico { --ic-bg: #FBEBD6; --ic-bd: #E2A867; }
+
+  .tiles-title { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 0.2px; margin: 12px 0 6px; }
+  .tile { display: flex; gap: 10px; align-items: center; padding: 9px 11px; border-radius: 10px; border: 1.5px solid var(--line); background: #fff; margin-bottom: 6px; }
+  .t-ico { width: 36px; height: 36px; font-size: 17px; }
+  .t-body { flex: 1; min-width: 0; }
+  .t-name { font-size: 12.5px; font-weight: 700; }
+  .t-what { font-size: 11.5px; color: var(--muted); line-height: 1.4; }
+  .t-mark { font-weight: 800; font-size: 16px; padding-left: 6px; }
+  .tile.present { border-color: #8FC4B3; background: #F2FAF7; } .tile.present .t-mark { color: var(--green); }
+  .tile.missing { border-style: dashed; background: #FAFAFB; } .tile.missing .t-ico { filter: grayscale(1); opacity: 0.5; } .tile.missing .t-name { color: var(--muted); } .tile.missing .t-mark { color: var(--red); }
+  .tile.soft { border-color: #E2A867; background: #FEF6EA; } .tile.soft .t-mark { color: #A8741A; }
+  .tile.flaw { border-color: #D9826A; background: #FCF1EE; } .tile.flaw .t-mark { color: var(--red); }
+
+  .remind { margin-bottom: 14px; font-size: 12.5px; }
+  .remind summary { cursor: pointer; font-weight: 700; color: var(--muted); }
+  .remind-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .remind-item { display: inline-flex; align-items: center; gap: 7px; padding: 4px 11px 4px 5px; border-radius: 20px; border: 1.5px solid var(--ic-bd); background: var(--ic-bg); font-weight: 700; font-size: 12px; }
+  .r-ico { width: 24px; height: 24px; font-size: 13px; background: #fff; border-width: 1.5px; }
+
+  .mp-row { display: flex; gap: 12px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.12); }
+  .mp-row:last-child { border-bottom: none; }
+  .mp-ico { width: 34px; height: 34px; font-size: 16px; }
+  .mp-text { font-size: 13.5px; line-height: 1.6; color: #DCE1F5; }
+  .mp-tag { display: block; font-size: 10.5px; font-weight: 700; color: var(--gold-soft); letter-spacing: 0.3px; margin-bottom: 2px; }
+
+  /* ---------- SBI game ---------- */
+  .primer-letter.sbi-S { background: var(--ink); } .primer-letter.sbi-B { background: var(--gold); } .primer-letter.sbi-I { background: var(--green); }
+  .sbi-grid { grid-template-columns: 1fr 1fr 1fr; }
+  @media (max-width: 560px) { .sbi-grid { grid-template-columns: 1fr; } }
+
+  .scenario-list { display: grid; gap: 10px; margin-bottom: 8px; }
+  .scenario-card { display: flex; gap: 14px; align-items: center; text-align: left; padding: 14px 16px; border-radius: 14px; border: 1.5px solid var(--line); background: #fff; cursor: pointer; transition: all 0.15s ease; }
+  .scenario-card:hover { border-color: var(--gold); background: var(--gold-soft); transform: translateY(-1px); }
+  .sc-emoji { width: 46px; height: 46px; border-radius: 50%; background: var(--surface); border: 1.5px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+  .sc-title { font-weight: 700; font-size: 14.5px; color: var(--ink); }
+  .sc-sub { font-size: 12px; color: var(--muted); margin: 2px 0 6px; line-height: 1.4; }
+  .sc-meta { font-size: 11.5px; color: var(--ink-soft); display: flex; align-items: center; gap: 6px; }
+
+  .person { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+  .avatar { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; color: #fff; flex-shrink: 0; }
+  .avatar.D { background: var(--red); } .avatar.I { background: var(--gold); } .avatar.S { background: var(--green); } .avatar.C { background: var(--ink); }
+  .p-info { flex: 1; min-width: 120px; }
+  .p-name { font-weight: 700; font-size: 15px; }
+  .p-sub { font-size: 11.5px; color: var(--muted); }
+  .mood-chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px 5px 8px; border-radius: 20px; font-size: 12px; font-weight: 700; border: 1.5px solid; }
+  .mood-emoji { font-size: 15px; }
+  .mood-chip.neutral { background: #EEF1FA; border-color: #C9D2EE; color: #3B4577; }
+  .mood-chip.open { background: #DCEFE9; border-color: #8FC4B3; color: #1F5245; }
+  .mood-chip.defensive { background: #F9E3C9; border-color: #E2A867; color: #7A4A0F; }
+  .mood-chip.withdrawn { background: #F6DCD4; border-color: #D9826A; color: #7A2E1A; }
+  .mood-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+  .mood-arrow { color: var(--muted); font-weight: 700; }
+
+  .metrics { display: grid; gap: 9px; margin-bottom: 16px; }
+  .m-head { display: flex; justify-content: space-between; align-items: center; font-size: 12px; margin-bottom: 4px; }
+  .m-name { color: var(--ink-soft); font-weight: 600; }
+  .m-val { font-weight: 800; color: var(--ink); display: inline-flex; align-items: center; gap: 6px; }
+  .m-delta { font-size: 11px; font-weight: 800; padding: 1px 7px; border-radius: 10px; }
+  .m-delta.up { background: #DCEFE9; color: #1F5245; } .m-delta.down { background: #F6DCD4; color: #7A2E1A; }
+  .m-track { height: 8px; background: var(--line); border-radius: 6px; overflow: hidden; }
+  .m-fill { height: 100%; border-radius: 6px; transition: width 0.5s ease; }
+
+  .setup-box { margin-bottom: 14px; padding: 12px 14px; border-radius: 10px; background: var(--gold-soft); border: 1px solid #E5CE9B; font-size: 12.5px; line-height: 1.55; color: #5C4510; }
+  .bubble { padding: 12px 15px; border-radius: 14px; font-size: 13.5px; line-height: 1.55; margin-bottom: 10px; max-width: 94%; }
+  .bubble .b-who { font-size: 11px; font-weight: 700; margin-bottom: 3px; opacity: 0.75; }
+  .bubble.emp { background: var(--surface); border: 1px solid var(--line); border-top-left-radius: 4px; color: var(--ink); }
+  .bubble.emp.open { background: #E7F4EF; border-color: #8FC4B3; }
+  .bubble.emp.defensive { background: #FBEBD6; border-color: #E2A867; }
+  .bubble.emp.withdrawn { background: #F8E4DE; border-color: #D9826A; }
+  .bubble.mgr { background: var(--ink); color: #fff; margin-left: auto; border-top-right-radius: 4px; }
+  .mood-note { font-size: 12px; color: var(--muted); margin: -2px 0 12px; font-style: italic; }
+  .retry-note { font-size: 12px; color: #7A4A0F; background: #F9E3C9; border-radius: 8px; padding: 7px 11px; margin-bottom: 10px; }
+  .ctx-box { margin-bottom: 18px; padding: 10px 14px; border-left: 4px solid var(--gold); background: var(--surface); border-radius: 0 10px 10px 0; font-size: 13px; line-height: 1.5; color: var(--ink-soft); }
+
+  .reply-list { display: grid; gap: 10px; }
+  .reply-btn { display: flex; gap: 12px; align-items: flex-start; text-align: left; padding: 13px 15px; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; cursor: pointer; transition: all 0.15s ease; font-size: 13.5px; line-height: 1.5; color: var(--ink); }
+  .reply-btn:hover { border-color: var(--gold); background: var(--gold-soft); }
+  .reply-num { width: 24px; height: 24px; border-radius: 50%; background: var(--surface); border: 1.5px solid var(--line); font-weight: 800; font-size: 11.5px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .reply-text { flex: 1; }
+
+  .verdict-card { border-radius: 16px; padding: 20px 22px; color: #fff; margin-bottom: 18px; }
+  .verdict-card.great { background: var(--green); } .verdict-card.partial { background: #A8741A; } .verdict-card.fail { background: var(--red); }
+  .verdict-card .v-label { font-size: 11px; font-weight: 700; letter-spacing: 0.3px; opacity: 0.85; margin-bottom: 6px; }
+  .verdict-card .v-title { font-size: 21px; font-weight: 800; margin-bottom: 8px; }
+  .verdict-card p { font-size: 13.5px; line-height: 1.55; margin: 0 0 10px; }
+  .verdict-card .v-score { font-size: 12.5px; opacity: 0.95; } .verdict-card .v-score span { font-size: 22px; font-weight: 800; }
+  .end-mood { margin-top: 4px; }
+  .chart-box { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px; margin-bottom: 18px; }
+  .chart-legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 11px; color: var(--muted); margin-top: 6px; }
+  .chart-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+
+  .sbi-row { display: flex; gap: 12px; padding: 11px 13px; border-radius: 10px; border: 1px solid var(--line); margin-bottom: 8px; background: #fff; }
+  .sbi-row.ok { border-left: 4px solid var(--green); } .sbi-row.no { border-left: 4px solid var(--red); background: #FBF1EE; }
+  .sbi-title { font-weight: 700; font-size: 13px; margin-bottom: 3px; }
+  .sbi-quote { font-size: 12px; color: var(--ink-soft); line-height: 1.5; }
+  .sbi-hint { font-size: 12px; color: #7A2E1A; line-height: 1.5; }
+
+  .tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .tag-chip { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+  .tag-chip.good { background: #DCEFE9; color: #1F5245; } .tag-chip.bad { background: #F6DCD4; color: #7A2E1A; }
+  .step-card { border: 1px solid var(--line); border-left: 4px solid var(--red); border-radius: 12px; padding: 13px 15px; margin-bottom: 12px; background: #fff; }
+  .step-card.best { border-left-color: var(--green); }
+  .step-card.neutral { border-left-color: var(--gold); }
+  .fb-live { border: 1px solid var(--line); border-left: 4px solid var(--gold); border-radius: 12px; padding: 13px 15px; margin-bottom: 16px; background: #fff; }
+  .fb-live.best { border-left-color: var(--green); } .fb-live.bad { border-left-color: var(--red); }
+  .fb-live-title { font-size: 11px; font-weight: 700; letter-spacing: 0.3px; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; }
+  .kind-row { margin-bottom: 8px; }
+  .kind-badge { display: inline-block; font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 20px; }
+  .kind-badge.best { background: #DCEFE9; color: #1F5245; } .kind-badge.neutral { background: #FBF1D6; color: #6B5314; } .kind-badge.bad { background: #F6DCD4; color: #7A2E1A; }
+  .verdict-card .v-reason { background: rgba(255,255,255,0.18); border-radius: 8px; padding: 8px 11px; font-size: 12.5px !important; }
+  .verdict-card .v-kinds { margin-top: 8px; font-size: 12px; opacity: 0.92; }
+
+  .sc-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; margin-bottom: 8px; }
+  .sc-n { width: 22px; height: 22px; border-radius: 50%; background: var(--ink); color: #fff; font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
+  .sc-mood { margin-left: auto; font-size: 11.5px; color: var(--muted); }
+  .sc-line { font-size: 13px; line-height: 1.55; color: var(--ink); background: var(--surface); border-radius: 8px; padding: 9px 12px; }
+  .sc-why { font-size: 12.5px; line-height: 1.55; color: var(--ink-soft); margin: 4px 0 8px; }
+  .sc-reply { font-size: 12px; line-height: 1.5; color: var(--muted); font-style: italic; }
+  .sc-best { margin-top: 8px; font-size: 12.5px; line-height: 1.55; color: #1F5245; background: #EEF8F4; border-radius: 8px; padding: 8px 12px; }
+  .model-box { margin: 18px 0; padding: 16px 18px; border-radius: 12px; background: var(--ink); color: #fff; }
+  .model-box .mb-title { font-size: 11px; font-weight: 700; color: var(--gold-soft); letter-spacing: 0.3px; margin-bottom: 8px; }
+  .model-box p { font-size: 13.5px; line-height: 1.6; color: #DCE1F5; margin: 0; }
+  .review-ok { margin-bottom: 18px; padding: 12px 14px; border-radius: 10px; background: #DCEFE9; color: #1F5245; font-size: 13px; }
+  .insight-box { margin-bottom: 18px; padding: 14px 16px; border-radius: 12px; background: var(--gold-soft); border: 1px solid #E5CE9B; }
+  .insight-box .ib-title { font-size: 11px; font-weight: 700; letter-spacing: 0.3px; color: #7A5A16; margin-bottom: 6px; }
+
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+(function () {
+  "use strict";
+  // ---------- Дані ----------
+  var NODE_ORDER = ["open", "situation", "behavior", "impact", "intent", "close"];
+  var NODE_TITLES = {
+    open: "Відкриття розмови", situation: "Ситуація (S)", behavior: "Поведінка (B)", impact: "Вплив (I)",
+    repair: "Відновлення розмови", intent: "Намір (Intent)", close: "Завершення розмови"
+  };
+  var NODE_ICONS = { open: "🧭", situation: "📍", behavior: "👁️", impact: "💥", intent: "🎯", close: "🤝", repair: "🩹" };
+  var METRICS = [
+    { key: "trust", label: "Довіра", icon: "🤝", color: "#C9962C" },
+    { key: "clarity", label: "Ясність повідомлення", icon: "🔍", color: "#1E2761" },
+    { key: "emotion", label: "Емоційний стан співрозмовника", icon: "🙂", color: "#2E7D6B" }
+  ];
+  var MOODS = {
+    neutral: { emoji: "😐", m: "Насторожений", f: "Насторожена" },
+    open: { emoji: "🙂", m: "Відкритий", f: "Відкрита" },
+    defensive: { emoji: "🛡️", m: "Захисна позиція", f: "Захисна позиція" },
+    withdrawn: { emoji: "🔒", m: "Замкнувся", f: "Замкнулась" }
+  };
+  var MOOD_NOTE = {
+    neutral: { m: "%n уважно слухає, але лишається насторожений.", f: "%n уважно слухає, але лишається насторожена." },
+    open: { m: "%n відкритий до розмови.", f: "%n відкрита до розмови." },
+    defensive: { m: "%n захищається й готовий заперечувати.", f: "%n захищається й готова заперечувати." },
+    withdrawn: { m: "%n замкнувся й відповідає коротко.", f: "%n замкнулась і відповідає коротко." }
+  };
+
+  // level: good — елемент моделі чи корисний прийом; soft — нейтральна помилка; bad — серйозна помилка
+  var TAGS = {
+    S: { label: "Ситуація", short: "S · Ситуація", icon: "📍", level: "good", cls: "el-S", what: "Названо конкретний час і місце події." },
+    B: { label: "Поведінка", short: "B · Поведінка", icon: "👁️", level: "good", cls: "el-B", what: "Описано лише те, що можна побачити або почути, без оцінок." },
+    I: { label: "Вплив", short: "I · Вплив", icon: "💥", level: "good", cls: "el-I", what: "Названо наслідки для проєкту, команди чи вашого стану." },
+    N: { label: "Намір", short: "I · Намір (Intent)", icon: "🎯", level: "good", cls: "el-N", what: "Названо ваш намір і/або запитано про намір співрозмовника." },
+    frame: { label: "Рамка розмови", short: "Рамка розмови", icon: "🧭", level: "good", cls: "el-frame", what: "Названо мету розмови й створено безпечну рамку." },
+    E: { label: "Визнання емоцій", short: "Визнання емоцій", icon: "❤️", level: "good", cls: "el-E", what: "Визнано емоції чи позицію співрозмовника." },
+    Q: { label: "Відкрите запитання", short: "Відкрите запитання", icon: "❓", level: "good", cls: "el-Q", what: "Запитання без звинувачення, яке дає людині розповісти свою версію." },
+    A: { label: "Конкретна домовленість", short: "Конкретна домовленість", icon: "🤝", level: "good", cls: "el-A", what: "Домовленість містить що, хто, коли та як перевіряємо." },
+    F: { label: "Підсумок і підтримка", short: "Підсумок і підтримка", icon: "📅", level: "good", cls: "el-F", what: "Повторено домовленість і залишено канал для звернень." },
+    gen: { label: "Узагальнення", short: "Узагальнення", icon: "♾️", level: "bad", cls: "lv-bad", what: "«Завжди», «постійно», «знову» перетворюють подію на характеристику людини." },
+    label: { label: "Ярлик", short: "Ярлик", icon: "🏷️", level: "bad", cls: "lv-bad", what: "Оцінка особистості («безвідповідальний») замість опису дій." },
+    mind: { label: "Домисел про мотиви", short: "Домисел про мотиви", icon: "🔮", level: "bad", cls: "lv-bad", what: "Припущення про мотиви, які не можна перевірити." },
+    blame: { label: "Звинувачувальне «чому»", short: "Звинувачувальне «чому»", icon: "👉", level: "bad", cls: "lv-bad", what: "Питання «чому ти…» звучить як звинувачення й вмикає виправдання." },
+    threat: { label: "Погроза", short: "Погроза", icon: "⛔", level: "bad", cls: "lv-bad", what: "Тиск покарання закриває діалог." },
+    dismiss: { label: "Знецінення", short: "Знецінення", icon: "🙅", level: "bad", cls: "lv-bad", what: "Знецінення емоцій чи причин співрозмовника." },
+    catastrophe: { label: "Перебільшення", short: "Перебільшення", icon: "🌋", level: "bad", cls: "lv-bad", what: "Перебільшення наслідків зменшує довіру до фактів." },
+    hearsay: { label: "«Скаржилися інші»", short: "«Скаржилися інші»", icon: "👥", level: "bad", cls: "lv-bad", what: "Посилання на невизначених «колег» чи «скарги» ставить людину в позицію обвинуваченого." },
+    dictate: { label: "Наказ без участі", short: "Наказ без участі", icon: "🔨", level: "bad", cls: "lv-bad", what: "Рішення нав'язане без участі людини, тож опір майже гарантований." },
+    vague: { label: "Розмитість", short: "Розмитість", icon: "🌫️", level: "soft", cls: "lv-soft", what: "Занадто м'яко чи розмито: незрозуміло, про що йдеться." },
+    avoid: { label: "Ухилення", short: "Ухилення", icon: "🙈", level: "soft", cls: "lv-soft", what: "Ухилення від теми, рішення чи підсумку." },
+    advice: { label: "Порада до розуміння", short: "Порада до розуміння", icon: "🛠️", level: "soft", cls: "lv-soft", what: "Порада до того, як ви вислухали людину." }
+  };
+  Object.keys(TAGS).forEach(function (k) { TAGS[k].good = TAGS[k].level === "good"; });
+
+  var SBI_META = {
+    S: { title: "S · Situation — Ситуація (контекст)", name: "Ситуація", def: "Вкажіть конкретний час і місце, коли відбулася подія. Це запобігає розмитим узагальненням на кшталт «ти завжди» чи «минулого тижня».", example: "«Сьогодні о 10:00 під час командної зустрічі…»", hint: "Назвіть конкретний час і місце події." },
+    B: { title: "B · Behavior — Поведінка", name: "Поведінка", def: "Опишіть лише ті дії чи слова, які можна було безпосередньо побачити або почути. Уникайте оцінок і припущень про мотиви.", example: "«Ти перебив мене під час демонстрації графіку» (а не «ти поводився неввічливо»).", hint: "Опишіть, що саме зробила людина: те, що можна побачити чи почути, без оцінок." },
+    I: { title: "I · Impact — Вплив (наслідки)", name: "Вплив", def: "Поясніть прямі наслідки такої поведінки для проєкту, команди або вашого стану.", example: "«Це збило мене з думки і затягнуло обговорення».", hint: "Поясніть конкретні наслідки для команди, роботи чи для вас." },
+    N: { title: "I · Intent — Намір", name: "Намір", def: "Скажіть, навіщо ви це говорите і чого прагнете, та запитайте про намір співрозмовника: чого він хотів досягти.", example: "«Я хочу, щоб ми разом знайшли рішення. Чого ти хотів досягти?»", hint: "Назвіть, чого ви прагнете, і запитайте про намір співрозмовника." }
+  };
+
+  function o(id, text, tags, mood, fx, reply, why, kind) {
+    return { id: id, text: text, tags: tags, mood: mood, fx: { trust: fx[0], clarity: fx[1], emotion: fx[2] }, reply: reply, why: why, kind: kind, best: kind === "best" };
+  }
+
+  var SCENARIOS = [
+  {
+    id: "late", emoji: "⏰", title: "Запізнення на стендапи", topic: "Запізнення",
+    employee: {"name": "Максим", "gender": "m", "disc": "I", "role": "Дослідник ресурсів"},
+    preview: "Максим тричі за тиждень запізнився на ранковий стендап.",
+    setup: "Максим — комунікабельний член команди, який легко налагоджує контакти з партнерами. Але цього тижня він тричі запізнився на ранковий стендап (початок о 9:00): у понеділок на 20 хвилин, у середу на 15, у четвер на 25. Команда починала без його оновлень. Ви запросили Максима на розмову наодинці.",
+    opening: "Максим заходить до переговорки з кавою й широкою усмішкою: «О, привіт! У тебе для мене нова ідея?»",
+    start: {"trust": 50, "clarity": 50, "emotion": 50},
+    modelParts: [{"k": "S", "text": "У понеділок, середу й четвер цього тижня на ранковому стендапі"}, {"k": "B", "text": "ти приєднався о 9:20, 9:15 і 9:25, хоча початок о 9:00."}, {"k": "I", "text": "Через це ми починали без твоїх оновлень, Софії двічі довелося перепитувати статуси, і нарада затяглася на 10 хвилин."}, {"k": "N", "text": "Я хочу розібратися, що відбувається, і знайти рішення разом. Що для тебе стоїть за цим і що б ти хотів змінити?"}],
+    styleNote: "Максим — тип I. Люди цього типу чутливі до оцінок свого образу: ярлики й узагальнення вони сприймають як удар по репутації й відповідають жартами або захистом. Відкриваються, коли відчувають повагу та конкретику без «вироку», а ухвалені кроки їм краще формулювати чітко й коротко.",
+    nodes: {
+      open: { ctx: "Ви починаєте розмову. Від першої фрази залежить, чи сприйме Максим її як нагоду розібратися, чи як атаку.", canRepair: true, retry: false, options: [
+        o("open_a", "Максиме, дякую, що прийшов. Хочу поговорити про ранкові стендапи саме цього тижня: спершу розкажу, що я побачив, а потім уважно послухаю тебе.", ["frame"], "neutral", [8, 10, 5],
+          "Максим перестає усміхатися, але сідає рівніше: «Гаразд. То що там зі стендапами?»",
+          "Ви назвали тему, пояснили порядок розмови й пообіцяли вислухати. Це знижує невизначеність і створює безпечну рамку.", "best"),
+        o("open_c", "Максиме, радий тебе бачити! Як справи, як партнери? До речі, є невелика дрібниця щодо наших стендапів, але вона, мабуть, не варта окремої розмови.", ["avoid", "vague"], "neutral", [2, -8, 4],
+          "«Усе супер! Партнери в захваті. А що зі стендапами?» — Максим усміхається, але насторожено.",
+          "Ви сховали серйозну тему за словом «дрібниця». Розмова приємна, але ясності немає, і Максим не розуміє, що це важливо.", "neutral"),
+        o("open_d", "Дякую, що прийшов. Кілька колег звернулися до мене щодо твоєї дисципліни, тому нам варто це обговорити, поки не стало серйозніше.", ["hearsay", "label"], "withdrawn", [-15, -4, -18],
+          "Максим мовчки дивиться на вас: «Кілька колег? Хто саме?.. Зрозуміло». Усмішка зникла.",
+          "Посилання на «кількох колег» і слово «дисципліна» ставлять людину в позицію обвинуваченого. Довіра падає, бо вона відчуває, що її обговорювали за спиною.", "bad")
+      ] },
+      situation: { ctx: "Спершу окресліть саму ситуацію: про який випадок ви говорите (коли і де). Поведінку й наслідки розберемо наступними кроками.", canRepair: true, retry: true, options: [
+        o("situation_a", "Давай поговоримо про ранкові стендапи цього тижня: у понеділок, середу й четвер, які починаються о 9:00.", ["S"], "neutral", [4, 9, 3],
+          "Максим киває: «Окей, про цей тиждень. Слухаю».",
+          "Ви назвали конкретну ситуацію: три стендапи, дні тижня й час початку. Це створює спільну точку відліку без оцінок і узагальнень.", "best"),
+        o("situation_b", "Давай поговоримо про те, як у тебе останнім часом складаються ранки і як загалом проходять наші зустрічі.", ["vague"], "neutral", [0, -5, 1],
+          "«Про ранки? Та в мене все нормально... А що саме?» — Максим здивовано знизує плечима.",
+          "Без конкретного часу й місця людина не розуміє, про яку подію мова, тому відповідає загально.", "neutral"),
+        o("situation_c", "Давай поговоримо про твої запізнення: вони бувають постійно, і на кожному стендапі це вже стало нормою.", ["gen"], "defensive", [-12, -4, -14],
+          "«Постійно»? Я що, щодня запізнююся? Не перебільшуй!",
+          "«Постійно» і «на кожному стендапі» перетворюють три випадки на звичку. Замість обговорення ситуації людина захищається.", "bad")
+      ] },
+      behavior: { ctx: "Тепер опишіть, що саме зробила людина: лише те, що можна було побачити чи почути, без оцінок і припущень про мотиви.", canRepair: true, retry: true, options: [
+        o("behavior_a", "У ці три дні ти приєднався до стендапу о 9:20, 9:15 і 9:25, тоді як він починається рівно о 9:00.", ["B"], "neutral", [4, 10, 2],
+          "Максим на мить замислюється: «Е-е... ну так, виходить. Я навіть не рахував».",
+          "Ви описали лише спостережувані факти (час приєднання) без оцінок. Це складно заперечити, тому ясність різко зросла.", "best"),
+        o("behavior_b", "У ці три дні ти якось не вкладався в наш ранковий розклад, і це було трохи не так, як мало б бути.", ["vague"], "neutral", [0, -6, 2],
+          "«Не вкладався?.. Тобто запізнився? Скажи конкретніше», — просить Максим.",
+          "Формулювання «не вкладався» і «не так, як мало б» не описують конкретних дій. Людина змушена здогадуватися.", "neutral"),
+        o("behavior_c", "У ці три дні ти поводився безвідповідально, бо, схоже, тобі байдуже до нашого ранкового розкладу й до команди.", ["label", "mind"], "defensive", [-14, -5, -16],
+          "«Безвідповідально»?! Мені не байдуже, я цей проєкт тягну на собі! Ти мене ображаєш.",
+          "«Безвідповідально» — ярлик на особистість, «тобі байдуже» — домисел про мотив. Обидва викликають захист і не описують дій.", "bad")
+      ] },
+      impact: { ctx: "Тепер поясніть, до чого призвела ця поведінка: наслідки для команди, роботи чи для вас.", canRepair: true, retry: true, options: [
+        o("impact_a", "Через це ми починали без твоїх оновлень: Софії двічі довелося перепитувати статуси, а нарада затяглася на 10 хвилин.", ["I"], "open", [10, 14, 8],
+          "Максим киває: «Ого... Я не думав, що це так відчувається. Софія мені нічого не казала».",
+          "Ви назвали конкретний вплив: двічі перепитували, +10 хвилин. Людині легше прийняти наслідки, ніж оцінку, і вона побачила власну роль.", "best"),
+        o("impact_b", "Мені дуже неприємно, коли таке трапляється, Максиме, і я справді переживаю за атмосферу в нашій команді.", ["vague"], "neutral", [-2, -4, -2],
+          "«Ну... вибач, якщо щось не так», — Максим відводить погляд.",
+          "Ви назвали емоцію, але не пояснили, до чого саме призвела поведінка. Лишилося абстрактне «неприємно».", "neutral"),
+        o("impact_c", "Ти, мабуть, не уявляєш, як це шкодить усім: така поведінка підриває довіру в команді й може зірвати весь проєкт.", ["catastrophe", "label"], "defensive", [-12, -6, -14],
+          "«Підриваю»?! Через три запізнення? Не перебільшуй!",
+          "Перебільшення («весь проєкт») викликає захист і знижує довіру до решти ваших слів.", "bad")
+      ] },
+      repair: {
+        defensive: { ctx: "Максим говорить підвищеним тоном і шукає, на що перевести розмову. Потрібно знизити напругу, не відмовляючись від теми.", options: [
+        o("repair_d_a", "Бачу, що це прозвучало різко, і я не хотів тебе образити, вибач. Давай я ще раз спокійно, з фактами, а потім дам тобі слово.", ["E", "frame"], "neutral", [10, 6, 14],
+          "«Окей... Просто неприємно було це чути. Давай, слухаю».",
+          "Ви визнали, що висловилися різко, і повторно задали рамку розмови. Людині стало безпечніше слухати.", "best"),
+        o("repair_d_c", "Гаразд, мабуть, я трохи перебільшив, тож забудь про це. Може, не варто так різко ставити питання, давай просто дещо уточнимо зараз.", ["vague"], "neutral", [3, -12, 6],
+          "«Ну... то про що тоді мова?» — Максим розгублений.",
+          "Ви зняли напругу, відмовившись від свого повідомлення. Тепер ясність упала, а проблема лишилася.", "neutral"),
+        o("repair_d_b", "Максиме, не варто так різко реагувати: я просто кажу, як є, і нічого особистого в цьому немає, тож давай, будь ласка, без емоцій.", ["dismiss"], "defensive", [-8, -2, -10],
+          "«Ну так, «як є»... Ти взагалі не дослухаєшся», — Максим відсувається.",
+          "Заклик «не варто так різко реагувати» знецінює емоцію й посилює захист.", "bad")
+        ] },
+        withdrawn: { ctx: "Максим замовк і дивиться в стіл. Тиск тут не допоможе: потрібен безпечний вхід у розмову.", options: [
+        o("repair_w_a", "Бачу, що ти замовк, і це нормально. Мені важливо тебе почути: коли будеш готовий, скажи, що б ти додав чи виправив.", ["E", "Q"], "neutral", [10, 6, 14],
+          "Максим повільно піднімає очі: «Просто не очікував. Мені незручно, як це виглядає з боку».",
+          "Ви визнали мовчання, зняли тиск і дали людині вибір, коли відповідати. Це безпечний вхід у діалог.", "best"),
+        o("repair_w_c", "Добре, я бачу, що зараз ти не готовий говорити. Просто запам'ятай, що я сказав, виправляйся, і на цьому закінчимо.", ["avoid"], "withdrawn", [-8, -4, -6],
+          "«Добре», — ледь чутно каже Максим.",
+          "Ви закрили тему без діалогу. Формально вона озвучена, але людина не почута.", "neutral"),
+        o("repair_w_b", "Максиме, розумію, що тобі непросто, але чому ти мовчиш? Мені потрібна твоя відповідь саме зараз, і чим швидше, тим краще для нас обох.", ["blame"], "withdrawn", [-10, -2, -12],
+          "Максим мовчить ще довше.",
+          "Вимога відповісти й «чому» посилюють закритість: людина відчуває, що її заганяють у кут.", "bad")
+        ] }
+      },
+      intent: { ctx: "Тепер покажіть, що ви не звинувачуєте: назвіть свій намір і дізнайтеся про намір співрозмовника.", canRepair: false, retry: false, options: [
+        o("intent_a", "Я хочу розібратися, що відбувається, і знайти рішення разом. Розкажи, як це виглядає з твого боку і що ти хотів би змінити?", ["N"], "open", [12, 6, 12],
+          "Максим видихає: «Я веду сина в садок, а потім міст — там завжди затор. Мені самому ніяково, але я не знав, як про це сказати».",
+          "Ви назвали свій намір (розібратися, знайти рішення разом) і запитали про намір співрозмовника. Без звинувачень людина розповіла реальну причину.", "best"),
+        o("intent_b", "Одразу підкажу, що робити: купи другий будильник і виїжджай на двадцять хвилин раніше, тоді все налагодиться.", ["advice"], "neutral", [-4, -2, -4],
+          "«Дякую за пораду... але справа не в будильнику», — розгублено каже Максим.",
+          "Порада до розуміння причини. Ви вирішували невідому проблему й не запитали про намір, тому порада не влучила.", "neutral"),
+        o("intent_c", "Чому ти не можеш просто виїхати раніше? Усі ж якось встигають, тож у чому справа саме в тебе особисто?", ["blame"], "defensive", [-14, -4, -14],
+          "«Я встаю о шостій! Ти не знаєш, що в мене вдома!»",
+          "«Чому ти не...» звучить як звинувачення, а «усі встигають» — як порівняння. Людина виправдовується, а не розповідає про свій намір.", "bad")
+      ] },
+      close: { ctx: "Розмова добігає кінця. Домовтеся про конкретні дії й завершіть її так, щоб людина пішла з планом і підтримкою.", canRepair: false, retry: false, options: [
+        o("close_a", "Що б, на твою думку, спрацювало? Тоді домовимося: до 9:00 ти на місці або пишеш у чат до 8:45, а через два тижні разом перевіримо. Дякую за відвертість.", ["A", "F"], "open", [14, 12, 10],
+          "Максим усміхається вперше за розмову: «Це реально. Я так і зроблю й напишу заздалегідь. Дякую, що врахував».",
+          "Рішення народилося спільно, містить конкретні дії, терміни й дату перевірки; ви подякували й залишили простір для звернень. Таку домовленість легко виконати й перевірити.", "best"),
+        o("close_b", "Давай домовимося так: ти постараєшся приходити вчасно й більше не запізнюватися, а якщо щось піде не так, ми це якось разом вирішимо. Я вірю, що ти впораєшся.", ["vague"], "neutral", [0, -10, 0],
+          "«Так, постараюсь», — відповідає Максим, але без упевненості.",
+          "«Постараєшся» і «більше не запізнюватися» нічого не фіксують: ні дій, ні термінів, ні перевірки.", "neutral"),
+        o("close_c", "Рішення таке: відтепер ти на стендапі рівно о 9:00, без винятків і без пояснень. Це не обговорюється, і я особисто перевірятиму присутність щоранку.", ["dictate"], "defensive", [-8, 4, -10],
+          "«Окей, буду... хоча ти мене, здається, так і не послухав».",
+          "Ясність зросла, але рішення нав'язане. Людина зобов'язується з опором і менш імовірно його дотримається.", "bad")
+      ] }
+    }
+  },
+  {
+    id: "conflict", emoji: "⚡", title: "Конфлікт на нарадах", topic: "Конфлікт",
+    employee: {"name": "Олена", "gender": "f", "disc": "D", "role": "Генератор ідей"},
+    preview: "Олена перебиває Марію на нарадах, і та перестала говорити про ризики.",
+    setup: "Олена — рішуча й швидка, вона тягне проєкт уперед. Але на нарадах із планування у вівторок і четвер вона тричі перебила Марію, коли та говорила про ризики, і відкинула її пропозиції словами «Це нереально, давайте далі». У п'ятницю Марія промовчала на нараді, ми пропустили залежність від постачальника й витратили два дні на переробку. Марія також сказала вам, що не хоче презентувати свою частину. Ви запросили Олену на розмову.",
+    opening: "Олена заходить рішуче й сідає, не відкладаючи ноутбука: «У мене п'ятнадцять хвилин. Що там?»",
+    start: {"trust": 50, "clarity": 50, "emotion": 50},
+    modelParts: [{"k": "S", "text": "На нарадах із планування у вівторок і четвер"}, {"k": "B", "text": "ти тричі перебила Марію, коли вона говорила про ризики, і відкинула її пропозиції словами «Це нереально, давайте далі»."}, {"k": "I", "text": "У п'ятницю Марія промовчала, ми пропустили залежність від постачальника й витратили два дні на переробку."}, {"k": "N", "text": "Мені потрібні і твоя швидкість, і її погляд на ризики. Чого ти прагнула, зупиняючи обговорення? Давай домовимося, як нам працювати разом."}],
+    styleNote: "Олена — тип D. Люди цього типу цінують прямоту, стислість і фокус на результаті. Довгі вступи, емоційні формулювання й ярлики вони сприймають як слабкість або атаку й відповідають контратакою. Відкриваються, коли чують факти, зв'язок із результатом і право впливати на рішення.",
+    nodes: {
+      open: { ctx: "Ви починаєте розмову. Олена нетерпляча й чекає суті.", canRepair: true, retry: false, options: [
+        o("open_a", "Олено, дякую, що знайшла час. Скажу прямо: хочу обговорити наради й вашу взаємодію з Марією. Спершу факти, потім твоя думка; це п'ятнадцять хвилин.", ["frame"], "neutral", [8, 10, 5],
+          "«Окей. Прямо — це добре. Слухаю».",
+          "Для D-типу ідеальний вступ — коротко, чітко, з вказаним часом і порядком. Ви показали повагу до її часу й задали рамку.", "best"),
+        o("open_c", "Олено, є одна тема, не те щоб проблема, можливо, ти й не помітила. Не знаю, як це сказати, але, мабуть, варто про це спокійно поговорити.", ["vague", "avoid"], "neutral", [-2, -8, -4],
+          "«Я зайнята. Кажи прямо — що відбувається?» — Олена нетерпляче дивиться на годинник.",
+          "Невпевнений вступ D-тип сприймає як слабкість і вимагає прямоти. Ясності не додалося, а напруга зросла.", "neutral"),
+        o("open_b", "Олено, скажу прямо: ти поводишся агресивно на нарадах, і колеги вже на це скаржаться, тож нам треба обговорити це сьогодні, поки не стало гірше.", ["label", "hearsay"], "defensive", [-12, -6, -15],
+          "«Агресивно?! Я просто працюю на результат, поки інші розмазують. Які ще «колеги»?»",
+          "«Агресивно» — ярлик, «колеги вже скаржаться» — посилання на невизначених людей. Для D-типу це виклик, і вона його приймає.", "bad")
+      ] },
+      situation: { ctx: "Окресліть ситуацію: про який випадок ви говорите (коли і де). Поведінку й наслідки розберемо далі.", canRepair: true, retry: true, options: [
+        o("situation_a", "Хочу обговорити дві наради з планування цього тижня — у вівторок і четвер, де ви з Марією говорили про ризики.", ["S"], "neutral", [4, 9, 3],
+          "«Окей, вівторок і четвер. Які саме моменти?»",
+          "Ви назвали конкретні наради (дні, тема) без оцінок і узагальнень. Для D-типу це чітка рамка.", "best"),
+        o("situation_b", "Хочу обговорити загальну атмосферу на наших нарадах останнім часом і те, як у вас складається командна робота.", ["vague"], "neutral", [0, -5, 1],
+          "«Атмосфера? Ми виконали план. Конкретніше».",
+          "Розмите формулювання: D-тип одразу вимагає конкретики, а вона відсутня.", "neutral"),
+        o("situation_c", "Хочу обговорити твою манеру вести наради: на кожній із них ти постійно всіх перебиваєш і нікого не слухаєш.", ["gen", "label"], "defensive", [-12, -4, -14],
+          "«Постійно всіх?! Я перебиваю тих, хто гальмує справу!»",
+          "«На кожній», «постійно», «всіх», «нікого» — узагальнення поспіль. Олена легко знаходить виключення й відповідає атакою.", "bad")
+      ] },
+      behavior: { ctx: "Тепер опишіть, що саме зробила Олена: лише те, що можна було побачити чи почути.", canRepair: true, retry: true, options: [
+        o("behavior_a", "У вівторок і четвер ти тричі перебила Марію, коли вона говорила про ризики, і відкинула її пропозиції словами «Це нереально, давайте далі».", ["B"], "neutral", [4, 10, 2],
+          "«Тричі? Ну... можливо. Там були дедлайни, я прискорювала».",
+          "Ви описали дії (три перебивання, конкретна фраза) без оцінок. Для D-типу факти важчі за емоції.", "best"),
+        o("behavior_b", "Під час обговорення ризиків між вами з Марією виникала напруга, і ти реагувала не зовсім так, як могла б, що помітно було всім.", ["vague"], "neutral", [0, -6, 2],
+          "«Напруга? Не зовсім так? Кажи, що я зробила», — Олена нетерпляче дивиться на годинник.",
+          "Формулювання «не зовсім так» не описують дій. D-тип просить конкретики.", "neutral"),
+        o("behavior_c", "Мені здається, ти хочеш показати, що Марія ні на що не здатна, і тому обриваєш її на півслові та відкидаєш її ідеї без обговорення.", ["mind", "label"], "defensive", [-10, -6, -14],
+          "«Це смішно. Я її за фахівчиню ціную. Ти робиш висновки наосліп».",
+          "Ви приписали мотив («хочеш показати», «ні на що не здатна»), який не можна підтвердити. Розмова переходить на мотиви замість дій.", "bad")
+      ] },
+      impact: { ctx: "Тепер поясніть вплив: наслідки для проєкту, команди чи для вас.", canRepair: true, retry: true, options: [
+        o("impact_a", "У п'ятницю Марія промовчала на нараді, і ми пропустили залежність від постачальника: на переробку пішло два дні.", ["I"], "open", [10, 14, 8],
+          "Олена зупиняється: «Два дні... Це дорого. Я не знала, що вона мовчала через мене».",
+          "Ви пов'язали поведінку з результатом (два дні втрат). Для D-типу це мова, яку вона чує.", "best"),
+        o("impact_b", "Мене це дуже засмучує і непокоїть, бо я справді хочу, щоб у команді було добре, а ситуація з Марією псує враження.", ["vague"], "neutral", [-2, -4, -2],
+          "«Ну... і що з того? Скажи, що змінити».",
+          "Ви висловили емоцію, але не назвали наслідків. Для D-типу емоції без фактів — «вода».", "neutral"),
+        o("impact_c", "Давай відверто, Олено: якщо така поведінка повториться, мені доведеться вивести тебе з проєкту й передати твої завдання.", ["threat"], "withdrawn", [-16, -2, -16],
+          "«Окей», — коротко відповідає Олена й відкидається на спинку стільця.",
+          "Погроза закрила діалог. Олена демонстративно підкоряється, але не приймає суті.", "bad")
+      ] },
+      repair: {
+        defensive: { ctx: "Олена перейшла в атаку й переводить розмову на «результати». Потрібно знизити напругу, не відмовляючись від теми.", options: [
+        o("repair_d_a", "Чую, що результат для тебе пріоритет, і це цінно. Скажу ще раз коротко й без оцінок, а потім дам тобі слово.", ["E", "frame"], "neutral", [10, 6, 14],
+          "«Окей. Давай коротко».",
+          "Ви визнали її цінності, повторно задали рамку й пообіцяли їй слово. Захист знизився.", "best"),
+        o("repair_d_c", "Гаразд, можливо, я й перебільшив, тож давай забудемо цю розмову. Я не хотів тебе зачепити, нехай усе буде як було.", ["vague"], "neutral", [3, -12, 6],
+          "«То про що ми взагалі говорили?»",
+          "Ви зняли напругу ціною повідомлення. Проблема лишилася, а ясність упала.", "neutral"),
+        o("repair_d_b", "Олено, не переходь в оборону: я просто констатую факти, нічого особистого тут немає, тож не потрібно так бурхливо реагувати.", ["dismiss"], "defensive", [-8, -2, -10],
+          "«Констатуєш. А я виправдовуватись не буду».",
+          "Фраза «не переходь в оборону» знецінює її реакцію; вона відповідає ще жорсткіше.", "bad")
+        ] },
+        withdrawn: { ctx: "Олена замкнулася й дивиться у вікно. Тиск тут лише закриє розмову остаточно.", options: [
+        o("repair_w_a", "Бачу, що розмова стала неприємною, і не хочу тиснути. Що б ти додала чи виправила з того, що я сказав?", ["E", "Q"], "neutral", [10, 6, 14],
+          "Олена повертається до вас: «Мені не подобається, що ти подав це як скаргу. Але гаразд, я слухаю».",
+          "Ви визнали дискомфорт, зняли тиск і запросили її погляд. Це повертає їй відчуття впливу.", "best"),
+        o("repair_w_c", "Гаразд, бачу, що говорити ти не хочеш. Тоді просто врахуй сказане й працюй далі, а ми повернемося до цього, коли буде час.", ["avoid"], "withdrawn", [-8, -4, -6],
+          "«Добре».",
+          "Ви закрили тему без діалогу. Формально сказано, але реальної розмови не було.", "neutral"),
+        o("repair_w_b", "Олено, я розумію, що тобі зараз важко, але чому ти мовчиш? Мені потрібна відповідь прямо зараз, і її треба дати без пауз.", ["blame"], "withdrawn", [-10, -2, -12],
+          "Олена мовчить, дивлячись просто на вас.",
+          "Наказ відповідати й «чому» — тиск, який D-тип сприймає як виклик і лише ще більше замикається.", "bad")
+        ] }
+      },
+      intent: { ctx: "Покажіть, що ви не звинувачуєте: назвіть свій намір і дізнайтеся про намір Олени.", canRepair: false, retry: false, options: [
+        o("intent_a", "Я хочу зберегти твою швидкість і почути погляд Марії на ризики. Розкажи, чого ти прагнула, зупиняючи обговорення?", ["N"], "open", [12, 6, 12],
+          "Олена видихає: «Я боюся, що ми не вкладемося в дедлайн. Коли Марія починає про ризики, мені здається, що це затягнеться на годину. Я не вмію зупиняти це м'якше».",
+          "Ви назвали свій намір (зберегти швидкість і почути ризики) і запитали про її намір. Відкрите запитання дало справжній мотив: страх за дедлайн.", "best"),
+        o("intent_b", "Одразу скажу, що робити: просто давай Марії по дві хвилини наприкінці кожної наради, і все стане на свої місця.", ["advice"], "neutral", [-3, 0, -3],
+          "«Можна й так... але ти навіть не спитав, чому я так роблю».",
+          "Порада до розуміння. Рішення може бути слушним, але Олена не відчула, що її намір почули.", "neutral"),
+        o("intent_c", "Усі розуміють, що ти під великим тиском, але це не виправдання, а ти, схоже, просто не вважаєш Марію рівною собі.", ["dismiss", "mind"], "withdrawn", [-10, -2, -10],
+          "«Звісно. Тоді що ви від мене хочете?» — тон холодний.",
+          "Ви приписали їй мотив («не вважаєш рівною») і знецінили її причину. Людина відчула, що розмова — формальність.", "bad")
+      ] },
+      close: { ctx: "Розмова добігає кінця. Домовтеся про конкретні дії й завершіть її так, щоб Олена пішла з планом і підтримкою.", canRepair: false, retry: false, options: [
+        o("close_a", "Домовимося так: на нарадах Марія має три хвилини на ризики, ти стежиш за таймером, за два тижні перевіряємо. Дякую за відвертість; якщо щось заважатиме, кажи.", ["A", "F"], "open", [14, 12, 10],
+          "«Таймер я можу. Три хвилини — реально. Домовились. Дякую, що без «виховної бесіди»».",
+          "Домовленість конкретна (3 хвилини, таймер, два тижні), а Олена отримує роль і вплив. Ви подякували й залишили канал для звернень.", "best"),
+        o("close_b", "Давай домовимося так: ти намагатимешся бути м'якшою з Марією й слухати уважніше, а якщо щось піде не так, ми це якось разом обговоримо ще раз. Я вірю в тебе.", ["vague"], "neutral", [0, -10, 0],
+          "«Окей, постараюсь», — без ентузіазму.",
+          "«М'якшою» — це оцінка, а не дія. Ніхто не зможе перевірити, чи домовленість виконана.", "neutral"),
+        o("close_c", "З цього моменту правило таке: ти слухаєш Марію до кінця й не перебиваєш нікого, без винятків. Це не обговорюється, і я стежитиму за виконанням.", ["dictate"], "defensive", [-8, 4, -10],
+          "«Гаразд. Хоча ти знову вирішив усе за мене».",
+          "Ясність зросла, але правило нав'язане. D-тип опирається чужим рішенням і шукатиме обхідні шляхи.", "bad")
+      ] }
+    }
+  },
+  {
+    id: "performance", emoji: "📉", title: "Падіння продуктивності", topic: "Продуктивність",
+    employee: {"name": "Дмитро", "gender": "m", "disc": "C", "role": "Завершувач"},
+    preview: "Завжди точний Дмитро зривав терміни й допустив помилки в звітах.",
+    setup: "Дмитро — педантичний і точний, раніше ніколи не зривав дедлайни. Але за останні три тижні він здав із запізненням на два дні звіт по клієнту А й на три дні звіт по бюджету, а в квартальному звіті колега знайшла три помилки в розрахунках. Дмитро став менше говорити на нарадах. Ви не знаєте, що сталося, і запросили його на розмову.",
+    opening: "Дмитро приходить із блокнотом і акуратно кладе його на стіл: «Я готовий. Це щодо звітів?» Видно, що він підготувався до розмови.",
+    start: {"trust": 50, "clarity": 50, "emotion": 50},
+    modelParts: [{"k": "S", "text": "За останні три тижні"}, {"k": "B", "text": "звіт по клієнту А ти здав на два дні пізніше, звіт по бюджету — на три, а в квартальному звіті колега знайшла три помилки в розрахунках."}, {"k": "I", "text": "Через це відділ продажів відклав зустріч із клієнтом на два дні, а Марії довелося повторно перевіряти розрахунки."}, {"k": "N", "text": "Раніше таких затримок не було, тому я хочу зрозуміти, що змінилося, і подумати, чим можу допомогти. Чого б ти хотів досягти?"}],
+    styleNote: "Дмитро — тип C. Люди цього типу цінують точність, логіку й час на обдумування. Розмиті формулювання («ти змінився», «щось не так») і емоційний тиск вони вважають несправедливими й відповідають вимогою доказів або замикаються. Відкриваються, коли отримують конкретні дані, чесність без звинувачень і зрозумілі кроки.",
+    nodes: {
+      open: { ctx: "Ви починаєте розмову. Дмитро чекає структури й фактів.", canRepair: true, retry: false, options: [
+        o("open_a", "Дмитре, дякую, що прийшов. Хочу поговорити про твої звіти за останні три тижні: спершу назву, що я бачив, а потім послухаю тебе.", ["frame"], "neutral", [8, 10, 5],
+          "«Гаразд. Мені б хотілося бачити конкретні дані, а не загальні враження».",
+          "Для C-типу чітка структура й обіцянка фактів знижують тривожність. Ви показали, що розмова буде справедливою.", "best"),
+        o("open_c", "Дмитре, радий тебе бачити! Як справи, як настрій? До речі, є кілька дрібниць зі звітами, але вони, мабуть, нічого страшного, не хвилюйся.", ["avoid", "vague"], "neutral", [2, -8, 3],
+          "«Які саме дрібниці? Мені б хотілося знати точно».",
+          "Нечіткий вступ тільки посилює тривогу. C-тип хоче конкретики, а не «дрібниць».", "neutral"),
+        o("open_b", "Дмитре, з тобою щось відбувається. Ти став неуважним і розсіяним, і це вже помітили інші, тому нам треба поговорити про твою роботу.", ["label", "vague"], "defensive", [-12, -8, -14],
+          "«Неуважним? Що саме? Наведи приклади, будь ласка, бо це звучить як упередження».",
+          "«Неуважний» — ярлик, «всі помітили» — розмита чутка. C-тип вимагає доказів і сприймає це як несправедливість.", "bad")
+      ] },
+      situation: { ctx: "Окресліть ситуацію: про які саме звіти й період ви говорите.", canRepair: true, retry: true, options: [
+        o("situation_a", "Хочу поговорити про твої звіти за останні три тижні: по клієнту А, по бюджету та квартальний звіт.", ["S"], "neutral", [4, 9, 3],
+          "Дмитро відкриває блокнот: «Три тижні, три звіти. Гаразд, слухаю».",
+          "Ви назвали період і конкретні звіти. Для C-типу це точна рамка, яка знижує тривожність.", "best"),
+        o("situation_b", "Хочу поговорити про твою роботу останнім часом і про те, як у тебе загалом ідуть робочі справи.", ["vague"], "neutral", [0, -5, 1],
+          "«Загалом? Мені б хотілося знати, які саме питання».",
+          "Без конкретних звітів і періоду C-тип не розуміє, про що йдеться.", "neutral"),
+        o("situation_c", "Хочу поговорити про те, що ти останнім часом працюєш гірше, ніж раніше, і, здається, просто розслабився.", ["gen", "mind"], "defensive", [-12, -5, -14],
+          "«Розслабився?! Я перевіряю кожну цифру двічі. Покажи, де саме гірше».",
+          "«Гірше, ніж раніше» — узагальнення, «розслабився» — домисел про мотив. C-тип вимагає доказів.", "bad")
+      ] },
+      behavior: { ctx: "Тепер опишіть, що сталося: лише факти, які можна перевірити.", canRepair: true, retry: true, options: [
+        o("behavior_a", "Звіт по клієнту А ти здав на два дні пізніше, звіт по бюджету — на три, а в квартальному звіті колега знайшла три помилки.", ["B"], "neutral", [4, 10, 2],
+          "Дмитро звіряється зі своїми записами: «Так, це відповідає моїм даним. Я не заперечую».",
+          "Ви назвали факти й цифри без оцінок. C-тип сприймає це як справедливість.", "best"),
+        o("behavior_b", "Є певні моменти зі звітами, які виглядають не так, як у тебе зазвичай, і їх помітили і колеги, і я, і керівництво.", ["vague"], "neutral", [0, -6, 2],
+          "«Які моменти? Дай, будь ласка, конкретні приклади».",
+          "Формулювання «певні моменти» не називають ні звітів, ні помилок. C-тип вимагає конкретики.", "neutral"),
+        o("behavior_c", "Ти став неуважним і недбалим, мабуть, просто перестав стежити за якістю, і саме тому звіти запізнюються й містять помилки.", ["label", "mind"], "defensive", [-14, -6, -16],
+          "«Недбалим?! Це твоя інтерпретація, нічим не підтверджена».",
+          "«Неуважний», «недбалий» — ярлики, «перестав стежити» — домисел. C-тип відповідає вимогою доказів і втрачає довіру.", "bad")
+      ] },
+      impact: { ctx: "Тепер поясніть наслідки: для відділу, для команди чи для вас.", canRepair: true, retry: true, options: [
+        o("impact_a", "Через затримку звітів відділ продажів відклав зустріч із клієнтом на два дні, а Марії довелося повторно перевіряти розрахунки.", ["I"], "open", [10, 14, 8],
+          "Дмитро відкладає ручку: «Два дні... і Марія. Я цього не врахував. Мені дуже неприємно».",
+          "Ви пов'язали дії з конкретними наслідками (зустріч, повторна перевірка). Для C-типу це логічно й переконливо.", "best"),
+        o("impact_b", "Мені це не подобається і трохи турбує, Дмитре, бо я не звик до такого від тебе, і хочеться, щоб усе було як раніше.", ["vague"], "neutral", [-2, -4, -2],
+          "«Що саме не подобається? Конкретно?» — Дмитро уточнює, але без конкретики не рухається.",
+          "Емоція без наслідків для C-типу порожня. Він чекає на логічний зв'язок.", "neutral"),
+        o("impact_c", "Ти підводиш весь відділ, Дмитре: через такі затримки ми зірвемо квартальний план, клієнти підуть, а всі зусилля марні.", ["catastrophe"], "defensive", [-12, -6, -14],
+          "«Клієнти підуть? Це перебільшення. Покажи цифри».",
+          "Перебільшення C-тип легко спростовує, і ви втрачаєте довіру до решти аргументів.", "bad")
+      ] },
+      repair: {
+        defensive: { ctx: "Дмитро вимагає доказів і сприймає розмову як несправедливу. Потрібно знизити напругу й повернутися до фактів.", options: [
+        o("repair_d_a", "Ти правий, моє формулювання було розмитим, вибач. Давай я назву конкретні дані та цифри, а потім уважно вислухаю тебе.", ["E", "frame"], "neutral", [10, 6, 14],
+          "«Дякую. Так мені значно легше розмовляти».",
+          "Ви визнали неточність і повернулися до фактів. C-тип відчув справедливість.", "best"),
+        o("repair_d_c", "Ну добре, можливо, я й помилявся, тож не будемо про це. Я не хотів тебе засмутити, нехай усе залишається як було.", ["vague"], "neutral", [3, -12, 6],
+          "«Тобто питання знято? Я хочу розуміти точно».",
+          "Ви зняли напругу, але відмовилися від повідомлення. Проблема лишилася, а ясність упала.", "neutral"),
+        o("repair_d_b", "Дмитре, не треба влаштовувати допит: я просто кажу, що бачу, і нічого несправедливого тут немає, тож заспокойся.", ["dismiss"], "defensive", [-8, -2, -10],
+          "«Це не допит. Я прошу доказів».",
+          "Ви знецінили його запит на точність, і він ще наполегливіше вимагає доказів.", "bad")
+        ] },
+        withdrawn: { ctx: "Дмитро замовк і щось записує в блокнот. Тиск зараз не допоможе.", options: [
+        o("repair_w_a", "Бачу, що ти замовк, і розумію, що тобі потрібен час. Мені важлива твоя перспектива: що б ти додав або виправив із сказаного?", ["E", "Q"], "neutral", [10, 6, 14],
+          "Дмитро піднімає очі: «Мені потрібно уточнити, що ви вважаєте нормою. Але я готовий слухати».",
+          "Ви визнали потребу в паузі й запросили його думку. C-тип отримав час і безпеку.", "best"),
+        o("repair_w_c", "Гаразд, бачу, що говорити зараз ти не готовий. Просто врахуй усе сказане й працюй далі, а до цього ми повернемося пізніше.", ["avoid"], "withdrawn", [-8, -4, -6],
+          "«Добре», — глухо відповідає Дмитро.",
+          "Ви закрили тему без діалогу. Формально сказано, але людина не почута.", "neutral"),
+        o("repair_w_b", "Дмитре, розумію, що розмова нелегка, але чому ти мовчиш? Мені потрібна твоя відповідь, і зараз, а не потім.", ["blame"], "withdrawn", [-10, -2, -12],
+          "Дмитро мовчки дописує щось у блокнот.",
+          "Вимога говорити й «чому» посилюють закритість.", "bad")
+        ] }
+      },
+      intent: { ctx: "Покажіть, що ви не звинувачуєте: назвіть свій намір і дізнайтеся, чого прагне Дмитро.", canRepair: false, retry: false, options: [
+        o("intent_a", "Я хочу розібратися, що змінилося, і допомогти. Розкажи, що заважає працювати так, як ти звик, і чого ти хочеш досягти?", ["N"], "open", [12, 6, 12],
+          "Дмитро видихає: «Мені додали два проєкти, а старі звіти ніхто не передав. Я точний лише за достатнього часу. Я не просив допомоги, щоб не здаватися некомпетентним».",
+          "Ви назвали свій намір (розібратися й допомогти) і запитали про його мету. Відповідь показала причину, у якій є й ваша частина: ви збільшили навантаження.", "best"),
+        o("intent_b", "Одразу скажу, що робити: прокидайся раніше, починай із найскладніших звітів і не відволікайся, тоді все вдасться наздогнати.", ["advice"], "neutral", [-4, -2, -4],
+          "«Дякую за пораду, але я так і роблю. Проблема в обсязі, а не в порядку».",
+          "Порада до розуміння причини. Ви не запитали про намір і обставини, тому порада не влучила.", "neutral"),
+        o("intent_c", "Усі зараз навантажені, і ніхто не скаржиться, тому не будемо перебільшувати: це робочий процес, і до нього треба звикати.", ["dismiss"], "withdrawn", [-10, -2, -10],
+          "«Зрозуміло», — Дмитро мовчки дивиться в блокнот.",
+          "Порівняння з іншими знецінює його досвід. Людина вирішує, що просити допомоги марно.", "bad")
+      ] },
+      close: { ctx: "Розмова добігає кінця. Домовтеся про конкретні кроки й завершіть її так, щоб Дмитро пішов із планом.", canRepair: false, retry: false, options: [
+        o("close_a", "Домовимося так: я знімаю з тебе один проєкт до кінця місяця, ти надсилаєш чернетку за два дні до дедлайну, а щоп'ятниці ми по 15 хвилин звіряємося. Дякую за відвертість.", ["A", "F"], "open", [14, 12, 10],
+          "«Це розумно. Я зможу гарантувати точність і строки, якщо навантаження зменшиться. Дякую, що врахували мій обсяг».",
+          "Домовленість двостороння: ви теж берете дію (знімаєте проєкт). C-тип сприймає це як чесність. Ви подякували й дали план.", "best"),
+        o("close_b", "Давай домовимося так: ти постараєшся не затримувати звіти й будеш уважнішим із розрахунками, а якщо виникнуть складнощі, ми це якось разом обговоримо. Я в тебе вірю.", ["vague"], "neutral", [0, -10, 0],
+          "«Постараюся», — відповідає Дмитро, але без конкретних критеріїв.",
+          "«Бути уважнішим» — не дія. Без критеріїв домовленість не можна перевірити.", "neutral"),
+        o("close_c", "З цього моменту правило таке: усі звіти ти здаєш за день до дедлайну, без винятків і без пояснень. Це не обговорюється, і я перевірятиму виконання кожного тижня.", ["dictate"], "defensive", [-8, 4, -10],
+          "«За день до дедлайну? За такого обсягу це нереально. Але гаразд, спробую».",
+          "Ясність зросла, але правило нав'язане й не враховує причину. Імовірно, воно не спрацює.", "bad")
+      ] }
+    }
+  }
+  ];
+
+  // ---------- Ядро гри ----------
+  function clamp(v) { return Math.max(0, Math.min(100, v)); }
+  function el(html) { var t = document.createElement("template"); t.innerHTML = html.trim(); return t.content.firstElementChild; }
+  function escHtml(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  function shuffle(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; }
+    return a;
+  }
+  function scenarioById(id) { return SCENARIOS.filter(function (s) { return s.id === id; })[0]; }
+  function moodLabel(sc, mood) { return MOODS[mood][sc.employee.gender === "f" ? "f" : "m"]; }
+  function moodNote(sc, mood) { return MOOD_NOTE[mood][sc.employee.gender === "f" ? "f" : "m"].replace("%n", sc.employee.name); }
+
+  function newRun(sc) {
+    var m = { trust: sc.start.trust, clarity: sc.start.clarity, emotion: sc.start.emotion };
+    return { nodeId: "open", metrics: m, mood: "neutral", history: [], repairUsed: false, repairReturn: null, repairRetry: false,
+      isRetry: false, lastReply: sc.opening, series: [{ trust: m.trust, clarity: m.clarity, emotion: m.emotion }] };
+  }
+
+  function nodeFor(sc, run) {
+    if (run.nodeId === "repair") return sc.nodes.repair[run.mood === "withdrawn" ? "withdrawn" : "defensive"];
+    return sc.nodes[run.nodeId];
+  }
+
+  // Застосувати вибір. Повертає id наступного вузла або "END"
+  function applyChoice(sc, run, opt) {
+    var node = nodeFor(sc, run);
+    var before = { trust: run.metrics.trust, clarity: run.metrics.clarity, emotion: run.metrics.emotion };
+    var after = {};
+    METRICS.forEach(function (mt) { after[mt.key] = clamp(before[mt.key] + opt.fx[mt.key]); });
+    var mood = opt.mood;
+    if (mood === "open" && after.trust < 35) mood = "neutral";
+    if (mood === "defensive" && before.trust >= 75 && before.emotion >= 70) mood = "neutral";
+    var best = node.options.filter(function (x) { return x.best; })[0];
+    var item = {
+      nodeId: run.nodeId, stepTitle: NODE_TITLES[run.nodeId], retry: !!run.isRetry, optionId: opt.id, kind: opt.kind, text: opt.text,
+      tags: opt.tags.slice(), expected: best.tags.slice(), why: opt.why, reply: opt.reply, mood: mood, moodBefore: run.mood, best: !!opt.best, bestText: best.text,
+      delta: { trust: after.trust - before.trust, clarity: after.clarity - before.clarity, emotion: after.emotion - before.emotion },
+      after: after
+    };
+    run.history.push(item);
+    run.metrics = after;
+    run.series.push({ trust: after.trust, clarity: after.clarity, emotion: after.emotion });
+    run.mood = mood;
+    run.lastReply = opt.reply;
+    var next;
+    if (run.nodeId === "repair") {
+      next = run.repairReturn; run.isRetry = run.repairRetry;
+    } else {
+      var idx = NODE_ORDER.indexOf(run.nodeId);
+      var failed = (mood === "defensive" || mood === "withdrawn");
+      if (node.canRepair && !run.repairUsed && failed) {
+        run.repairUsed = true; run.repairRetry = !!node.retry;
+        run.repairReturn = node.retry ? run.nodeId : NODE_ORDER[idx + 1];
+        next = "repair";
+      } else {
+        run.isRetry = false;
+        next = idx + 1 < NODE_ORDER.length ? NODE_ORDER[idx + 1] : "END";
+      }
+    }
+    if (next !== "END") run.nodeId = next;
+    return next;
+  }
+
+  function summarize(run) {
+    var cover = { S: false, B: false, I: false, N: false }, quote = { S: null, B: null, I: null, N: null };
+    var agreed = false, bad = {}, goodTags = 0, bestCount = 0, neutralCount = 0, badCount = 0;
+    run.history.forEach(function (h) {
+      h.tags.forEach(function (t) {
+        if (cover.hasOwnProperty(t) && !cover[t]) { cover[t] = true; quote[t] = h.text; }
+        if (t === "A") agreed = true;
+        if (TAGS[t] && !TAGS[t].good) bad[t] = (bad[t] || 0) + 1; else goodTags += 1;
+      });
+      if (h.kind === "best") bestCount += 1; else if (h.kind === "neutral") neutralCount += 1; else badCount += 1;
+    });
+    var m = run.metrics;
+    var score = Math.round((m.trust + m.clarity + m.emotion) / 3);
+    var sbi = (cover.S ? 1 : 0) + (cover.B ? 1 : 0) + (cover.I ? 1 : 0);
+    var sbii = sbi + (cover.N ? 1 : 0);
+    var level = (score >= 70 && sbi === 3 && agreed) ? "great" : (score >= 50 ? "partial" : "fail");
+    return { cover: cover, quote: quote, agreed: agreed, bad: bad, score: score, sbi: sbi, sbii: sbii, level: level, bestCount: bestCount, neutralCount: neutralCount, badCount: badCount, steps: run.history.length };
+  }
+
+  var KIND_META = {
+    best: { label: "Відмінна відповідь", cls: "best" },
+    neutral: { label: "Нейтральна відповідь", cls: "neutral" },
+    bad: { label: "Непідходяща відповідь", cls: "bad" }
+  };
+
+  var VERDICTS = {
+    great: { label: "Конструктивна розмова", text: "Ви дотрималися структури SBI, зберегли довіру й дійшли конкретної домовленості. Співрозмовник пішов зі зрозумілим планом і відчуттям поваги." },
+    partial: { label: "Частковий результат", text: "Розмова відбулася, але не повністю: частина повідомлення була нечіткою або викликала захист, чи домовленість лишилась розмитою. Розбір нижче покаже, де SBI спрацював, а де його підмінили оцінками чи розмитістю." },
+    fail: { label: "Розмова не вдалася", text: "Співрозмовник захистився чи замкнувся, а ясних домовленостей немає. Це нормальний досвід у тренажері: розбір нижче покаже, які саме формулювання вимкнули діалог і чим їх замінити." }
+  };
+
+  // ---------- Стан ----------
+  var STORAGE_PREFIX = "difficult-conversation-sbi:";
+  var app = document.getElementById("app");
+  var state = {
+    screen: "intro", studentName: "", scenarioId: null, run: null,
+    optionOrder: [], orderMemory: {}, prevOrders: {}, currOrders: {}, lastItem: null, saveStatus: "idle", teacherRows: null, teacherLoading: false
+  };
+
+  function currentScenario() { return scenarioById(state.scenarioId); }
+
+  function startScenario(id) {
+    state.scenarioId = id; state.run = newRun(currentScenario()); state.saveStatus = "idle";
+    // Розташування варіантів із попереднього проходження цієї ситуації: нове має відрізнятися в кожному слоті
+    state.prevOrders = state.orderMemory[id] || {};
+    state.currOrders = {};
+    state.orderMemory[id] = state.currOrders;
+    prepareNode(); state.screen = "talk"; render();
+  }
+  function orderKey() {
+    var run = state.run;
+    return run.nodeId === "repair" ? "repair:" + (run.mood === "withdrawn" ? "w" : "d") : run.nodeId;
+  }
+  // Випадкова перестановка, у якій жоден варіант не стоїть на тому ж місці, що й під час попереднього проходження
+  function arrangeOptions(ids, prev) {
+    var order = shuffle(ids);
+    if (!prev || prev.length !== ids.length) return order;
+    for (var tries = 0; tries < 60; tries++) {
+      var clash = order.some(function (id, i) { return prev[i] === id; });
+      if (!clash) return order;
+      order = shuffle(ids);
+    }
+    // запасний варіант: циклічний зсув попереднього порядку
+    return prev.slice(1).concat(prev[0]);
+  }
+  function prepareNode() {
+    var sc = currentScenario(); var node = nodeFor(sc, state.run);
+    var key = orderKey();
+    var ids = node.options.map(function (x) { return x.id; });
+    state.optionOrder = arrangeOptions(ids, state.prevOrders[key]);
+    state.currOrders[key] = state.optionOrder.slice();
+  }
+
+  // ---------- Компоненти ----------
+  function metricsHtml(run, deltas) {
+    return '<div class="metrics">' + METRICS.map(function (mt) {
+      var v = run.metrics[mt.key];
+      var d = deltas ? deltas[mt.key] : 0;
+      var dHtml = d ? '<span class="m-delta ' + (d > 0 ? "up" : "down") + '">' + (d > 0 ? "+" : "−") + Math.abs(d) + '</span>' : "";
+      return '<div class="metric"><div class="m-head"><span class="m-name">' + mt.icon + ' ' + mt.label + '</span><span class="m-val">' + v + dHtml + '</span></div>' +
+        '<div class="m-track"><div class="m-fill" style="width:' + v + '%;background:' + mt.color + '"></div></div></div>';
+    }).join("") + '</div>';
+  }
+  function moodChip(sc, mood) { return '<span class="mood-chip ' + mood + '"><span class="mood-emoji">' + MOODS[mood].emoji + '</span>' + moodLabel(sc, mood) + '</span>'; }
+  function personHeader(sc, mood) {
+    return '<div class="person"><div class="avatar ' + sc.employee.disc + '">' + sc.employee.name.charAt(0) + '</div>' +
+      '<div class="p-info"><div class="p-name">' + sc.employee.name + '</div><div class="p-sub">' + sc.employee.role + ' · тип ' + sc.employee.disc + '</div></div>' + moodChip(sc, mood) + '</div>';
+  }
+  function tileHtml(tag, state, extraText) {
+    var t = TAGS[tag];
+    var mark = state === "present" ? "✓" : "✕";
+    var what = extraText || t.what;
+    return '<div class="tile ' + state + ' ' + t.cls + '"><div class="t-ico">' + t.icon + '</div><div class="t-body"><div class="t-name">' + t.short + '</div><div class="t-what">' + what + '</div></div><div class="t-mark">' + mark + '</div></div>';
+  }
+  // Піктограми розбору: що мало прозвучати (✓/✕) і що було помилкою
+  function feedbackTilesHtml(it) {
+    var expected = it.expected || [];
+    var html = '<div class="tiles-title">Що мало прозвучати в цій відповіді</div>' +
+      expected.map(function (tg) { return tileHtml(tg, it.tags.indexOf(tg) !== -1 ? "present" : "missing"); }).join("");
+    var extras = it.tags.filter(function (tg) { return TAGS[tg].good && expected.indexOf(tg) === -1; });
+    if (extras.length) html += extras.map(function (tg) { return tileHtml(tg, "present"); }).join("");
+    var flaws = it.tags.filter(function (tg) { return !TAGS[tg].good; });
+    if (flaws.length) html += '<div class="tiles-title">Що було зайвим або помилковим</div>' +
+      flaws.map(function (tg) { return tileHtml(tg, TAGS[tg].level === "soft" ? "soft" : "flaw"); }).join("");
+    return html;
+  }
+
+  var NODE_SHORT = { open: "Старт", situation: "S", behavior: "B", impact: "I", intent: "Intent", close: "Фінал" };
+  function stepperHtml(run) {
+    var cur = stepIndex(run);
+    return '<div class="stepper">' + NODE_ORDER.map(function (id, i) {
+      var cls = i < cur ? "done" : (i === cur ? "cur" : "todo");
+      return '<div class="st-item ' + cls + '"><div class="st-ico">' + NODE_ICONS[id] + '</div><div class="st-lab">' + NODE_SHORT[id] + '</div></div>';
+    }).join('<div class="st-line"></div>') + '</div>';
+  }
+
+  function stepIndex(run) {
+    var id = run.nodeId === "repair" ? run.repairReturn : run.nodeId;
+    var i = NODE_ORDER.indexOf(id); return i < 0 ? 0 : i;
+  }
+
+  // ---------- Екрани ----------
+  function renderIntro() {
+    var primer = ["S", "B", "I", "N"].map(function (k) {
+      var m = SBI_META[k];
+      return '<div class="el-card ' + TAGS[k].cls + '"><div class="el-ico">' + TAGS[k].icon + '</div><div class="el-body"><div class="el-name">' + m.title + '</div><div class="el-def">' + m.def + '</div><div class="el-ex">' + m.example + '</div></div></div>';
+    }).join("");
+    var flawKeys = Object.keys(TAGS).filter(function (k) { return !TAGS[k].good; });
+    var flaws = flawKeys.map(function (k) {
+      return '<div class="flaw-item ' + TAGS[k].level + '"><span class="fi-ico">' + TAGS[k].icon + '</span>' + TAGS[k].label + '</div>';
+    }).join("");
+    var cards = SCENARIOS.map(function (sc) {
+      return '<button class="scenario-card" data-id="' + sc.id + '"><div class="sc-emoji">' + sc.emoji + '</div><div class="sc-body"><div class="sc-title">' + sc.title +
+        '</div><div class="sc-sub">' + sc.preview + '</div><div class="sc-meta"><span class="mini-badge ' + sc.employee.disc + '">' + sc.employee.disc + '</span> ' + sc.employee.name + ' · ' + sc.employee.role + '</div></div></button>';
+    }).join("");
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<p class="kicker">Практичне заняття 5 · Бізнес-лідерство</p>' +
+      '<h1 class="title serif">Складна розмова: зворотний зв’язок за моделлю SBI-I</h1>' +
+      '<p class="lead">Мета гри — навчитися обирати формулювання, у яких є елементи моделі: <b>Ситуація</b>, <b>Поведінка</b>, <b>Вплив</b> та <b>Намір</b>. Кожен елемент має власний крок розмови. На кожному кроці є три репліки: відмінна, нейтральна й непідходяща. Обирайте одну й дивіться, як реагує співрозмовник: відкривається, захищається чи замикається. Після кожної відповіді ви одразу побачите піктограми елементів, які прозвучали чи ні.</p>' +
+      '<label class="field-label">Шлях розмови: шість кроків</label>' +
+      '<div class="roadmap">' + [["open", "Старт", "створіть безпечну атмосферу й рамку розмови"], ["situation", "S · Ситуація", "назвіть, про який випадок мова (час і місце)"], ["behavior", "B · Поведінка", "опишіть дії, які можна побачити чи почути"], ["impact", "I · Вплив", "поясніть наслідки для команди, роботи чи для вас"], ["intent", "Intent · Намір", "назвіть свій намір і дізнайтеся про намір людини"], ["close", "Фінал", "домовтеся про конкретні кроки й завершіть розмову"]].map(function (r, i) {
+        return '<div class="rm-item"><div class="rm-ico">' + NODE_ICONS[r[0]] + '</div><div class="rm-body"><div class="rm-name">' + (i + 1) + '. ' + r[1] + '</div><div class="rm-desc">' + r[2] + '</div></div></div>';
+      }).join("") + '</div>' +
+      '<label class="field-label">Ваше ім’я (необов’язково)</label>' +
+      '<input class="text-input" id="name-input" type="text" placeholder="Наприклад, Анна К." value="' + escHtml(state.studentName) + '" />' +
+      '<label class="field-label">Модель SBI-I: чотири елементи</label>' +
+      '<div class="el-list">' + primer + '</div>' +
+      '<label class="field-label">Типові помилки</label>' +
+      '<div class="flaw-grid">' + flaws + '</div>' +
+      '<div class="note-box"><b>Три типи відповідей.</b> <span class="kind-badge best">Відмінна</span> містить потрібні елементи моделі; <span class="kind-badge neutral">Нейтральна</span> не шкодить, але розмита чи ухильна; <span class="kind-badge bad">Непідходяща</span> містить помилку, яка запускає захист або замкненість.</div>' +
+      '<label class="field-label">Оберіть ситуацію</label>' +
+      '<div class="scenario-list">' + cards + '</div>' +
+      '<button class="teacher-link" id="teacher-link">Перегляд результатів групи (для викладача)</button>' +
+      '</div></div>'
+    );
+    var input = card.querySelector("#name-input");
+    input.addEventListener("input", function () { state.studentName = input.value.trim(); });
+    card.querySelectorAll(".scenario-card").forEach(function (b) {
+      b.addEventListener("click", function () { state.studentName = input.value.trim(); startScenario(b.getAttribute("data-id")); });
+    });
+    card.querySelector("#teacher-link").addEventListener("click", function () { state.screen = "teacher"; render(); loadTeacherRows(); });
+    return card;
+  }
+
+  function renderTalk() {
+    var sc = currentScenario(), run = state.run, node = nodeFor(sc, run);
+    var pct = Math.round((stepIndex(run) / NODE_ORDER.length) * 100);
+    var first = run.history.length === 0;
+    var title = NODE_TITLES[run.nodeId];
+    var ctx = node.ctx;
+    if (run.nodeId === "repair") ctx = node.ctx;
+    var retryNote = run.isRetry ? '<div class="retry-note">Після паузи ви повертаєтесь до цього кроку ще раз.</div>' : "";
+    var options = state.optionOrder.map(function (id) { return node.options.filter(function (x) { return x.id === id; })[0]; });
+    var opts = options.map(function (op, i) {
+      return '<button class="reply-btn" data-id="' + op.id + '"><span class="reply-num">' + String.fromCharCode(65 + i) + '</span><span class="reply-text">' + escHtml(op.text) + '</span></button>';
+    }).join("");
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      stepperHtml(run) +
+      '<p class="step-count">' + sc.emoji + ' ' + sc.title + ' · Крок ' + (stepIndex(run) + 1) + ' із ' + NODE_ORDER.length + ' · ' + NODE_ICONS[run.nodeId] + ' ' + title + '</p>' +
+      personHeader(sc, run.mood) +
+      metricsHtml(run, null) +
+      (first ? '<div class="setup-box"><b>Ситуація.</b> ' + sc.setup + '</div>' : "") +
+      '<div class="bubble emp"><div class="b-who">' + sc.employee.name + '</div>' + (first ? sc.opening : run.lastReply) + '</div>' +
+      (first ? "" : '<div class="mood-note">' + moodNote(sc, run.mood) + '</div>') +
+      retryNote +
+      '<div class="ctx-box">' + ctx + '</div>' +
+      '<details class="remind"><summary>Нагадування: модель SBI-I</summary><div class="remind-row">' +
+        ["S", "B", "I", "N"].map(function (k) { return '<div class="remind-item ' + TAGS[k].cls + '"><span class="r-ico">' + TAGS[k].icon + '</span><span>' + SBI_META[k].name + '</span></div>'; }).join("") +
+      '</div></details>' +
+      '<label class="field-label">Що ви скажете?</label>' +
+      '<div class="reply-list">' + opts + '</div>' +
+      '</div></div>'
+    );
+    card.querySelectorAll(".reply-btn").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var opt = node.options.filter(function (x) { return x.id === b.getAttribute("data-id"); })[0];
+        var prevMood = run.mood;
+        var next = applyChoice(sc, run, opt);
+        state.lastItem = run.history[run.history.length - 1];
+        state.lastItem.prevMood = prevMood; state.nextNode = next;
+        state.screen = "reaction"; render();
+      });
+    });
+    return card;
+  }
+
+  // Розбір відповіді одразу після вибору
+  function liveFeedbackHtml(it) {
+    return '<div class="fb-live ' + KIND_META[it.kind].cls + '">' +
+      '<div class="fb-live-title">Розбір вашої відповіді</div>' +
+      '<div class="kind-row"><span class="kind-badge ' + KIND_META[it.kind].cls + '">' + KIND_META[it.kind].label + '</span></div>' +
+      feedbackTilesHtml(it) +
+      '<p class="sc-why">' + escHtml(it.why) + '</p>' +
+      (it.kind === "best" ? "" : '<p class="fb-hint">Яка саме репліка була б відмінною, дізнаєтеся в детальному розборі в кінці.</p>') +
+      '</div>';
+  }
+
+  function renderReaction() {
+    var sc = currentScenario(), run = state.run, it = state.lastItem;
+    var isEnd = state.nextNode === "END";
+    var repairNext = state.nextNode === "repair";
+    var cta = isEnd ? "Переглянути вердикт →" : "Продовжити розмову →";
+    var moodChange = it.prevMood !== it.mood
+      ? moodChip(sc, it.prevMood) + '<span class="mood-arrow">→</span>' + moodChip(sc, it.mood)
+      : moodChip(sc, it.mood);
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<p class="step-count">' + sc.emoji + ' ' + sc.title + ' · ' + it.stepTitle + '</p>' +
+      '<div class="bubble mgr"><div class="b-who">Ви</div>' + escHtml(it.text) + '</div>' +
+      '<div class="bubble emp ' + it.mood + '"><div class="b-who">' + sc.employee.name + '</div>' + it.reply + '</div>' +
+      '<div class="mood-row">' + moodChange + '</div>' +
+      metricsHtml(run, it.delta) +
+      liveFeedbackHtml(it) +
+      (repairNext ? '<div class="note-box">Розмова напружилась. Спробуйте відновити контакт, перш ніж рухатися далі.</div>' : "") +
+      '<button class="btn btn-primary" id="next-btn">' + cta + '</button>' +
+      '</div></div>'
+    );
+    card.querySelector("#next-btn").addEventListener("click", function () {
+      if (isEnd) { state.screen = "verdict"; render(); saveResultToStorage(); }
+      else { prepareNode(); state.screen = "talk"; render(); }
+    });
+    return card;
+  }
+
+  function chartSvg(series) {
+    var W = 320, H = 130, padL = 26, padR = 10, padT = 10, padB = 20;
+    var n = series.length, stepX = n > 1 ? (W - padL - padR) / (n - 1) : 0;
+    function X(i) { return padL + i * stepX; }
+    function Y(v) { return padT + (H - padT - padB) * (1 - v / 100); }
+    var grid = [0, 50, 100].map(function (g) {
+      return '<line x1="' + padL + '" y1="' + Y(g) + '" x2="' + (W - padR) + '" y2="' + Y(g) + '" stroke="#DDE4F5" stroke-width="1"/><text x="' + (padL - 6) + '" y="' + (Y(g) + 3) + '" font-size="9" fill="#5B6685" text-anchor="end">' + g + '</text>';
+    }).join("");
+    var lines = METRICS.map(function (mt) {
+      var pts = series.map(function (s, i) { return X(i) + "," + Y(s[mt.key]); }).join(" ");
+      var dots = series.map(function (s, i) { return '<circle cx="' + X(i) + '" cy="' + Y(s[mt.key]) + '" r="2.6" fill="' + mt.color + '"/>'; }).join("");
+      return '<polyline points="' + pts + '" fill="none" stroke="' + mt.color + '" stroke-width="2"/>' + dots;
+    }).join("");
+    var xl = series.map(function (s, i) { return '<text x="' + X(i) + '" y="' + (H - 6) + '" font-size="9" fill="#5B6685" text-anchor="middle">' + (i === 0 ? "старт" : i) + '</text>'; }).join("");
+    return '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" role="img" aria-label="Динаміка показників">' + grid + lines + xl + '</svg>' +
+      '<div class="chart-legend">' + METRICS.map(function (mt) { return '<span><i style="background:' + mt.color + '"></i>' + mt.label + '</span>'; }).join("") + '</div>';
+  }
+
+  function sbiChecklistHtml(sum) {
+    return ["S", "B", "I", "N"].map(function (k) {
+      var ok = sum.cover[k];
+      var what = ok ? 'Прозвучало: «' + escHtml(sum.quote[k]) + '»' : 'Не прозвучало. ' + SBI_META[k].hint;
+      return tileHtml(k, ok ? "present" : "missing", what);
+    }).join("");
+  }
+
+  function historyHtml(run) {
+    return run.history.map(function (h, i) {
+      var sc = currentScenario();
+      return '<div class="step-card ' + KIND_META[h.kind].cls + '">' +
+        '<div class="sc-head"><span class="sc-n">' + (i + 1) + '</span><b>' + h.stepTitle + (h.retry ? ' · повторна спроба' : '') + '</b><span class="sc-mood">' + MOODS[h.mood].emoji + ' ' + moodLabel(sc, h.mood) + '</span></div>' +
+        '<div class="kind-row"><span class="kind-badge ' + KIND_META[h.kind].cls + '">' + KIND_META[h.kind].label + '</span></div>' +
+        '<div class="sc-line">«' + escHtml(h.text) + '»</div>' +
+        feedbackTilesHtml(h) +
+        '<p class="sc-why">' + escHtml(h.why) + '</p>' +
+        '<div class="sc-reply">' + sc.employee.name + ': ' + h.reply + '</div>' +
+        (h.kind === "best" ? "" : '<div class="sc-best"><b>Відмінна відповідь була б такою:</b> «' + escHtml(h.bestText) + '»</div>') +
+        '</div>';
+    }).join("");
+  }
+
+  function modelBoxHtml(sc) {
+    var rows = sc.modelParts.map(function (m) {
+      return '<div class="mp-row"><div class="mp-ico ' + TAGS[m.k].cls + '">' + TAGS[m.k].icon + '</div><div class="mp-text"><span class="mp-tag">' + TAGS[m.k].short + '</span>' + escHtml(m.text) + '</div></div>';
+    }).join("");
+    return '<div class="model-box"><div class="mb-title">Модельна SBI-I репліка для цієї ситуації</div>' + rows + '</div>';
+  }
+
+  function badSummaryHtml(sum) {
+    var keys = Object.keys(sum.bad).sort(function (a, b) { return sum.bad[b] - sum.bad[a]; });
+    if (keys.length === 0) return '<div class="review-ok">Типових помилок не виявлено: ні ярликів, ні узагальнень, ні погроз.</div>';
+    return '<div class="insight-box"><div class="ib-title">Типові помилки в розмові</div><div class="tag-row">' +
+      keys.map(function (k) { return '<span class="tag-chip bad">' + TAGS[k].icon + ' ' + TAGS[k].label + ' × ' + sum.bad[k] + '</span>'; }).join("") + '</div></div>';
+  }
+
+  // Пояснення, чому вердикт не найвищий, хоча показники високі
+  function verdictReason(sum) {
+    if (sum.level !== "partial" || sum.score < 70) return "";
+    var missing = [];
+    if (!sum.cover.S) missing.push("ситуацію");
+    if (!sum.cover.B) missing.push("поведінку");
+    if (!sum.cover.I) missing.push("вплив");
+    var parts = [];
+    if (missing.length) parts.push("ви не назвали " + missing.join(", "));
+    if (!sum.agreed) parts.push("не було конкретної домовленості");
+    if (!parts.length) return "";
+    return '<p class="v-reason">Показники хороші, але для найвищого вердикту не вистачило: ' + parts.join("; ") + '.</p>';
+  }
+
+  function renderVerdict() {
+    var sc = currentScenario(), run = state.run, sum = summarize(run), v = VERDICTS[sum.level];
+    var saveNote = "";
+    if (state.saveStatus === "saving") saveNote = "Зберігаємо результат…";
+    else if (state.saveStatus === "saved") saveNote = "Результат збережено.";
+    else if (state.saveStatus === "failed") saveNote = "Результат сформовано, але не вдалося зберегти для викладача.";
+    var plain = plainTextExport();
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<p class="kicker" style="text-align:center;">' + (state.studentName ? escHtml(state.studentName) + " · " : "") + sc.emoji + ' ' + sc.title + '</p>' +
+      '<div class="verdict-card ' + sum.level + '"><div class="v-label">Вердикт розмови</div><div class="v-title">' + v.label + '</div><p>' + v.text + '</p>' + verdictReason(sum) +
+        '<div class="v-score"><span>' + sum.score + '</span> / 100 · SBI-I: ' + sum.sbii + ' з 4 · ' + (sum.agreed ? "домовленість є" : "домовленості немає") + '</div>' +
+        '<div class="v-kinds">' + (sum.sbii === 4 ? "🏅 Повна модель SBI-I: усі чотири елементи прозвучали. " : "") + 'Відмінних відповідей: ' + sum.bestCount + ' · нейтральних: ' + sum.neutralCount + ' · непідходящих: ' + sum.badCount + '</div></div>' +
+      '<div class="end-mood">' + personHeader(sc, run.mood) + '</div>' +
+      metricsHtml(run, null) +
+      '<label class="field-label">Динаміка показників</label><div class="chart-box">' + chartSvg(run.series) + '</div>' +
+      '<label class="field-label">Де спрацювала модель SBI-I</label>' + sbiChecklistHtml(sum) +
+      '<div class="next-box"><div class="nb-title">Що далі?</div>' +
+        '<p>Спробуйте ще раз: варіанти відповідей розташовані по-іншому, а розмова може піти інакше. Або оберіть іншу ситуацію.</p>' +
+        '<div class="result-actions">' +
+          '<button class="btn btn-primary" id="retry-btn">Пройти ще раз</button>' +
+          '<button class="btn btn-secondary" id="other-btn">Інша ситуація</button>' +
+          '<button class="btn btn-secondary" id="copy-btn">Скопіювати результат</button>' +
+        '</div></div>' +
+      '<details class="deep"><summary>Показати детальний розбір ситуації</summary>' +
+        '<div class="deep-body">' +
+          '<p class="deep-lead">Тут ви побачите, які репліки були б відмінними, і пояснення до кожного кроку. Якщо хочете пройти гру без підказок, пропустіть цей розділ і запустіть її ще раз.</p>' +
+          badSummaryHtml(sum) +
+          '<label class="field-label">Розбір вашої розмови по кроках</label>' + historyHtml(run) +
+          modelBoxHtml(sc) +
+          '<div class="note-box"><b>Чому ' + sc.employee.name + ' реагував' + (sc.employee.gender === "f" ? "ла" : "") + ' саме так.</b> ' + sc.styleNote + '</div>' +
+        '</div></details>' +
+      (saveNote ? '<p class="save-note">' + saveNote + '</p>' : "") +
+      '<textarea id="copy-fallback-area" style="display:none;margin-top:12px;width:100%;min-height:110px;padding:10px;border-radius:10px;border:1.5px solid var(--line);font-size:11.5px;color:var(--muted);background:var(--surface);" readonly>' + escHtml(plain) + '</textarea>' +
+      '<button class="teacher-link" id="teacher-link">Перегляд результатів групи (для викладача)</button>' +
+      '</div></div>'
+    );
+    card.querySelector("#copy-btn").addEventListener("click", function (e) { copyToClipboard(plainTextExport(), e.currentTarget); });
+    card.querySelector("#retry-btn").addEventListener("click", function () { startScenario(state.scenarioId); });
+    card.querySelector("#other-btn").addEventListener("click", function () { state.screen = "intro"; render(); });
+    card.querySelector("#teacher-link").addEventListener("click", function () { state.screen = "teacher"; render(); loadTeacherRows(); });
+    return card;
+  }
+
+  // ---------- Експорт, збереження, викладач ----------
+  function plainTextExport() {
+    var sc = currentScenario(), run = state.run, sum = summarize(run), v = VERDICTS[sum.level];
+    var L = [];
+    L.push("Складна розмова (SBI-I): " + sc.title);
+    if (state.studentName) L.push("Студент: " + state.studentName);
+    L.push("Співрозмовник: " + sc.employee.name + " (" + sc.employee.disc + ", " + sc.employee.role + ")");
+    L.push("");
+    L.push("Вердикт: " + v.label + " · підсумковий бал " + sum.score + " / 100");
+    L.push("Довіра: " + run.metrics.trust + " · Ясність: " + run.metrics.clarity + " · Емоційний стан: " + run.metrics.emotion);
+    L.push("SBI-I: ситуація " + (sum.cover.S ? "так" : "ні") + ", поведінка " + (sum.cover.B ? "так" : "ні") + ", вплив " + (sum.cover.I ? "так" : "ні") + ", намір " + (sum.cover.N ? "так" : "ні") + "; домовленість " + (sum.agreed ? "є" : "немає"));
+    L.push("");
+    run.history.forEach(function (h, i) {
+      L.push((i + 1) + ". " + h.stepTitle + (h.retry ? " (повторно)" : "") + " — [" + KIND_META[h.kind].label.toLowerCase() + "]");
+      L.push("   Ви: «" + h.text + "»");
+      L.push("   Реакція: " + MOODS[h.mood].emoji + " " + moodLabel(sc, h.mood) + " · " + h.tags.map(function (t) { return (TAGS[t].good ? "+" : "−") + TAGS[t].icon + " " + TAGS[t].label; }).join(", "));
+    });
+    return L.join("\n");
+  }
+
+  function copyToClipboard(text, btn) {
+    function ok() { btn.textContent = "Скопійовано ✓"; setTimeout(function () { btn.textContent = "Скопіювати результат"; }, 1800); }
+    function fail() { var ta = document.getElementById("copy-fallback-area"); if (ta) { ta.style.display = "block"; ta.focus(); ta.select(); } }
+    if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(ok).catch(fail); }
+    else {
+      try {
+        var temp = document.createElement("textarea"); temp.value = text; temp.style.position = "fixed"; temp.style.opacity = "0";
+        document.body.appendChild(temp); temp.focus(); temp.select();
+        var success = document.execCommand("copy"); document.body.removeChild(temp);
+        if (success) ok(); else fail();
+      } catch (e) { fail(); }
+    }
+  }
+
+  function saveResultToStorage() {
+    if (!window.storage) return;
+    var sc = currentScenario(), run = state.run, sum = summarize(run), v = VERDICTS[sum.level];
+    state.saveStatus = "saving";
+    var key = STORAGE_PREFIX + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
+    var payload = {
+      name: state.studentName || "Анонім", scenarioId: sc.id, scenarioTitle: sc.title,
+      trust: run.metrics.trust, clarity: run.metrics.clarity, emotion: run.metrics.emotion,
+      score: sum.score, level: sum.level, verdict: v.label,
+      sbi: { S: sum.cover.S, B: sum.cover.B, I: sum.cover.I, N: sum.cover.N }, agreed: sum.agreed, bad: sum.bad,
+      path: run.history.map(function (h) { return { nodeId: h.nodeId, optionId: h.optionId, kind: h.kind, best: h.best, tags: h.tags, mood: h.mood, retry: h.retry }; }),
+      timestamp: Date.now()
+    };
+    window.storage.set(key, JSON.stringify(payload), true).then(function (r) {
+      state.saveStatus = r ? "saved" : "failed"; render();
+    }).catch(function () { state.saveStatus = "failed"; render(); });
+  }
+
+  function loadTeacherRows() {
+    state.teacherLoading = true; render();
+    if (!window.storage) { state.teacherRows = []; state.teacherLoading = false; render(); return; }
+    window.storage.list(STORAGE_PREFIX, true).then(function (listRes) {
+      var keys = (listRes && listRes.keys) || [];
+      if (keys.length === 0) { state.teacherRows = []; state.teacherLoading = false; render(); return; }
+      var promises = keys.map(function (k) {
+        return window.storage.get(k, true).then(function (r) { try { return JSON.parse(r.value); } catch (e) { return null; } }).catch(function () { return null; });
+      });
+      Promise.all(promises).then(function (rows) {
+        rows = rows.filter(Boolean).sort(function (a, b) { return b.timestamp - a.timestamp; });
+        state.teacherRows = rows; state.teacherLoading = false; render();
+      });
+    }).catch(function () { state.teacherRows = []; state.teacherLoading = false; render(); });
+  }
+
+  function csvEscape(t) { return '"' + String(t).replace(/"/g, '""') + '"'; }
+  function downloadCsv() {
+    var rows = state.teacherRows || [];
+    var header = ["Ім'я", "Ситуація", "Довіра", "Ясність", "Емоційний стан", "Бал", "Вердикт", "S", "B", "I", "Намір", "Домовленість", "Кроків", "Відмінних", "Нейтральних", "Непідходящих", "Типові помилки", "Дата"];
+    var lines = [header.map(csvEscape).join(";")];
+    rows.forEach(function (r) {
+      var path = r.path || [];
+      var bestN = path.filter(function (p) { return p.kind === "best"; }).length;
+      var neutN = path.filter(function (p) { return p.kind === "neutral"; }).length;
+      var badN = path.filter(function (p) { return p.kind === "bad"; }).length;
+      var bad = Object.keys(r.bad || {}).map(function (k) { return (TAGS[k] ? TAGS[k].label : k) + "×" + r.bad[k]; }).join(", ");
+      lines.push([csvEscape(r.name), csvEscape(r.scenarioTitle), r.trust, r.clarity, r.emotion, r.score, csvEscape(r.verdict),
+        r.sbi && r.sbi.S ? "так" : "ні", r.sbi && r.sbi.B ? "так" : "ні", r.sbi && r.sbi.I ? "так" : "ні", r.sbi && r.sbi.N ? "так" : "ні", r.agreed ? "так" : "ні",
+        path.length, bestN, neutN, badN, csvEscape(bad), csvEscape(new Date(r.timestamp).toLocaleString("uk-UA"))].join(";"));
+    });
+    var blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a"); a.href = url; a.download = "difficult-conversation-results.csv";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  }
+
+  function teacherStatsHtml(rows) {
+    var out = "";
+    SCENARIOS.forEach(function (sc) {
+      var rs = rows.filter(function (r) { return r.scenarioId === sc.id; });
+      if (rs.length === 0) return;
+      var n = rs.length;
+      function avg(f) { return Math.round(rs.reduce(function (s, r) { return s + (r[f] || 0); }, 0) / n); }
+      function pct(f) { return Math.round(rs.filter(f).length / n * 100) + "%"; }
+      var levels = { great: 0, partial: 0, fail: 0 };
+      rs.forEach(function (r) { if (levels.hasOwnProperty(r.level)) levels[r.level] += 1; });
+      var nodeStats = {};
+      rs.forEach(function (r) { (r.path || []).forEach(function (p) {
+        if (p.nodeId === "repair") return;
+        var s = nodeStats[p.nodeId] = nodeStats[p.nodeId] || { n: 0, best: 0, neutral: 0, badN: 0, bad: {} };
+        s.n += 1;
+        if (p.kind === "best") s.best += 1; else if (p.kind === "neutral") s.neutral += 1; else s.badN += 1;
+        if (p.kind !== "best") (p.tags || []).forEach(function (t) { if (TAGS[t] && !TAGS[t].good) s.bad[t] = (s.bad[t] || 0) + 1; });
+      }); });
+      var nodeRows = NODE_ORDER.filter(function (id) { return nodeStats[id]; }).map(function (id) {
+        var s = nodeStats[id], top = null;
+        Object.keys(s.bad).forEach(function (t) { if (!top || s.bad[t] > s.bad[top]) top = t; });
+        return '<tr><td>' + NODE_TITLES[id] + '</td><td>' + Math.round(s.best / s.n * 100) + '%</td><td>' + Math.round(s.neutral / s.n * 100) + '%</td><td>' + Math.round(s.badN / s.n * 100) + '%</td><td>' + (top ? TAGS[top].icon + " " + TAGS[top].label : "—") + '</td></tr>';
+      }).join("");
+      out += '<label class="field-label" style="margin-top:22px;">' + sc.emoji + ' ' + sc.title + ' · ' + n + ' проходжень</label>' +
+        '<div class="table-scroll"><table class="results-table"><thead><tr><th>Довіра</th><th>Ясність</th><th>Емоції</th><th>S</th><th>B</th><th>I</th><th>Намір</th><th>Домовленість</th></tr></thead><tbody><tr>' +
+        '<td>' + avg("trust") + '</td><td>' + avg("clarity") + '</td><td>' + avg("emotion") + '</td>' +
+        '<td>' + pct(function (r) { return r.sbi && r.sbi.S; }) + '</td><td>' + pct(function (r) { return r.sbi && r.sbi.B; }) + '</td><td>' + pct(function (r) { return r.sbi && r.sbi.I; }) + '</td><td>' + pct(function (r) { return r.sbi && r.sbi.N; }) + '</td><td>' + pct(function (r) { return r.agreed; }) + '</td></tr></tbody></table></div>' +
+        '<div class="note-box" style="margin-top:10px;">Вердикти: конструктивна розмова — ' + levels.great + ', частковий результат — ' + levels.partial + ', розмова не вдалася — ' + levels.fail + '.</div>' +
+        '<div class="table-scroll"><table class="results-table"><thead><tr><th>Крок</th><th>Відмінна</th><th>Нейтральна</th><th>Непідходяща</th><th>Часта помилка</th></tr></thead><tbody>' + nodeRows + '</tbody></table></div>';
+    });
+    return out;
+  }
+
+  function renderTeacher() {
+    var rows = state.teacherRows;
+    var bodyHtml;
+    if (state.teacherLoading) bodyHtml = '<p class="empty-note">Завантаження результатів…</p>';
+    else if (!rows || rows.length === 0) bodyHtml = '<p class="empty-note">Поки що ніхто не пройшов тренажер за цим посиланням.</p>';
+    else {
+      var trs = rows.map(function (r) {
+        return '<tr><td>' + escHtml(r.name) + '</td><td>' + escHtml(r.scenarioTitle || "") + '</td><td>' + r.score + '</td><td>' + escHtml(r.verdict || "") + '</td><td>' + new Date(r.timestamp).toLocaleString("uk-UA") + '</td></tr>';
+      }).join("");
+      bodyHtml = '<div class="table-scroll"><table class="results-table"><thead><tr><th>Студент</th><th>Ситуація</th><th>Бал</th><th>Вердикт</th><th>Дата</th></tr></thead><tbody>' + trs + '</tbody></table></div>' + teacherStatsHtml(rows);
+    }
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<div class="teacher-header"><h1 class="title serif" style="margin:0;font-size:22px;">Результати групи</h1><button class="icon-btn" id="refresh-btn">Оновити</button></div>' +
+      bodyHtml +
+      '<div class="result-actions"><button class="btn btn-secondary" id="csv-btn"' + ((!rows || rows.length === 0) ? " disabled" : "") + '>Завантажити CSV</button><button class="btn btn-secondary" id="back-btn">← Назад</button></div>' +
+      '</div></div>'
+    );
+    card.querySelector("#refresh-btn").addEventListener("click", loadTeacherRows);
+    card.querySelector("#back-btn").addEventListener("click", function () { state.screen = state.run && state.run.history.length && state.nextNode === "END" ? "verdict" : "intro"; render(); });
+    var csvBtn = card.querySelector("#csv-btn");
+    if (csvBtn && rows && rows.length > 0) csvBtn.addEventListener("click", downloadCsv);
+    return card;
+  }
+
+  function render() {
+    app.innerHTML = "";
+    var view;
+    if (state.screen === "intro") view = renderIntro();
+    else if (state.screen === "talk") view = renderTalk();
+    else if (state.screen === "reaction") view = renderReaction();
+    else if (state.screen === "verdict") view = renderVerdict();
+    else view = renderTeacher();
+    app.appendChild(view);
+    window.scrollTo(0, 0);
+  }
+
+  render();
+
+})();
+</script>
+</body>
+</html>
