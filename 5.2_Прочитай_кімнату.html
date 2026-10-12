@@ -1,127 +1,47 @@
-<!DOCTYPE html>
-<html lang="uk">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Прочитай кімнату</title>
+<!DOCTYPE html><html lang="uk"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Прочитай кімнату</title>
 <style>
-  :root {
-    --ink: #1E2761; --ink-soft: #384080; --surface: #F3F6FC; --card: #FFFFFF;
-    --gold: #C9962C; --gold-soft: #F3E4C6; --muted: #5B6685; --line: #DDE4F5;
-    --red: #B3492F; --green: #2E7D6B;
-  }
-  * { box-sizing: border-box; }
-  html, body {
-    margin: 0; padding: 0; min-height: 100%; background: var(--surface);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    color: var(--ink);
-  }
-  .serif { font-family: Cambria, Georgia, "Times New Roman", serif; }
-  #app { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 32px 18px; }
-  .stage-wrap { width: 100%; max-width: 660px; }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 36px 34px; box-shadow: 0 18px 40px -24px rgba(30,39,97,0.35); }
-  @media (max-width: 480px) { .card { padding: 24px 18px; } }
-
-  .kicker { font-size: 13px; color: var(--muted); margin: 0 0 10px; }
-  h1.title { font-size: 26px; line-height: 1.25; margin: 0 0 14px; font-weight: 700; }
-  p.lead { font-size: 15px; line-height: 1.6; color: var(--muted); margin: 0 0 22px; }
-  label.field-label { display: block; font-size: 13px; color: var(--ink-soft); margin-bottom: 6px; font-weight: 600; }
-  input.text-input {
-    width: 100%; padding: 12px 14px; border-radius: 10px; border: 1.5px solid var(--line);
-    font-size: 15px; color: var(--ink); background: var(--surface); margin-bottom: 20px;
-  }
-  input.text-input:focus { outline: none; border-color: var(--gold); }
-  .btn {
-    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-    padding: 13px 24px; border-radius: 10px; border: none; font-size: 14.5px; font-weight: 600;
-    cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease;
-  }
-  .btn-primary { background: var(--ink); color: #fff; width: 100%; }
-  .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 10px 20px -12px rgba(30,39,97,0.6); }
-  .btn-secondary { background: var(--surface); color: var(--ink); border: 1.5px solid var(--line); }
-  .note-box { margin: 0 0 20px; padding: 12px 14px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); font-size: 12.5px; color: var(--muted); line-height: 1.5; }
-
-  /* State primer */
-  .primer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
-  @media (max-width: 480px) { .primer-grid { grid-template-columns: 1fr; } }
-  .primer-item { padding: 10px 12px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); display: flex; gap: 10px; align-items: flex-start; }
-  .primer-item .primer-emoji { font-size: 22px; line-height: 1; flex-shrink: 0; }
-  .primer-item b { display: block; font-size: 12.5px; color: var(--ink); margin-bottom: 2px; }
-  .primer-item span { font-size: 11px; color: var(--muted); line-height: 1.4; }
-
-  /* Quiz */
-  .progress-track { height: 5px; background: var(--line); border-radius: 4px; overflow: hidden; margin-bottom: 22px; }
-  .progress-fill { height: 100%; background: var(--gold); border-radius: 4px; transition: width 0.4s ease; }
-  .step-count { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
-  .scene-label { font-size: 12px; color: var(--gold); font-weight: 700; margin-bottom: 10px; letter-spacing: 0.2px; }
-  .desc-box { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; margin-bottom: 22px; }
-  .desc-box p { font-size: 14.5px; line-height: 1.65; margin: 0; color: var(--ink-soft); }
-  .choice-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  @media (max-width: 480px) { .choice-list { grid-template-columns: 1fr; } }
-  .choice-btn {
-    display: flex; align-items: center; gap: 10px; text-align: left; padding: 14px 16px; border-radius: 12px; border: 1.5px solid var(--line);
-    background: #fff; cursor: pointer; font-size: 13.5px; font-weight: 600; color: var(--ink-soft);
-    transition: all 0.15s ease;
-  }
-  .choice-btn .choice-emoji { font-size: 22px; line-height: 1; flex-shrink: 0; }
-  .choice-btn:hover { border-color: var(--gold); background: var(--gold-soft); }
-
-  /* Feedback */
-  .consequence-box { border-radius: 14px; padding: 18px 20px; margin-bottom: 20px; color: #fff; }
-  .consequence-box.correct { background: var(--green); }
-  .consequence-box.incorrect { background: var(--red); }
-  .consequence-box .cq-label { font-size: 11px; font-weight: 700; margin-bottom: 8px; letter-spacing: 0.3px; opacity: 0.85; }
-  .consequence-box p { font-size: 13.5px; line-height: 1.55; margin: 0; }
-  .consequence-box .cq-your { font-size: 12px; margin-bottom: 8px; opacity: 0.9; }
-
-  /* Results */
-  table.results-recap { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px; }
-  table.results-recap th { text-align: left; font-size: 10.5px; color: var(--muted); font-weight: 600; padding: 7px 6px; border-bottom: 2px solid var(--line); }
-  table.results-recap td { padding: 8px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
-  .result-icon { font-weight: 800; }
-  .result-icon.ok { color: var(--green); } .result-icon.no { color: var(--red); }
-
-  .tier-card { margin-top: 4px; padding: 20px 22px; border-radius: 14px; background: var(--ink); color: #fff; margin-bottom: 20px; }
-  .tier-card .t-label { font-size: 11px; color: var(--gold-soft); font-weight: 700; margin-bottom: 8px; letter-spacing: 0.3px; }
-  .tier-card .t-title { font-size: 19px; font-weight: 700; margin-bottom: 8px; }
-  .tier-card p { font-size: 13.5px; line-height: 1.55; color: #DCE1F5; margin: 0; }
-  .score-big { text-align: center; margin-bottom: 4px; }
-  .score-big .num { font-size: 40px; font-weight: 800; color: var(--ink); }
-  .score-big .den { font-size: 16px; color: var(--muted); }
-
-  .save-note { font-size: 12.5px; color: var(--muted); margin-top: 14px; text-align: center; }
-  .result-actions { display: flex; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
-  .result-actions .btn { flex: 1; min-width: 140px; }
-  .teacher-link { display: block; text-align: center; margin-top: 20px; font-size: 12.5px; color: var(--muted); text-decoration: underline; cursor: pointer; background: none; border: none; }
-
-  .teacher-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
-  table.results-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  table.results-table th { text-align: left; font-size: 10.5px; color: var(--muted); font-weight: 600; padding: 7px 6px; border-bottom: 2px solid var(--line); }
-  table.results-table td { padding: 8px 6px; border-bottom: 1px solid var(--line); }
-  .tag { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; background: var(--gold-soft); color: #7A5A16; }
-  .empty-note { text-align: center; color: var(--muted); font-size: 13.5px; padding: 30px 0; }
-  .icon-btn { background: none; border: 1.5px solid var(--line); border-radius: 8px; padding: 7px 13px; font-size: 12.5px; color: var(--ink); cursor: pointer; }
-  .icon-btn:hover { border-color: var(--gold); }
-  .table-scroll { overflow-x: auto; }
-</style>
-</head>
-<body>
-<div id="app"></div>
-
+:root{--ink:#1E2761;--ink2:#384080;--bg:#F3F6FC;--card:#fff;--gold:#C9962C;--mut:#5B6685;--line:#DDE4F5;--hero:#1E2761;box-sizing:border-box;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#E8ECFF;--ink2:#B9C2F0;--bg:#10142B;--card:#1A2040;--gold:#E0AE45;--mut:#A3ADD3;--line:#2E3664;--hero:#2B3575}}
+:root[data-theme="dark"]{--ink:#E8ECFF;--ink2:#B9C2F0;--bg:#10142B;--card:#1A2040;--gold:#E0AE45;--mut:#A3ADD3;--line:#2E3664;--hero:#2B3575}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 -apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+.serif{font-family:Cambria,Georgia,serif}#app{display:flex;justify-content:center;padding:28px 16px}.st{width:100%;max-width:680px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:34px 30px;box-shadow:0 18px 40px -26px rgba(30,39,97,.4)}
+@media(max-width:480px){.card{padding:24px 18px}}
+.k{font-size:13px;color:var(--mut);margin:0 0 8px}h1{font-size:27px;line-height:1.2;margin:0 0 12px}h2{font-size:18px;margin:28px 0 10px}p{margin:0 0 12px}.mut{color:var(--mut)}.sm{font-size:14px}
+input,textarea{width:100%;padding:12px 14px;border-radius:10px;border:1.5px solid var(--line);font:inherit;font-size:15px;color:var(--ink);background:var(--bg)}
+.btn{display:inline-flex;justify-content:center;align-items:center;padding:13px 22px;border-radius:10px;border:1.5px solid var(--line);font:inherit;font-weight:600;font-size:15px;cursor:pointer;background:var(--bg);color:var(--ink)}
+.pri{background:var(--ink);color:var(--bg);border-color:var(--ink);width:100%}.ghost{background:none;border:none;color:var(--mut);font-weight:500;padding:8px 4px}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.row .btn{flex:1;min-width:140px}
+.ex{background:var(--bg);border:1px dashed var(--line);border-radius:12px;padding:12px 14px;font-size:14px;margin:0 0 18px}
+.pg{height:6px;background:var(--line);border-radius:4px;overflow:hidden;margin-bottom:18px}.pg i{display:block;height:100%;background:var(--gold);transition:width .3s}
+.stmt{font-size:21px;line-height:1.4;font-weight:600;min-height:112px;margin:8px 0 26px}
+.opts{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:22px}
+.opt{display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:none;cursor:pointer;font:inherit;font-size:12px;color:var(--mut);padding:0}
+.opt b{width:100%;max-width:56px;aspect-ratio:1;border-radius:50%;border:2px solid var(--line);background:var(--card);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--ink2);transition:.15s}
+.opt:hover b{border-color:var(--gold)}.opt.on b{background:var(--gold);border-color:var(--gold);color:#fff;transform:scale(1.08)}.opt:focus-visible b{outline:3px solid var(--ink2);outline-offset:2px}
+.nav{display:flex;justify-content:space-between;align-items:center}
+.bar{margin-bottom:12px}.bl{display:flex;justify-content:space-between;font-size:14px;font-weight:600;margin-bottom:4px}.bt{height:12px;background:var(--bg);border:1px solid var(--line);border-radius:7px;overflow:hidden}.bt i{display:block;height:100%;border-radius:7px}
+.hero{background:var(--hero);color:#fff;border-radius:14px;padding:20px 22px;margin-top:18px}.hero p{color:#DCE1F5;font-size:14.5px}.hero b{color:#fff}.hero .lb{font-size:12px;color:#F3E4C6;font-weight:700}.hero .nm{font-size:22px;font-weight:700;margin:2px 0 10px}
+.box{margin-top:14px;padding:14px 16px;border-radius:12px;background:var(--bg);border:1px solid var(--line);font-size:14px}
+details{border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:8px}summary{cursor:pointer;font-weight:600}details p{font-size:14px;margin:8px 0 0}
+.case{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}.case p{font-size:14.5px}
+.ch{display:flex;flex-wrap:wrap;gap:6px}.ch button{flex:1;min-width:105px;padding:8px;border:1.5px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit;font-size:13px;cursor:pointer}
+.fb{margin-top:10px;font-size:14px}table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:left}
+svg text{fill:var(--mut);font-family:inherit}.link{display:block;margin:18px auto 0;background:none;border:none;color:var(--mut);font-size:13px;text-decoration:underline;cursor:pointer}
+.ch button{display:flex;flex-direction:column;align-items:center;gap:3px}.ch button:disabled{opacity:.55;cursor:default}.ch button.sel{opacity:1;border-color:var(--gold);border-width:2px}.ov{position:fixed;inset:0;background:rgba(10,14,40,.62);display:flex;align-items:center;justify-content:center;padding:20px;z-index:9}.ov .card{max-height:90vh;overflow:auto}
+.cb{display:flex;gap:12px;align-items:center;text-align:left;width:100%;padding:13px 14px;margin-bottom:8px;border:1.5px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);font:inherit;font-size:15px;cursor:pointer}.cb .em{font-size:24px}.cb:hover:not(:disabled){border-color:var(--gold)}.cb:disabled{cursor:default}.cb.ok{border-color:#2E7D6B;background:color-mix(in srgb,#2E7D6B 18%,var(--bg))}.cb.no{border-color:#B3492F;background:color-mix(in srgb,#B3492F 18%,var(--bg))}.why{display:block;margin-top:6px;font-size:13.5px;color:var(--mut)}
+</style></head><body><div id="app"></div>
 <script>
-(function () {
-  var STATES = [
-    { key: "anxiety", emoji: "😰", label: "Тривога / невпевненість", short: "Нервозність, потреба в підтвердженні, уникання погляду." },
-    { key: "irritation", emoji: "😤", label: "Роздратування / фрустрація", short: "Різкість, нетерпіння, стислі відповіді." },
-    { key: "demotivation", emoji: "😞", label: "Демотивація / вигорання", short: "Втрата ініціативи, рівний тон, відстороненість." },
-    { key: "resistance", emoji: "🎭", label: "Прихований опір", short: "Словесна згода за відсутності реальних дій." }
-  ];
-  var STATE_ORDER = STATES.map(function (s) { return s.key; });
-  function stateLabel(key) { return STATES.filter(function (s) { return s.key === key; })[0].label; }
-  function stateEmoji(key) { return STATES.filter(function (s) { return s.key === key; })[0].emoji; }
-  function stateLabelWithEmoji(key) { return stateEmoji(key) + " " + stateLabel(key); }
-
-  var SCENARIOS = [
+(function(){
+var STATES=[
+{key:"anxiety",emoji:"😰",label:"Тривога / невпевненість",nm:"Тривога",short:"Нервозність, потреба в підтвердженні, уникання погляду.",cue:"тілесні сигнали, перепитування й пошук підтвердження",c:"#C9962C"},
+{key:"irritation",emoji:"😤",label:"Роздратування / фрустрація",nm:"Роздратування",short:"Різкість, нетерпіння, стислі відповіді.",cue:"різкість і нетерпіння, зміну тону порівняно зі звичайним",c:"#B3492F"},
+{key:"demotivation",emoji:"😞",label:"Демотивація / вигорання",nm:"Демотивація",short:"Втрата ініціативи, рівний тон, відстороненість.",cue:"поступове зникнення ініціативи й рівний, байдужий тон",c:"#7A4FA0"},
+{key:"resistance",emoji:"🎭",label:"Прихований опір",nm:"Прихований опір",short:"Словесна згода за відсутності реальних дій.",cue:"розрив між словами й діями",c:"#384080"},
+{key:"neutral",emoji:"🙂",label:"Усе гаразд / замало даних",nm:"Усе гаразд",short:"Поведінка збігається зі звичною або має просте пояснення.",cue:"те, чи збігається поведінка зі звичною для людини, і чи є просте пояснення",c:"#2E7D6B"}];
+function stOf(k){return STATES.filter(function(s){return s.key===k})[0]}
+function lab(k){return stOf(k).emoji+" "+stOf(k).label}
+var SCENARIOS = [
     { id: "s1", correct: "anxiety",
       text: "На нараді, коли ви запитуєте молодшого аналітика про статус звіту, він починає говорити швидше, кілька разів перепрошує за «ще не зовсім готово», хоча дедлайн ще не настав. Уникає прямого погляду, тримає руки під столом, і в кінці додає: «Вибачте, якщо це звучить незрозуміло, можу переробити, якщо треба»." ,
       explanation: "Пришвидшена мова, повторні вибачення ще до настання дедлайну, уникання зорового контакту й закрита поза — класичні вербальні й невербальні сигнали тривоги та невпевненості, а не роздратування чи опору." },
@@ -221,285 +141,91 @@
       explanation: "Відкрите вираження сумнівів лише в колі колег, а не керівництву, при формальній публічній підтримці — типовий прихований опір." },
     { id: "s32", correct: "resistance",
       text: "Керівник відділу продажів формально впроваджує нову систему звітності, вимагану згори, але жодного разу сам її не використовує, продовжуючи вести облік у старій таблиці «для власної зручності».",
-      explanation: "Формальне впровадження без особистого використання нового підходу — дії, що суперечать заявленій підтримці, ознака прихованого опору змінам." }
+      explanation: "Формальне впровадження без особистого використання нового підходу — дії, що суперечать заявленій підтримці, ознака прихованого опору змінам." },
+    { id: "n1", correct: "neutral", text: "Колега відповів на ваше повідомлення одним словом «Ок». Він пише коротко з усіма, а на живих зустрічах завжди жвавий і привітний, і сьогодні поводиться так само.", explanation: "Коротка відповідь є звичною манерою цієї людини, а змін порівняно з її нормою немає. Робити висновки про настрій передчасно." },
+    { id: "n2", correct: "neutral", text: "Менеджерка закрила ноутбук і вийшла з наради раніше, бо за п'ять хвилин мала дзвінок із клієнтом. Вона попередила про це на початку зустрічі й коротко підсумувала свій пункт.", explanation: "Є просте пояснення (запланований дзвінок), і вона його озвучила. Ніяких ознак напруги чи відсторонення немає." },
+    { id: "n3", correct: "neutral", text: "Співробітник мовчить на нараді, бо тема його напряму не стосується. Після наради він поставив у чаті два влучні уточнювальні запитання, як і зазвичай.", explanation: "Мовчання на зустрічі при звичній залученості після неї не є сигналом демотивації. Ініціатива в нього збереглася." },
+    { id: "n4", correct: "neutral", text: "Аналітик прийшов на зустріч на п'ять хвилин пізніше, перепросив і пояснив, що затримався потяг. Роботу він завжди здає вчасно, а на зустрічі включився одразу.", explanation: "Одноразове запізнення з поясненням, без інших змін у поведінці не вказує на вигорання чи опір." },
+    { id: "n5", correct: "neutral", text: "Наприкінці довгого дня колега зітхнув і потер очі, а потім із посмішкою пожартував про каву й запропонував підсумувати та розходитися.", explanation: "Звичайна втома після насиченого дня, поряд із жартом і конструктивною пропозицією. Ознак роздратування чи тривоги немає." },
+    { id: "n6", correct: "neutral", text: "Нова працівниця двічі попросила уточнити завдання, бо воно для неї нове. Вона робить нотатки, ставить конкретні запитання й після пояснення одразу береться до роботи, без вибачень чи пошуку підтвердження.", explanation: "Уточнювальні запитання тут є нормальною робочою поведінкою, а не тривогою: немає перепрошень, нервозності й повторних прохань про підтвердження." },
+    { id: "n7", correct: "neutral", text: "Керівник відділу відповів на нову пропозицію: «Потрібно ще подумати» і попросив два дні. Через два дні він надіслав докладні пропозиції щодо покращення, які команда вже почала застосовувати.", explanation: "Слова й дії збігаються: відкладання було справжнім обдумуванням, а не прихованим опором." },
+    { id: "n8", correct: "neutral", text: "Колега відмовився від додаткового доручення, пояснивши, що має три термінові завдання, і запропонував конкретні дати, коли зможе допомогти. Тон був спокійним, як завжди.", explanation: "Чітка відмова з поясненням і пропозицією альтернативи, без зміни тону, є звичайною асертивністю, а не роздратуванням чи опором." }
   ];
-
-  var STORAGE_PREFIX = "read-the-room-quiz:";
-
-  var state = {
-    screen: "intro",
-    studentName: "",
-    order: [],
-    index: 0,
-    answers: [],
-    lastAnswer: null,
-    saveStatus: "idle",
-    teacherRows: null,
-    teacherLoading: false
-  };
-
-  var app = document.getElementById("app");
-  function el(html) { var t = document.createElement("template"); t.innerHTML = html.trim(); return t.content.firstElementChild; }
-  function escHtml(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
-  function shuffle(arr) {
-    var a = arr.slice();
-    for (var i = a.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
-    }
-    return a;
-  }
-
-  function pickRoundScenarios() {
-    var picked = [];
-    STATE_ORDER.forEach(function (key) {
-      var pool = SCENARIOS.filter(function (s) { return s.correct === key; });
-      var shuffledPool = shuffle(pool);
-      picked.push(shuffledPool[0], shuffledPool[1]);
-    });
-    return shuffle(picked).map(function (s) { return s.id; });
-  }
-
-  function scoreCount() { return state.answers.filter(function (a) { return a.isCorrect; }).length; }
-
-  function tierFor(score, total) {
-    var pct = score / total;
-    if (pct >= 0.875) return { label: "Відмінне зчитування емоційного стану", text: "Ви впевнено помічаєте й вербальні, і невербальні сигнали — саме ця чутливість і є основою емпатії та якісного лідерського зворотного зв'язку." };
-    if (pct >= 0.625) return { label: "Непогано, є прогалини", text: "Більшість станів ви визначили правильно, але деякі сигнали ще плутаються між собою — найчастіше плутають тривогу з демотивацією (обидві виглядають «тихо», але мають різну природу) або роздратування з прихованим опором (одне явне, інше приховане)." };
-    return { label: "Варто потренувати уважність до сигналів", text: "Поки що складно з першого прочитання розрізнити стани. Спробуйте звертати увагу не лише на слова, а на розрив між словами й діями (опір), різкість реакцій (роздратування), рівень ініціативи (демотивація) та тілесні сигнали (тривога)." };
-  }
-
-  function plainTextExport() {
-    var lines = [];
-    lines.push("Тренажер «Прочитай кімнату» — результати");
-    if (state.studentName) lines.push("Студент: " + state.studentName);
-    lines.push("");
-    lines.push("Результат: " + scoreCount() + " з " + SCENARIOS.length);
-    lines.push("");
-    state.answers.forEach(function (a) {
-      var sc = SCENARIOS.filter(function (s) { return s.id === a.scenarioId; })[0];
-      lines.push((a.isCorrect ? "[правильно] " : "[неправильно] ") + sc.id + " — ваша відповідь: " + stateLabel(a.chosen) + ", правильна: " + stateLabel(a.correct));
-    });
-    return lines.join("\n");
-  }
-
-  function saveResultToStorage() {
-    if (!window.storage) return;
-    state.saveStatus = "saving";
-    var key = STORAGE_PREFIX + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
-    var payload = { name: state.studentName || "Анонім", score: scoreCount(), total: SCENARIOS.length, answers: state.answers, timestamp: Date.now() };
-    window.storage.set(key, JSON.stringify(payload), true).then(function (r) {
-      state.saveStatus = r ? "saved" : "failed"; render();
-    }).catch(function () { state.saveStatus = "failed"; render(); });
-  }
-
-  function loadTeacherRows() {
-    state.teacherLoading = true; render();
-    if (!window.storage) { state.teacherRows = []; state.teacherLoading = false; render(); return; }
-    window.storage.list(STORAGE_PREFIX, true).then(function (listRes) {
-      var keys = (listRes && listRes.keys) || [];
-      if (keys.length === 0) { state.teacherRows = []; state.teacherLoading = false; render(); return; }
-      var promises = keys.map(function (k) {
-        return window.storage.get(k, true).then(function (r) { try { return JSON.parse(r.value); } catch (e) { return null; } }).catch(function () { return null; });
-      });
-      Promise.all(promises).then(function (rows) {
-        rows = rows.filter(Boolean).sort(function (a, b) { return b.timestamp - a.timestamp; });
-        state.teacherRows = rows; state.teacherLoading = false; render();
-      });
-    }).catch(function () { state.teacherRows = []; state.teacherLoading = false; render(); });
-  }
-
-  function csvEscape(t) { return '"' + String(t).replace(/"/g, '""') + '"'; }
-  function downloadCsv() {
-    var rows = state.teacherRows || [];
-    var header = ["Ім'я", "Бал", "З", "Дата"];
-    var lines = [header.map(csvEscape).join(";")];
-    rows.forEach(function (r) {
-      lines.push([csvEscape(r.name), r.score, r.total, csvEscape(new Date(r.timestamp).toLocaleString("uk-UA"))].join(";"));
-    });
-    var blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8;" });
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement("a"); a.href = url; a.download = "read-the-room-results.csv";
-    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-  }
-
-  function copyToClipboard(text, btn) {
-    function ok() { btn.textContent = "Скопійовано ✓"; setTimeout(function () { btn.textContent = "Скопіювати результат"; }, 1800); }
-    function fail() { var ta = document.getElementById("copy-fallback-area"); if (ta) { ta.style.display = "block"; ta.focus(); ta.select(); } }
-    if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(ok).catch(fail); }
-    else {
-      try {
-        var temp = document.createElement("textarea"); temp.value = text; temp.style.position = "fixed"; temp.style.opacity = "0";
-        document.body.appendChild(temp); temp.focus(); temp.select();
-        var success = document.execCommand("copy"); document.body.removeChild(temp);
-        if (success) ok(); else fail();
-      } catch (e) { fail(); }
-    }
-  }
-
-  function renderIntro() {
-    var primerHtml = STATES.map(function (s) {
-      return '<div class="primer-item"><span class="primer-emoji">' + s.emoji + '</span><div><b>' + s.label + '</b><span>' + s.short + '</span></div></div>';
-    }).join("");
-
-    var card = el(
-      '<div class="stage-wrap"><div class="card">' +
-      '<p class="kicker">Практичне заняття 5 · Бізнес-лідерство</p>' +
-      '<h1 class="title serif">Прочитай кімнату</h1>' +
-      '<p class="lead">8 робочих ситуацій. У кожній — детальний опис поведінки людини на нараді чи в розмові. Визначте, який емоційний стан за цим стоїть.</p>' +
-      '<label class="field-label">Чотири стани, серед яких обирати</label>' +
-      '<div class="primer-grid">' + primerHtml + '</div>' +
-      '<label class="field-label">Ваше ім\'я (необов\'язково)</label>' +
-      '<input type="text" class="text-input" id="name-input" placeholder="Наприклад, Олена К." value="' + state.studentName.replace(/"/g,'&quot;') + '" />' +
-      '<button class="btn btn-primary" id="start-btn">Почати (8 ситуацій) →</button>' +
-      '</div></div>'
-    );
-    card.querySelector("#start-btn").addEventListener("click", function () {
-      state.studentName = card.querySelector("#name-input").value.trim();
-      state.order = pickRoundScenarios();
-      state.index = 0; state.answers = [];
-      state.screen = "quiz"; render();
-    });
-    return card;
-  }
-
-  function renderQuiz() {
-    var scId = state.order[state.index];
-    var sc = SCENARIOS.filter(function (s) { return s.id === scId; })[0];
-    var progressPct = Math.round((state.index / state.order.length) * 100);
-
-    var choicesHtml = STATE_ORDER.map(function (key) {
-      return '<button class="choice-btn" data-state="' + key + '"><span class="choice-emoji">' + stateEmoji(key) + '</span><span>' + stateLabel(key) + '</span></button>';
-    }).join("");
-
-    var card = el(
-      '<div class="stage-wrap"><div class="card">' +
-      '<div class="progress-track"><div class="progress-fill" style="width:' + progressPct + '%"></div></div>' +
-      '<p class="step-count">Ситуація ' + (state.index + 1) + ' із ' + state.order.length + '</p>' +
-      '<p class="scene-label">Що відчуває ця людина?</p>' +
-      '<div class="desc-box"><p>' + sc.text + '</p></div>' +
-      '<div class="choice-list">' + choicesHtml + '</div>' +
-      '</div></div>'
-    );
-
-    card.querySelectorAll(".choice-btn").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        var chosen = btn.getAttribute("data-state");
-        var isCorrect = chosen === sc.correct;
-        var answer = { scenarioId: sc.id, chosen: chosen, correct: sc.correct, isCorrect: isCorrect };
-        state.answers.push(answer);
-        state.lastAnswer = answer;
-        state.screen = "feedback"; render();
-      });
-    });
-    return card;
-  }
-
-  function renderFeedback() {
-    var a = state.lastAnswer;
-    var sc = SCENARIOS.filter(function (s) { return s.id === a.scenarioId; })[0];
-    var isLast = state.index >= state.order.length - 1;
-
-    var card = el(
-      '<div class="stage-wrap"><div class="card">' +
-      '<div class="consequence-box ' + (a.isCorrect ? "correct" : "incorrect") + '">' +
-        '<div class="cq-label">' + (a.isCorrect ? "Правильно!" : "Неправильно") + '</div>' +
-        '<div class="cq-your">Ваша відповідь: ' + stateLabelWithEmoji(a.chosen) + (a.isCorrect ? "" : " · Правильна: " + stateLabelWithEmoji(a.correct)) + '</div>' +
-        '<p>' + escHtml(sc.explanation) + '</p>' +
-      '</div>' +
-      '<button class="btn btn-primary" id="continue-btn">' + (isLast ? "Дивитися підсумок →" : "Наступна ситуація →") + '</button>' +
-      '</div></div>'
-    );
-
-    card.querySelector("#continue-btn").addEventListener("click", function () {
-      if (isLast) { state.screen = "results"; render(); saveResultToStorage(); }
-      else { state.index += 1; state.screen = "quiz"; render(); }
-    });
-    return card;
-  }
-
-  function renderResults() {
-    var score = scoreCount();
-    var total = SCENARIOS.length;
-    var tier = tierFor(score, total);
-
-    var rowsHtml = state.answers.map(function (a) {
-      return (
-        '<tr>' +
-          '<td>' + stateLabelWithEmoji(a.correct) + '</td>' +
-          '<td>' + stateLabelWithEmoji(a.chosen) + '</td>' +
-          '<td><span class="result-icon ' + (a.isCorrect ? "ok" : "no") + '">' + (a.isCorrect ? "✓" : "✕") + '</span></td>' +
-        '</tr>'
-      );
-    }).join("");
-
-    var plain = plainTextExport();
-    var saveNote = "";
-    if (state.saveStatus === "saving") saveNote = "Зберігаємо результат…";
-    else if (state.saveStatus === "saved") saveNote = "Результат збережено.";
-    else if (state.saveStatus === "failed") saveNote = "Результат сформовано, але не вдалося зберегти для викладача.";
-
-    var card = el(
-      '<div class="stage-wrap"><div class="card">' +
-      (state.studentName ? '<p class="kicker" style="text-align:center;">' + escHtml(state.studentName) + '</p>' : "") +
-      '<div class="score-big"><span class="num">' + score + '</span><span class="den"> / ' + total + '</span></div>' +
-      '<table class="results-recap"><thead><tr><th>Правильний стан</th><th>Ваша відповідь</th><th></th></tr></thead><tbody>' + rowsHtml + '</tbody></table>' +
-      '<div class="tier-card"><div class="t-label">Підсумок</div><div class="t-title">' + tier.label + '</div><p>' + tier.text + '</p></div>' +
-      (saveNote ? '<p class="save-note">' + saveNote + '</p>' : "") +
-      '<div class="result-actions">' +
-        '<button class="btn btn-secondary" id="copy-btn">Скопіювати результат</button>' +
-        '<button class="btn btn-secondary" id="retry-btn">Спробувати ще раз</button>' +
-      '</div>' +
-      '<textarea id="copy-fallback-area" style="display:none;margin-top:12px;width:100%;min-height:110px;padding:10px;border-radius:10px;border:1.5px solid var(--line);font-size:11.5px;color:var(--muted);background:var(--surface);" readonly>' + escHtml(plain) + '</textarea>' +
-      '<button class="teacher-link" id="teacher-link">Перегляд результатів групи (для викладача)</button>' +
-      '</div></div>'
-    );
-
-    card.querySelector("#copy-btn").addEventListener("click", function (e) { copyToClipboard(plainTextExport(), e.currentTarget); });
-    card.querySelector("#retry-btn").addEventListener("click", function () { state.screen = "intro"; state.answers = []; state.index = 0; render(); });
-    card.querySelector("#teacher-link").addEventListener("click", function () { state.screen = "teacher"; render(); loadTeacherRows(); });
-    return card;
-  }
-
-  function renderTeacher() {
-    var rows = state.teacherRows;
-    var bodyHtml;
-    if (state.teacherLoading) bodyHtml = '<p class="empty-note">Завантаження результатів…</p>';
-    else if (!rows || rows.length === 0) bodyHtml = '<p class="empty-note">Поки що ніхто не пройшов тренажер за цим посиланням.</p>';
-    else {
-      var trs = rows.map(function (r) {
-        return '<tr><td>' + escHtml(r.name) + '</td><td>' + r.score + ' / ' + r.total + '</td><td>' + new Date(r.timestamp).toLocaleString("uk-UA") + '</td></tr>';
-      }).join("");
-      bodyHtml = '<div class="table-scroll"><table class="results-table"><thead><tr><th>Студент</th><th>Бал</th><th>Дата</th></tr></thead><tbody>' + trs + '</tbody></table></div>';
-    }
-    var card = el(
-      '<div class="stage-wrap"><div class="card">' +
-      '<div class="teacher-header"><h1 class="title serif" style="margin:0;font-size:22px;">Результати групи</h1><button class="icon-btn" id="refresh-btn">Оновити</button></div>' +
-      bodyHtml +
-      '<div class="result-actions"><button class="btn btn-secondary" id="csv-btn"' + ((!rows || rows.length === 0) ? " disabled" : "") + '>Завантажити CSV</button><button class="btn btn-secondary" id="back-btn">← Назад</button></div>' +
-      '</div></div>'
-    );
-    card.querySelector("#refresh-btn").addEventListener("click", loadTeacherRows);
-    card.querySelector("#back-btn").addEventListener("click", function () { state.screen = state.answers.length > 0 ? "results" : "intro"; render(); });
-    var csvBtn = card.querySelector("#csv-btn");
-    if (csvBtn && rows && rows.length > 0) csvBtn.addEventListener("click", downloadCsv);
-    return card;
-  }
-
-  function render() {
-    app.innerHTML = "";
-    var view;
-    if (state.screen === "intro") view = renderIntro();
-    else if (state.screen === "quiz") view = renderQuiz();
-    else if (state.screen === "feedback") view = renderFeedback();
-    else if (state.screen === "results") view = renderResults();
-    else view = renderTeacher();
-    app.appendChild(view);
-    window.scrollTo(0, 0);
-  }
-
-  render();
+var ACTIONS={
+anxiety:{good:[
+{t:"Наодинці спокійно спитати, що саме турбує, і чітко назвати очікування та право на помилки",w:"Зменшує невизначеність, яка підживлює тривогу, і дає людині відчуття безпеки."},
+{t:"Окремо від команди домовитися про зрозумілі кроки й терміни та сказати, що готові допомогти",w:"Чіткі кроки й підтримка зменшують невизначеність і повертають відчуття контролю."}],
+bad:[
+{t:"Підбадьорити перед усіма словами «не хвилюйся, у тебе все чудово вийде», щоб додати впевненості",w:"Загальна фраза не знімає причину, а публічність лише привертає увагу до тривоги."},
+{t:"Тихо забрати частину завдань і нічого не пояснювати, щоб людині стало трохи легше працювати",w:"Без пояснень це може виглядати як недовіра й посилити невпевненість."},
+{t:"Почекати й нічого не робити, бо хвилювання зазвичай минає саме, без будь-якого втручання",w:"Без підтримки тривога часто закріплюється й вимагає ще більше підтверджень."},
+{t:"Сказати, що з тривогою кожен справляється сам, і не втручатися в особисті переживання людини",w:"Самотні зусилля рідко знімають тривогу: потрібні безпечна розмова й ясність."}]},
+irritation:{good:[
+{t:"Дати час охолонути, потім наодинці визнати напругу й спитати, що допомогло б її зняти",w:"Людина може заспокоїтися, а ви показуєте, що її стан помічено, без звинувачень."},
+{t:"Пізніше наодинці спитати про перевантаження й разом обговорити, що змінити в термінах",w:"Шукаєте джерело роздратування й даєте людині відчути, що її почули."}],
+bad:[
+{t:"Одразу зробити зауваження щодо різкого тону в присутності всієї команди учасників зустрічі",w:"Публічна критика посилює напругу й може спровокувати відкритий конфлікт."},
+{t:"Відповісти в такому самому різкому тоні, щоб людина побачила, як її поведінка виглядає збоку",w:"Це ескалація: емоція заразна, і ситуація лише загострюється."},
+{t:"Не реагувати й нічого не змінювати, бо роздратування зазвичай минає разом із робочим днем",w:"Якщо джерело (перевантаження, терміни) лишається, роздратування повернеться."},
+{t:"Пожартувати з ситуації перед усіма, щоб розрядити обстановку й трохи підняти настрій команді",w:"Жарт про чуже роздратування може здатися зневагою й лише посилити його."}]},
+demotivation:{good:[
+{t:"Окремо поговорити про навантаження й сенс роботи та домовитися про один малий конкретний крок",w:"Причини вигорання видно лише в розмові, а малий крок повертає відчуття ефективності."},
+{t:"Спитати наодинці, що зникло з роботи, і разом змінити завдання під те, що людині цікаво",w:"Повернення сенсу й вибору працює краще, ніж тиск чи формальні стимули."}],
+bad:[
+{t:"Нагадати про терміни й посилити контроль над виконанням усіх завдань цієї конкретної людини",w:"Контроль без розуміння причин поглиблює відчуження."},
+{t:"Запропонувати премію без жодної розмови, щоб людина відчула, що її внесок цінують грошима",w:"Грошова винагорода не усуває причин втрати мотивації."},
+{t:"Почекати кілька місяців, бо мотивація зазвичай відновлюється сама, коли минає складний період",w:"Вигорання розвивається поступово й без змін в умовах лише посилюється."},
+{t:"Сказати на зборах, що ініціативи в команді стало менше, і попросити всіх трохи активізуватися",w:"Публічне зауваження посоромить людину, але не розв'яже причин її відстороненості."}]},
+resistance:{good:[
+{t:"Наодинці спитати про сумніви, обговорити реальні перешкоди й домовитися про контрольні точки",w:"Дає змогу висловити відкрито те, що сказано лише за спиною, і перетворити опір на конкретні питання."},
+{t:"Окремо попросити назвати, що в рішенні здається нереалістичним, і разом знайти, що змінити",w:"Робить приховані заперечення відкритими й дає людині частку впливу на рішення."}],
+bad:[
+{t:"Публічно сказати, що команда саботує впровадження, і вимагати пояснень перед усіма колегами",w:"Звинувачення руйнує довіру й заганяє опір ще глибше."},
+{t:"Вважати публічну згоду щирою й не перевіряти, як просувається робота над цим рішенням",w:"Розрив слів і дій лишається, а справжні заперечення так і не прозвучать."},
+{t:"Посилити тиск наказом без розмови, щоб рішення виконували суворо за планом і без винятків",w:"Тиск без діалогу зазвичай лише перетворює пасивний опір на ще прихованіший."},
+{t:"Поскаржитися вищому керівництву на нелояльність і чекати, що воно ухвалить відповідні заходи",w:"Це переносить проблему вгору, не з'ясувавши її причин, і псує стосунки в команді."}]},
+neutral:{good:[
+{t:"Спокійно працювати далі, але помічати зміни порівняно зі звичною поведінкою цієї людини",w:"Ознакою є зміна відносно норми людини, а не окрема поведінка. Уважність без поспішних висновків."},
+{t:"Нічого не вирішувати за один епізод і тримати в полі зору, чи поведінка змінюється з часом",w:"Один епізод не є діагнозом: важливі зміни помітні лише в динаміці."}],
+bad:[
+{t:"Влаштувати серйозну розмову про стан людини, щоб переконатися, що з нею справді все гаразд",w:"Це надмірна реакція: людина може відчути підозру, хоча проблеми немає."},
+{t:"Одразу повідомити про цю ситуацію в HR, щоб зафіксувати її про всяк випадок на майбутнє",w:"Надмірна ескалація без жодних реальних підстав."},
+{t:"Занести людину до списку «ризикових» співробітників і уважно стежити за кожним її кроком",w:"Це упередження, яке псує довіру й стосунки."},
+{t:"Попросити колег непомітно повідомляти вам про настрій і поведінку цієї людини щодня",w:"Таємний нагляд руйнує довіру в команді й нічим не виправданий."}]}};
+function mkPos(){var p;do{p=shuffle([0,1,2,3,0,1,2,3])}while(p.some(function(x,i){return i&&x===p[i-1]}));return p}
+function buildOpts(key,pos){var A=ACTIONS[key],g=A.good[Math.floor(Math.random()*A.good.length)],o=shuffle(A.bad).slice(0,3).map(function(x){return{t:x.t,w:x.w}});o.splice(pos,0,{t:g.t,w:g.w,ok:1});return o}
+var st={screen:"intro",name:"",order:[],index:0,answers:[],last:null};
+var app=document.getElementById("app");
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
+function sc(id){return SCENARIOS.filter(function(s){return s.id===id})[0]}
+function pickRound(){var p=[],u={};STATES.forEach(function(s){var x=shuffle(SCENARIOS.filter(function(y){return y.correct===s.key}))[0];p.push(x);u[x.id]=1});
+var r=shuffle(SCENARIOS.filter(function(y){return!u[y.id]}));return shuffle(p.concat(r.slice(0,3))).map(function(x){return x.id})}
+function score(){return st.answers.filter(function(a){return a.isCorrect}).length}
+function react(){return st.answers.filter(function(a){return a.actOk}).length}
+function tier(p){return p>=.875?["Сильне зчитування сигналів","Ви впевнено помічаєте вербальні й невербальні сигнали та відрізняєте їх від звичайної поведінки. Це основа емпатії та якісного лідерського зворотного зв'язку."]:p>=.625?["Непогано, є прогалини","Більшість станів ви визначили правильно, але деякі сигнали ще плутаються. Подивіться підказки до ваших помилок нижче."]:["Варто потренувати уважність до сигналів","Поки що складно розрізняти стани з першого прочитання. Дивіться не лише на слова, а й на розрив між словами й діями, різкість реакцій, рівень ініціативи, тілесні сигнали та на те, чи змінилась поведінка порівняно зі звичною."]}
+function intro(){return'<div class="card"><p class="k">Практичне заняття 5 · Бізнес-лідерство</p><h1 class="serif">Прочитай кімнату</h1><p class="mut">8 робочих ситуацій. У кожній описано поведінку людини на нараді чи в розмові. Спершу визначте, що за цим стоїть (іноді нічого особливого), а потім оберіть, як би ви відреагували. Те, що ви «прочитали», — лише гіпотеза, яку варто перевірити.</p><label class="sm"><b>П\'ять варіантів відповіді</b></label><div style="margin:8px 0 18px">'+STATES.map(function(s){return'<div class="box" style="margin:0 0 8px;display:flex;gap:12px;align-items:flex-start"><span style="font-size:24px">'+s.emoji+'</span><div><b>'+s.label+'</b><div class="mut sm">'+s.short+'</div></div></div>'}).join("")+'</div><label class="sm" for="nm"><b>Ваше ім\'я</b> <span class="mut">(необов\'язково)</span></label><input id="nm" maxlength="40" placeholder="Наприклад, Олена К." value="'+esc(st.name)+'" style="margin:6px 0 18px"><button class="btn pri" data-a="start">Почати (8 ситуацій) →</button></div>'}
+function quiz(){var s=sc(st.order[st.index]);
+return'<div class="card"><div class="pg"><i style="width:'+Math.round(st.index/st.order.length*100)+'%"></i></div><p class="k">Ситуація '+(st.index+1)+' із '+st.order.length+' · крок 1 із 2</p><p style="font-weight:700;margin:0 0 10px">Що стоїть за поведінкою цієї людини?</p><div class="box" style="margin:0 0 16px;font-size:15.5px">'+s.text+'</div>'+STATES.map(function(x,i){return'<button class="cb" data-a="pick" data-k="'+x.key+'"><span class="em">'+x.emoji+'</span><span>'+x.label+'</span></button>'}).join("")+'</div>'}
+function feedback(){var a=st.last,s=sc(a.scenarioId),done=a.act>=0,isLast=st.index>=st.order.length-1;
+var head='<div class="box" style="margin:0 0 18px;border-left:4px solid '+(a.isCorrect?"#2E7D6B":"#B3492F")+'"><b>'+(a.isCorrect?"✓ Правильно!":"✕ Неправильно")+'</b><div class="mut sm" style="margin:4px 0 8px">Ваша відповідь: '+lab(a.chosen)+(a.isCorrect?"":" · Правильна: "+lab(a.correct))+'</div><div class="sm">'+esc(s.explanation)+'</div></div>';
+var opts=a.opts.map(function(o,i){var cls="cb";if(done){if(o.ok)cls+=" ok";else if(i===a.act)cls+=" no"}return'<button class="'+cls+'" data-a="act" data-i="'+i+'"'+(done?" disabled":"")+'><span>'+o.t+(done&&(o.ok||i===a.act)?'<span class="why">'+(o.ok?"✓ ":"✕ ")+o.w+'</span>':"")+'</span></button>'}).join("");
+var warn=done&&!a.isCorrect?'<div class="box" style="margin-top:10px"><b>Зверніть увагу:</b> ваш діагноз виявився хибним, тож ця реакція могла б не потрапити в ціль. Найнадійніше — спершу перевірити гіпотезу спокійним відкритим запитанням.</div>':"";
+return'<div class="card"><div class="pg"><i style="width:'+Math.round((st.index+.5)/st.order.length*100)+'%"></i></div><p class="k">Ситуація '+(st.index+1)+' із '+st.order.length+' · крок 2 із 2</p>'+head+'<p style="font-weight:700;margin:0 0 4px">Що ви зробите?</p><p class="mut sm" style="margin:0 0 12px">Ви визначили стан як «'+stOf(a.chosen).label+'». Яка реакція найкраща?</p>'+opts+warn+(done?'<button class="btn pri" data-a="next" style="margin-top:14px">'+(isLast?"Дивитися підсумок →":"Наступна ситуація →")+'</button>':"")+'</div>'}
+function results(){var N=st.order.length,rec=score(),rea=react(),t=tier(rec/N);
+var miss=st.answers.map(function(a,i){return{a:a,i:i}}).filter(function(x){return!x.a.isCorrect});
+var mh=miss.length?miss.map(function(x){return'<div class="box" style="margin-top:8px"><b>Ситуація '+(x.i+1)+'.</b> Ви обрали '+lab(x.a.chosen)+', а було '+lab(x.a.correct)+'. <span class="mut">Підказка: зверніть увагу на '+stOf(x.a.correct).cue+'.</span></div>'}).join(""):'<p class="mut sm">Помилок у розпізнаванні немає.</p>';
+var rows=st.answers.map(function(a){return'<tr><td>'+lab(a.correct)+'</td><td>'+lab(a.chosen)+'</td><td>'+(a.isCorrect?"✓":"✕")+'</td><td>'+(a.actOk?"✓":"✕")+'</td></tr>'}).join("");
+return'<div class="card">'+(st.name?'<p class="k">'+esc(st.name)+'</p>':"")+'<h1 class="serif">Ваш результат</h1><div style="display:flex;gap:12px;flex-wrap:wrap;margin:6px 0 4px"><div class="box" style="flex:1;min-width:140px;margin:0;text-align:center"><div class="mut sm">Розпізнавання</div><div style="font-size:30px;font-weight:700">'+rec+' <span class="mut" style="font-size:16px">з '+N+'</span></div></div><div class="box" style="flex:1;min-width:140px;margin:0;text-align:center"><div class="mut sm">Вибір реакції</div><div style="font-size:30px;font-weight:700">'+rea+' <span class="mut" style="font-size:16px">з '+N+'</span></div></div></div><div class="hero"><div class="lb">ПІДСУМОК</div><div class="nm">'+t[0]+'</div><p>'+t[1]+'</p><p><b>Про реакцію:</b> найнадійніша — спокійна розмова наодинці з відкритим запитанням, а не публічне зауваження чи ігнорування.</p></div><h2>Розбір помилок</h2>'+mh+'<details style="margin-top:14px"><summary>Усі відповіді</summary><div style="overflow-x:auto;margin-top:8px"><table><tr><th>Правильний стан</th><th>Ваша відповідь</th><th>Стан</th><th>Реакція</th></tr>'+rows+'</table></div></details><div class="row"><button class="btn" data-a="retry">Спробувати ще раз</button></div></div>'}
+function render(){app.innerHTML='<div class="st">'+({intro:intro,quiz:quiz,feedback:feedback,results:results}[st.screen])()+'</div>';window.scrollTo(0,0)}
+function choose(k){var s=sc(st.order[st.index]),a={scenarioId:s.id,chosen:k,correct:s.correct,isCorrect:k===s.correct,act:-1,actOk:false,opts:buildOpts(k,st.pos[st.index])};st.answers.push(a);st.last=a;st.screen="feedback";render()}
+app.addEventListener("click",function(e){var b=e.target.closest("[data-a]");if(!b)return;var a=b.dataset.a;
+if(a==="start"){st.name=document.getElementById("nm").value.trim();st.order=pickRound();st.pos=mkPos();st.index=0;st.answers=[];st.screen="quiz";render()}
+else if(a==="pick")choose(b.dataset.k);
+else if(a==="act"){var x=st.last;if(x.act>=0)return;x.act=+b.dataset.i;x.actOk=!!x.opts[x.act].ok;render()}
+else if(a==="next"){if(st.index>=st.order.length-1)st.screen="results";else{st.index++;st.screen="quiz"}render()}
+else if(a==="retry"){st.screen="intro";st.answers=[];st.index=0;render()}});
+document.addEventListener("keydown",function(e){if(st.screen==="quiz"&&/^[1-5]$/.test(e.key)&&!/INPUT|TEXTAREA/.test(e.target.tagName))choose(STATES[+e.key-1].key)});
+render();
 })();
-</script>
-</body>
-</html>
+</script></body></html>

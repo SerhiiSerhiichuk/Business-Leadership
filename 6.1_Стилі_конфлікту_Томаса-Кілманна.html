@@ -1,0 +1,152 @@
+<!DOCTYPE html><html lang="uk"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Ваш стиль у конфлікті</title>
+<style>
+:root{--ink:#1E2761;--ink2:#384080;--bg:#F3F6FC;--card:#fff;--gold:#C9962C;--mut:#5B6685;--line:#DDE4F5;--hero:#1E2761;box-sizing:border-box;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#E8ECFF;--ink2:#B9C2F0;--bg:#10142B;--card:#1A2040;--gold:#E0AE45;--mut:#A3ADD3;--line:#2E3664;--hero:#2B3575}}
+:root[data-theme="dark"]{--ink:#E8ECFF;--ink2:#B9C2F0;--bg:#10142B;--card:#1A2040;--gold:#E0AE45;--mut:#A3ADD3;--line:#2E3664;--hero:#2B3575}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 -apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+.serif{font-family:Cambria,Georgia,serif}#app{display:flex;justify-content:center;padding:28px 16px}.st{width:100%;max-width:680px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:34px 30px;box-shadow:0 18px 40px -26px rgba(30,39,97,.4)}
+@media(max-width:480px){.card{padding:24px 18px}}
+.k{font-size:13px;color:var(--mut);margin:0 0 8px}h1{font-size:27px;line-height:1.2;margin:0 0 12px}h2{font-size:18px;margin:28px 0 10px}p{margin:0 0 12px}.mut{color:var(--mut)}.sm{font-size:14px}
+input,textarea{width:100%;padding:12px 14px;border-radius:10px;border:1.5px solid var(--line);font:inherit;font-size:15px;color:var(--ink);background:var(--bg)}
+.btn{display:inline-flex;justify-content:center;align-items:center;padding:13px 22px;border-radius:10px;border:1.5px solid var(--line);font:inherit;font-weight:600;font-size:15px;cursor:pointer;background:var(--bg);color:var(--ink)}
+.pri{background:var(--ink);color:var(--bg);border-color:var(--ink);width:100%}.ghost{background:none;border:none;color:var(--mut);font-weight:500;padding:8px 4px}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.row .btn{flex:1;min-width:140px}
+.ex{background:var(--bg);border:1px dashed var(--line);border-radius:12px;padding:12px 14px;font-size:14px;margin:0 0 18px}
+.pg{height:6px;background:var(--line);border-radius:4px;overflow:hidden;margin-bottom:18px}.pg i{display:block;height:100%;background:var(--gold);transition:width .3s}
+.stmt{font-size:21px;line-height:1.4;font-weight:600;min-height:112px;margin:8px 0 26px}
+.opts{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:22px}
+.opt{display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:none;cursor:pointer;font:inherit;font-size:12px;color:var(--mut);padding:0}
+.opt b{width:100%;max-width:56px;aspect-ratio:1;border-radius:50%;border:2px solid var(--line);background:var(--card);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--ink2);transition:.15s}
+.opt:hover b{border-color:var(--gold)}.opt.on b{background:var(--gold);border-color:var(--gold);color:#fff;transform:scale(1.08)}.opt:focus-visible b{outline:3px solid var(--ink2);outline-offset:2px}
+.nav{display:flex;justify-content:space-between;align-items:center}
+.bar{margin-bottom:12px}.bl{display:flex;justify-content:space-between;font-size:14px;font-weight:600;margin-bottom:4px}.bt{height:12px;background:var(--bg);border:1px solid var(--line);border-radius:7px;overflow:hidden}.bt i{display:block;height:100%;border-radius:7px}
+.hero{background:var(--hero);color:#fff;border-radius:14px;padding:20px 22px;margin-top:18px}.hero p{color:#DCE1F5;font-size:14.5px}.hero b{color:#fff}.hero .lb{font-size:12px;color:#F3E4C6;font-weight:700}.hero .nm{font-size:22px;font-weight:700;margin:2px 0 10px}
+.box{margin-top:14px;padding:14px 16px;border-radius:12px;background:var(--bg);border:1px solid var(--line);font-size:14px}
+details{border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:8px}summary{cursor:pointer;font-weight:600}details p{font-size:14px;margin:8px 0 0}
+.case{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}.case p{font-size:14.5px}
+.ch{display:flex;flex-wrap:wrap;gap:6px}.ch button{flex:1;min-width:105px;padding:8px;border:1.5px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit;font-size:13px;cursor:pointer}
+.fb{margin-top:10px;font-size:14px}table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:left}
+svg text{fill:var(--mut);font-family:inherit}.link{display:block;margin:18px auto 0;background:none;border:none;color:var(--mut);font-size:13px;text-decoration:underline;cursor:pointer}
+.ch button{display:flex;flex-direction:column;align-items:center;gap:3px}.ch button:disabled{opacity:.55;cursor:default}.ch button.sel{opacity:1;border-color:var(--gold);border-width:2px}.ov{position:fixed;inset:0;background:rgba(10,14,40,.62);display:flex;align-items:center;justify-content:center;padding:20px;z-index:9}.ov .card{max-height:90vh;overflow:auto}
+</style></head><body><div id="app"></div>
+<script>
+(function(){
+var ORD=["CP","CL","CM","AC","AV"],CODE=["AV","AC","CM","CP","CL"],L=["Ніколи","Рідко","Іноді","Часто","Майже завжди"];
+var S={
+CP:{n:"Суперництво",e:"🦈",c:"#B3492F",x:0,y:1,q:"«Зробімо так, як треба»",ok:"Криза, що вимагає швидкого рішення, або принципове питання, де ви певні у своїй правоті.",rk:"Регулярно руйнує довіру й стосунки заради короткої перемоги.",ch:"Перш ніж наполягати, поставте співрозмовнику одне запитання про його мотив."},
+CL:{n:"Співпраця",e:"🦉",c:"#2E7D6B",x:1,y:1,q:"«Давайте з'ясуємо, що кому насправді потрібно»",ok:"Питання складне й важливе, є час дослідити інтереси обох і знайти вигідне всім рішення.",rk:"Потребує часу й довіри; не підходить, коли ситуація термінова або інша сторона не готова до діалогу.",ch:"Перед довгим пошуком спільного рішення оцініть, чи вистачає часу і чи питання справді важливе."},
+CM:{n:"Компроміс",e:"🦊",c:"#C9962C",x:.5,y:.5,q:"«Зустрінемося посередині»",ok:"Сили сторін приблизно рівні, часу мало — швидка часткова угода краща за відсутність рішення.",rk:"Заміняє глибший пошук рішення, яке могло б задовольнити обох повністю.",ch:"Перш ніж ділити навпіл, запитайте себе: чи є варіант, що влаштує обох повністю?"},
+AC:{n:"Пристосування",e:"🧸",c:"#384080",x:1,y:0,q:"«Добре, нехай буде по-твоєму»",ok:"Питання важливіше для іншої сторони або стосунки цінніші за результат цього разу.",rk:"Стає звичкою й веде до прихованої образи та втрати власної позиції.",ch:"Раз цього тижня скажіть «я бачу це інакше» там, де зазвичай мовчите."},
+AV:{n:"Уникнення",e:"🐢",c:"#8891B5",x:0,y:0,q:"«Давай про це потім»",ok:"Питання незначне, емоції зашкалюють і потрібен час охолонути, або ви не можете впливати на результат.",rk:"Важливі питання роками лишаються невирішеними, а напруга накопичується.",ch:"Оберіть одну відкладену розмову й призначте для неї час цього тижня."}};
+var T={
+AV1:["AV","Я відкладаю неприємну розмову, сподіваючись, що все владнається саме."],AV2:["AV","У суперечці мені легше промовчати, ніж сказати, що я думаю інакше."],AV3:["AV","Я оминаю зустрічі й розмови, де очікується напружена дискусія."],AV4:["AV","Я вважаю, що деякі конфлікти краще не чіпати, ніж розбурхувати."],
+AC1:["AC","Заради добрих стосунків я поступаюся, навіть коли думаю, що маю рацію."],AC2:["AC","Мені важливіше, щоб співрозмовник лишився задоволений, ніж щоб вийшло по-моєму."],AC3:["AC","У суперечці я перший пропоную поступку, щоб зберегти мир."],AC4:["AC","Я відступаю, якщо бачу, що співрозмовник дуже засмучений."],
+CM1:["CM","Я шукаю рішення, де кожна сторона дещо віддає й дещо отримує."],CM2:["CM","Мені здається справедливим, коли обидві сторони поступаються приблизно порівну."],CM3:["CM","Коли мало часу, я краще погоджуся на часткове рішення, ніж шукатиму ідеальне."],CM4:["CM","Я часто пропоную «розділити різницю навпіл», щоб швидше завершити суперечку."],
+CP1:["CP","У суперечці я чітко називаю свою позицію й тримаюся її, навіть якщо виникає напруга."],CP2:["CP","Мені важливо досягти свого результату, тож я активно переконую й наполягаю."],CP3:["CP","Мені важко поступитися, коли я знаю, що моя позиція правильна."],CP4:["CP","Заради важливого результату я можу погодитися на напругу у стосунках."],
+CL1:["CL","Я намагаюся зрозуміти справжні інтереси іншої сторони, а не лише її заявлену позицію."],CL2:["CL","Я витрачаю більше часу, щоб знайти рішення, яке влаштує обох."],CL3:["CL","Я запрошую іншу сторону разом пошукати варіант, що підійде всім."],CL4:["CL","Я ставлю уточнювальні запитання, щоб зрозуміти, чому людина стоїть на своєму."]};
+var ITEMS=["CM2","CP1","AV1","CL1","AC1","CP2","AV2","CL2","CM1","AC2","CP3","CL3","AV3","CM3","AC3","CP4","CL4","AV4","CM4","AC4"].map(function(id){return{id:id,s:T[id][0],t:T[id][1]}});
+function c(b,t,w){return{b:b,t:t,w:w}}
+var CASES=[
+c("AV","Під час онлайн-зустрічі двоє колег гостро сперечаються через дрібне формулювання в презентації, яка вас не стосується.","Питання незначне й вас не стосується: не втручайтеся й не підливайте масла у вогонь."),
+c("AV","Пізно ввечері ви отримали різкого листа від клієнта, і емоції зашкалюють.","Спершу потрібен час охолонути: відповідь на емоціях лише погіршить ситуацію. Відкладіть її до ранку."),
+c("AV","Ви стали свідком суперечки двох керівників відділів про бюджет, який вас не стосується й на який ви не можете вплинути.","Реального впливу у вас немає, тож краще залишитися осторонь."),
+c("AV","У груповому чаті всі пишуть великими літерами, а одногрупник вимагає негайно стати на чийсь бік.","Пристрасті зашкалюють: краще відкласти розмову й повернутися до неї, коли всі заспокояться."),
+c("AV","Незнайомець у коментарях під вашим дописом провокує вас на перепалку.","Питання незначне й не варте ваших сил: найкраще проігнорувати."),
+c("AC","Колега просить помінятися змінами, бо в нього важлива сімейна подія, а вам графік байдужий.","Для нього питання важливе, а для вас ні: поступка нічого вам не коштує, а стосунки виграють."),
+c("AC","Одногрупник дуже хоче виступити першим на захисті проєкту, а вам порядок не важливий.","Для нього це важливо, а для вас ні: поступіться, і стосунки в команді виграють."),
+c("AC","Друзі обирають фільм на вечір. Вам усе одно, а одна людина дуже хоче конкретний жанр.","Для вас вибір неважливий, а для неї важливий: поступіться заради приємного вечора."),
+c("AC","Керівник просить виконати завдання його способом. Ваш був би трохи зручнішим, але результат однаковий.","Результат той самий, а добрі стосунки з керівником важливіші за дрібну перевагу."),
+c("AC","Колега дуже переживає за обраний ним колір логотипу, а у вас немає сильної думки.","Для нього це важливо, а для вас ні: поступка збереже гарну атмосферу в команді."),
+c("CM","Ви з колегою хочете забронювати єдину переговорну на одну й ту саму годину, а часу шукати інше місце немає.","Сили рівні, а часу мало: розділіть годину навпіл і швидко домовтеся."),
+c("CM","Клієнт і ви хочете закрити угоду сьогодні, але різниця в ціні невелика.","Швидка угода посередині краща за затяжні торги, коли різниця мала, а терміни тиснуть."),
+c("CM","Ви з сусідом по кімнаті сперечаєтеся про розподіл прибирання, а через два дні іспити.","Потрібна швидка справедлива угода: поділіть обов'язки порівну й не витрачайте час на суперечки."),
+c("CM","Команда не може вирішити, скільки слайдів показувати: 15 чи 10. До подачі година.","Сторони рівні, часу мало: домовтеся посередині, наприклад на 12 слайдах."),
+c("CM","Ви з керівником по-різному бачите дедлайн (п'ятниця чи наступний вівторок), а рішення потрібне сьогодні.","Сили приблизно рівні, а терміни обмежені: погодьте проміжну дату, наприклад понеділок."),
+c("CP","На виробництві виявили загрозу безпеці. Потрібно негайно зупинити лінію, а колега просить «ще трохи попрацювати».","Це криза, де потрібне швидке й тверде рішення: безпека не обговорюється."),
+c("CP","Команда пропонує вказати у звіті вигадані дані, щоб він виглядав переконливіше.","Питання принципове (доброчесність): потрібна чітка й тверда відмова без компромісів."),
+c("CP","Під час пожежної тривоги учасник тренінгу відмовляється вийти із залу, бо «дописує».","Ситуація критична: потрібна категорична вимога негайно залишити приміщення."),
+c("CP","Клієнт вимагає відвантажити партію без обов'язкового контролю якості.","Правило не обговорюється, а ризик великий: потрібна тверда відмова."),
+c("CP","За хвилину команда має обрати один із двох планів. Дискусія затягується, а ви знаєте, що правильний план А.","Час критичний, а ви певні у своїй правоті: чітко назвіть рішення й діяйте."),
+c("CL","Ви з другом хочете різні теми для спільної курсової. До здачі два тижні, обом важлива хороша оцінка.","Питання важливе й час є: з'ясуйте, чого кожен хоче насправді, і знайдіть тему, що поєднає обидва інтереси."),
+c("CL","Два відділи сперечаються про спільний бюджет на наступний квартал. Результат важливий для обох, є два тижні.","Питання складне й важливе, час є: вивчіть інтереси обох відділів і знайдіть рішення, вигідне всім."),
+c("CL","Керівник хоче скоротити витрати, а ви хочете зберегти якість продукту. Обидві цілі важливі, до обговорення є тиждень.","Є час і дві важливі цілі: шукайте варіант, що не жертвує жодною з них."),
+c("CL","Двоє учасників команди не можуть домовитися про ролі, і це гальмує проєкт, що триває два місяці.","Конфлікт довготривалий і важливий: спільно з'ясуйте інтереси й розподіліть ролі так, щоб влаштувало обох."),
+c("CL","Ви з партнером по стартапу по-різному бачите стратегію, а ваша співпраця триває вже роки.","Стосунки й результат однаково цінні: потрібна відверта розмова про глибинні інтереси.")];
+function sh(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
+function makeRounds(){var L={};ORD.forEach(function(k){L[k]=sh(CASES.filter(function(x){return x.b===k}))});var R=[];for(var i=0;i<5;i++)R.push(sh(ORD.map(function(k){var x=L[k][i];return{b:x.b,t:x.t,w:x.w,a:""}})));return R}
+function casesHtml(){var R=st.rd[st.ri];
+return'<p class="mut sm" style="margin:0 0 10px"><b>Раунд '+(st.ri+1)+' із 5</b> · по одній ситуації на кожен стиль</p>'+R.map(function(x,i){return'<div class="case"><p><b>Ситуація '+(i+1)+'.</b> '+x.t+'</p><div class="ch">'+ORD.map(function(k){return'<button data-a="cs" data-c="'+i+'" data-k="'+k+'"'+(x.a?" disabled":"")+(x.a===k?' class="sel"':"")+'><span style="font-size:22px;line-height:1.2">'+S[k].e+'</span><span>'+S[k].n+'</span></button>'}).join("")+'</div>'+(x.a?'<div class="fb">'+(x.a===x.b?"✓ <b>Добрий вибір.</b> ":"Можливо, але найкраще тут підійде <b>"+S[x.b].e+" "+S[x.b].n+"</b>. ")+x.w+'</div>':"")+'</div>'}).join("")+'<button class="btn pri" data-a="next" style="margin-top:6px">'+(st.ri<4?"🔄 Оновити: наступні 5 ситуацій":"Завершити 🎉")+'</button>'}
+function showEnd(){var m=document.createElement("div");m.id="end";m.className="ov";m.innerHTML='<div class="card" style="max-width:460px;text-align:center"><div style="font-size:42px">🎉</div><h1 class="serif" style="font-size:24px">Дякуємо, що пройшли до кінця!</h1><p class="mut">Ви пройшли всі 5 раундів ситуацій і побачили, що в кожного стилю є своє місце.'+(st.an?' Найкращий стиль для ситуації ви обрали в '+st.ok+' із '+st.an+' випадків.':'')+'</p><p>Бажаємо вам гнучкості: уміти і відстояти своє, і почути іншого. Нехай кожен конфлікт стане нагодою знайти краще рішення.</p><div class="row"><button class="btn" data-a="close">Закрити</button><button class="btn pri" data-a="retake" style="width:auto">Пройти ще раз</button></div></div>';app.appendChild(m)}
+var st={s:"intro",i:0,a:{},n:"",r:null,lock:0,saved:0};
+try{var d=JSON.parse(localStorage.getItem("tk6"));if(d&&d.a&&Object.keys(d.a).length){st.a=d.a;st.i=d.i||0;st.n=d.n||"";st.saved=1}}catch(e){}
+var app=document.getElementById("app");
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+function lv(v){return v>=14?"високий":v>=10?"середній":"низький"}
+function save(){try{localStorage.setItem("tk6",JSON.stringify({a:st.a,i:st.i,n:st.n}))}catch(e){}}
+function calc(s){var v=ORD.map(function(k){return s[k]}),mx=Math.max.apply(0,v),mn=Math.min.apply(0,v);
+var top=ORD.filter(function(k){return s[k]===mx}),quiet=ORD.filter(function(k){return s[k]===mn&&top.indexOf(k)<0}),
+rest=ORD.filter(function(k){return top.indexOf(k)<0}).sort(function(a,b){return s[b]-s[a]}),t=0,px=0,py=0;
+ORD.forEach(function(k){t+=s[k];px+=s[k]*S[k].x;py+=s[k]*S[k].y});
+var f=function(q){return Math.min(.96,Math.max(.04,.5+(q/t-.5)*2.4))};
+return{s:s,top:top,quiet:quiet,sec:rest[0],flat:mx-mn<=4||top.length>=4,px:f(px),py:f(py)}}
+function petal(r){var s=r.s,A={CP:-45,CL:45,AC:135,AV:225},P={CP:[62,26],CL:[278,26],AV:[62,282],AC:[278,282]},K=["CP","CL","AC","AV"];
+var g='<svg viewBox="0 0 340 330" role="img" aria-label="Пелюсткова діаграма стилів" style="width:100%;max-width:440px;display:block;margin:0 auto">';
+var shape=function(l){var w=l*.28;return"M0 0C"+w+" "+(-l*.3)+" "+w*.7+" "+(-l*.8)+" 0 "+(-l)+"C"+(-w*.7)+" "+(-l*.8)+" "+(-w)+" "+(-l*.3)+" 0 0Z"};
+K.forEach(function(k){g+='<g transform="translate(170 165) rotate('+A[k]+')"><path d="'+shape(120)+'" fill="none" stroke="var(--line)" stroke-dasharray="4 4"/></g>'});
+K.forEach(function(k){var l=22+98*(s[k]-4)/16,on=r.flat||r.top.indexOf(k)>=0;
+g+='<g transform="translate(170 165) rotate('+A[k]+')"><path d="'+shape(l)+'" fill="'+S[k].c+'" fill-opacity="'+(on?.8:.45)+'" stroke="'+S[k].c+'" stroke-width="'+(on&&!r.flat?3:1.5)+'"/></g>'});
+g+='<circle cx="170" cy="165" r="'+(14+16*(s.CM-4)/16)+'" fill="#C9962C" stroke="#fff" stroke-width="2.5"/><text x="170" y="171" font-size="16" text-anchor="middle">🦊</text>';
+K.forEach(function(k){var p=P[k];g+='<text x="'+p[0]+'" y="'+p[1]+'" font-size="22" text-anchor="middle">'+S[k].e+'</text><text x="'+p[0]+'" y="'+(p[1]+18)+'" font-size="12.5" font-weight="700" text-anchor="middle" style="fill:var(--ink)">'+S[k].n+'</text><text x="'+p[0]+'" y="'+(p[1]+33)+'" font-size="11.5" text-anchor="middle">'+s[k]+'/20 · '+lv(s[k])+'</text>'});
+g+='</svg>';
+var LN=["Низька","Середня","Висока"],Z=function(v){return v>=28?2:v>=20?1:0};
+var ax=function(ic,n,q,v,a,b,txt){var z=Z(v),P=function(x){return Math.min(97,Math.max(3,(x-8)/32*100))},sp=Math.abs(s[a]-s[b]),hi=s[a]>=s[b]?a:b,lo=hi===a?b:a,
+dots=[a,b].map(function(k){return'<i title="'+S[k].n+'" style="position:absolute;top:-1px;left:calc('+P(2*s[k])+'% - 7px);width:14px;height:14px;border-radius:50%;background:'+S[k].c+';border:2px solid var(--card)"></i>'}).join("");
+return'<div class="box" style="margin-top:12px"><div style="font-weight:700;font-size:15px">'+ic+' '+n+'</div><div class="mut sm" style="margin-bottom:12px">'+q+'</div><div style="position:relative;height:12px;border-radius:7px;background:linear-gradient(90deg,var(--line) 0 37.5%,color-mix(in srgb,var(--ink2) 28%,var(--line)) 37.5% 62.5%,color-mix(in srgb,var(--ink2) 55%,var(--line)) 62.5%)">'+dots+'<i style="position:absolute;top:-4px;left:calc('+P(v)+'% - 10px);width:20px;height:20px;border-radius:50%;background:var(--gold);border:3px solid var(--card)"></i></div><div class="mut" style="display:flex;font-size:11.5px;margin:7px 0 12px;text-align:center"><span style="flex:37.5">Низька</span><span style="flex:25">Середня</span><span style="flex:37.5">Висока</span></div><div><b>'+LN[z]+' · '+v+' із 40.</b> '+txt[z]+'</div>'+(sp>=6?'<div class="box" style="margin-top:10px"><b>Зверніть увагу:</b> стилі в цій парі дуже різні: '+S[hi].e+' '+S[hi].n+' ('+s[hi]+'/20) і '+S[lo].e+' '+S[lo].n+' ('+s[lo]+'/20). Сума приховує цю різницю, тому дивіться на кольорові точки.</div>':'')+'<div class="mut sm" style="margin-top:8px">Золота точка — підсумок осі, кольорові — окремі стилі.</div><div class="mut sm" style="margin-top:6px">Складається з: '+pt(a,b)+'</div></div>'};
+var asT=["Ви рідко наполягаєте на своєму. Інколи варто чіткіше заявити про власні потреби.","Ви відстоюєте своє, коли питання справді важливе.","Ви чітко заявляєте про свої інтереси й готові за них боротися."],
+coT=["Ви рідше орієнтуєтеся на потреби співрозмовника. Корисно частіше питати, чого хоче інша сторона.","Ви зважаєте на іншого, але не завжди ставите це на перше місце.","Ви уважні до потреб інших і прагнете зберегти стосунки."];
+var pt=function(a,b){return S[a].e+' '+S[a].n+' '+s[a]+' + '+S[b].e+' '+S[b].n+' '+s[b]};
+return g+'<p class="sm" style="text-align:center;margin:6px 0 4px">🦊 <b>Компроміс</b> (коло в центрі): '+s.CM+'/20 · '+lv(s.CM)+'</p><h2>Дві осі вашого профілю</h2><p class="mut sm">Будь-який конфлікт можна оцінити за двома запитаннями: «наскільки мені важливо досягти свого?» і «наскільки мені важливі стосунки та інтереси іншої людини?». Від поєднання відповідей залежить стиль.</p>'+ax("🎯","Наполегливість","Наскільки я відстоюю свої інтереси",s.CP+s.CL,"CP","CL",asT)+ax("🤝","Кооперативність","Наскільки я зважаю на інтереси іншого",s.CL+s.AC,"CL","AC",coT)+'<details style="margin-top:12px"><summary>Як осі пов\'язані зі стилями</summary><p>🦈 <b>Суперництво:</b> наполегливість висока, кооперативність низька.</p><p>🦉 <b>Співпраця:</b> обидві високі, тому цей стиль входить в обидві осі.</p><p>🧸 <b>Пристосування:</b> кооперативність висока, наполегливість низька.</p><p>🐢 <b>Уникнення:</b> обидві низькі.</p><p>🦊 <b>Компроміс:</b> посередині за обома.</p></details>'}
+function intro(){return'<div class="card"><p class="k">Практичне заняття 6 · Бізнес-лідерство</p><h1 class="serif">Ваш стиль у конфлікті</h1><p class="mut">20 коротких тверджень про те, як ви зазвичай поводитеся, коли ваші інтереси стикаються з чужими. Це навчальна самооцінка за мотивами моделі Томаса-Кілманна, а не діагноз і не офіційний тест TKI.</p><ul class="mut sm" style="padding-left:20px;margin:0 0 16px"><li>Правильних відповідей немає: відповідайте так, як є, а не як мало б бути.</li><li>Згадайте останні пів року: навчання, робота, друзі, сім\'я.</li><li>Перша думка зазвичай найточніша. Можна натискати клавіші 1–5.</li></ul><div class="ex"><b>Приклад.</b> «Я відкладаю неприємну розмову». Оберіть, як часто це про вас: від «Ніколи» до «Майже завжди».</div><label class="sm" for="nm"><b>Ім\'я або псевдонім</b> <span class="mut">(необов\'язково, потрапить у код для викладача)</span></label><input id="nm" maxlength="40" value="'+esc(st.n)+'" style="margin:6px 0 18px">'+(st.saved?'<button class="btn pri" data-a="cont" style="margin-bottom:10px">Продовжити з твердження '+(st.i+1)+'</button><button class="btn" data-a="start" style="width:100%">Почати спочатку</button>':'<button class="btn pri" data-a="start">Почати</button>')+'<p class="mut sm" style="margin:18px 0 0;text-align:center">20 тверджень · близько 5 хвилин</p><button class="link" data-a="teacher">Для викладача: зведення групи</button></div>'}
+function quiz(){var it=ITEMS[st.i],sel=st.a[it.id];
+var o=L.map(function(l,j){return'<button class="opt'+(sel===j+1?" on":"")+'" data-a="v" data-v="'+(j+1)+'"><b>'+(j+1)+'</b>'+l+'</button>'}).join("");
+return'<div class="card"><div class="pg"><i style="width:'+Math.round(st.i/20*100)+'%"></i></div><p class="k">Твердження '+(st.i+1)+' із 20 · залишилось '+(19-st.i)+'</p><p class="stmt serif">'+it.t+'</p><p class="mut sm" style="margin-bottom:10px">Як часто це про вас?</p><div class="opts">'+o+'</div><div class="nav"><button class="btn ghost" data-a="back"'+(st.i?"":' style="visibility:hidden"')+'>← Назад</button><span class="mut sm">Відповідайте чесно</span></div></div>'}
+function results(){var r=st.r,top=r.top,s=r.s;
+var bars=ORD.map(function(k){return'<div class="bar"><div class="bl"><span>'+S[k].e+" "+S[k].n+'</span><span>'+s[k]+"/20 · "+lv(s[k])+'</span></div><div class="bt"><i style="width:'+s[k]*5+'%;background:'+S[k].c+';opacity:'+(top.indexOf(k)>=0&&!r.flat?1:.55)+'"></i></div></div>'}).join("");
+var hero;
+if(r.flat)hero='<div class="lb">ПРОФІЛЬ</div><div class="nm">Рівномірний профіль</div><p>Ваші бали майже однакові. Це може означати гнучкість, а може — що ви обирали «середні» відповіді. Згадайте три реальні конфлікти й чесно подивіться, який стиль ви застосовували насправді.</p>';
+else hero='<div class="lb">ДОМІНУЮЧИЙ СТИЛЬ</div><div class="nm">'+top.map(function(k){return S[k].e+" "+S[k].n}).join(" і ")+'</div>'+top.map(function(k){return'<p><b>Ваша фраза:</b> '+S[k].q+'</p><p><b>Коли доречний:</b> '+S[k].ok+'</p><p><b>Коли ризикований:</b> '+S[k].rk+'</p>'}).join("")+(top.length==1?'<p><b>Далі за вираженістю:</b> '+S[r.sec].e+" "+S[r.sec].n+'.</p>':"")+'<p><b>🎯 Виклик тижня:</b> '+S[top[0]].ch+'</p>';
+var q=r.quiet[0],blind=(q&&!r.flat)?'<div class="box"><b>Ваш невикористаний інструмент: '+S[q].e+" "+S[q].n+'.</b> Жоден стиль не є «поганим». Цей стиль доречний, коли: '+S[q].ok.charAt(0).toLowerCase()+S[q].ok.slice(1)+'</div>':"";
+var acc=ORD.map(function(k){return'<details><summary>'+S[k].e+" "+S[k].n+" · "+lv(s[k])+'</summary><p><b>'+S[k].q+'</b></p><p>Доречний: '+S[k].ok+'</p><p>Ризик: '+S[k].rk+'</p></details>'}).join("");
+var cs=casesHtml();
+var code="TK1|"+(st.n||"Анонім").replace(/[|\n]/g," ")+"|"+CODE.map(function(k){return s[k]}).join(",");
+return'<div class="card">'+(st.n?'<p class="k">'+esc(st.n)+'</p>':"")+'<h1 class="serif">Ваш профіль у конфлікті</h1><p class="mut sm">Кожна пелюстка показує, наскільки виражений стиль (пунктир — максимум, 20 балів). Найдовша пелюстка — ваш домінуючий стиль, а рівна зірка означає, що ви гнучко змінюєте підхід залежно від ситуації. Рівні для кожного стилю: до 9 — низький, 10–13 — середній, від 14 — високий («Часто» і частіше).</p>'+petal(r)+'<h2>Ваші бали</h2>'+bars+'<div class="hero">'+hero+'</div>'+blind+'<h2>Усі п\'ять стилів</h2>'+acc+'<h2>Застосуйте на практиці</h2><p class="mut sm">Для кожної ситуації оберіть стиль, який підійде найкраще, і прочитайте пояснення. Усього 5 раундів по 5 ситуацій, щоразу випадкові.</p><div id="cases">'+cs+'</div><div class="row"><button class="btn" data-a="retake">Пройти ще раз</button></div><button class="link" data-a="teacher">Для викладача: зведення групи</button></div>'}
+function teacher(){return'<div class="card"><h1 class="serif" style="font-size:22px">Зведення групи</h1><p class="mut sm">Студенти надсилають вам свої коди (рядки, що починаються з TK1). Вставте їх сюди, по одному в рядок.</p><textarea id="codes" rows="6" placeholder="TK1|Олена К.|12,9,14,11,17"></textarea><label class="sm" style="display:flex;gap:8px;margin-top:10px;align-items:center"><input type="checkbox" id="anon" style="width:auto"> Сховати імена (для показу на екрані)</label><div class="row"><button class="btn pri" data-a="agg" style="width:auto">Показати зведення</button><button class="btn" data-a="exit">← Назад</button></div><div id="out"></div></div>'}
+function agg(){var rows=[];document.getElementById("codes").value.split("\n").forEach(function(l){var m=l.trim().match(/^TK1\|([^|]*)\|(\d+(?:,\d+){4})$/);if(!m)return;var v=m[2].split(",").map(Number);if(v.some(function(x){return x<4||x>20}))return;var s={};CODE.forEach(function(k,i){s[k]=v[i]});rows.push({n:m[1],s:s,r:calc(s)})});
+var out=document.getElementById("out"),an=document.getElementById("anon").checked;
+if(!rows.length){out.innerHTML='<p class="mut sm" style="margin-top:16px">Не знайдено жодного коректного коду.</p>';return}
+var cnt={},avg={};ORD.forEach(function(k){cnt[k]=0;avg[k]=0});
+rows.forEach(function(x){x.r.top.forEach(function(k){cnt[k]++});ORD.forEach(function(k){avg[k]+=x.s[k]})});
+var bars=ORD.map(function(k){return'<div class="bar"><div class="bl"><span>'+S[k].e+" "+S[k].n+'</span><span>'+cnt[k]+' студ. · середній бал '+(avg[k]/rows.length).toFixed(1)+'</span></div><div class="bt"><i style="width:'+cnt[k]/rows.length*100+'%;background:'+S[k].c+'"></i></div></div>'}).join("");
+var tb=an?"":'<div style="overflow-x:auto;margin-top:14px"><table><tr><th>Студент</th><th>Домінуючий</th></tr>'+rows.map(function(x){return'<tr><td>'+esc(x.n)+'</td><td>'+(x.r.flat?"Рівномірний":x.r.top.map(function(k){return S[k].n}).join(" / "))+'</td></tr>'}).join("")+'</table></div>';
+out.innerHTML='<h2>Відповідей: '+rows.length+'</h2><p class="mut sm">Скільки студентів мають кожен стиль домінуючим.</p>'+bars+tb}
+function render(){app.innerHTML='<div class="st">'+({intro:intro,quiz:quiz,results:results,teacher:teacher}[st.s])()+'</div>';window.scrollTo(0,0)}
+function pick(v){if(st.lock)return;var it=ITEMS[st.i];st.a[it.id]=v;st.lock=1;save();document.querySelectorAll(".opt").forEach(function(o){o.classList.toggle("on",+o.dataset.v===v)});
+setTimeout(function(){st.lock=0;if(st.s!=="quiz")return;if(st.i<19){st.i++;save();render()}else{var s={};ORD.forEach(function(k){s[k]=0});ITEMS.forEach(function(x){s[x.s]+=st.a[x.id]||0});st.r=calc(s);st.rd=makeRounds();st.ri=0;st.ok=0;st.an=0;st.s="results";try{localStorage.removeItem("tk6")}catch(e){}render()}},200)}
+function back(){if(st.s==="quiz"&&st.i>0){st.i--;render()}}
+app.addEventListener("click",function(e){var b=e.target.closest("[data-a]");if(!b)return;var a=b.dataset.a;
+if(a==="start"){st.n=document.getElementById("nm").value.trim();st.a={};st.i=0;st.saved=0;st.s="quiz";save();render()}
+else if(a==="cont"){st.n=document.getElementById("nm").value.trim();st.s="quiz";render()}
+else if(a==="v")pick(+b.dataset.v);else if(a==="back")back();
+else if(a==="retake"){st.a={};st.i=0;st.r=null;st.saved=0;st.s="intro";render()}
+else if(a==="teacher"){st.s="teacher";render()}
+else if(a==="exit"){st.s=st.r?"results":"intro";render()}
+else if(a==="agg")agg();
+else if(a==="copy"){var t=document.getElementById("code");t.select();try{navigator.clipboard.writeText(t.value)}catch(x){}try{document.execCommand("copy")}catch(x){}b.textContent="Скопійовано ✓"}
+else if(a==="cs"){var c=st.rd[st.ri][+b.dataset.c];if(c.a)return;c.a=b.dataset.k;st.an++;if(c.a===c.b)st.ok++;document.getElementById("cases").innerHTML=casesHtml()}
+else if(a==="next"){if(st.ri<4){st.ri++;var cc=document.getElementById("cases");cc.innerHTML=casesHtml();cc.scrollIntoView({behavior:"smooth",block:"start"})}else showEnd()}
+else if(a==="close"){var m=document.getElementById("end");if(m)m.remove()}});
+document.addEventListener("keydown",function(e){if(st.s!=="quiz"||/INPUT|TEXTAREA/.test(e.target.tagName))return;if(/^[1-5]$/.test(e.key))pick(+e.key);else if(e.key==="Backspace"||e.key==="ArrowLeft")back()});
+render();
+})();
+</script></body></html>
