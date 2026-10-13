@@ -1,533 +1,137 @@
-<!DOCTYPE html>
-<html lang="uk">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Трансформаційне vs транзакційне лідерство</title>
+<!DOCTYPE html><html lang="uk"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Трансформаційне чи транзакційне лідерство?</title>
 <style>
-  :root {
-    --ink: #1E2761;
-    --ink-soft: #384080;
-    --surface: #F3F6FC;
-    --card: #FFFFFF;
-    --gold: #C9962C;
-    --gold-soft: #F3E4C6;
-    --teal: #2E7D6B;
-    --teal-soft: #DCEFE9;
-    --muted: #5B6685;
-    --line: #DDE4F5;
-  }
-  * { box-sizing: border-box; }
-  html, body {
-    margin: 0; padding: 0; min-height: 100%;
-    background: var(--surface);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    color: var(--ink);
-  }
-  .serif { font-family: Cambria, Georgia, "Times New Roman", serif; }
-  #app { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 32px 18px; }
-  .stage { width: 100%; max-width: 640px; }
-  .card {
-    background: var(--card); border: 1px solid var(--line); border-radius: 18px;
-    padding: 40px 36px; box-shadow: 0 18px 40px -24px rgba(30, 39, 97, 0.35);
-  }
-  @media (max-width: 480px) { .card { padding: 26px 20px; } }
-
-  .kicker { font-size: 13px; color: var(--muted); margin: 0 0 10px; }
-  h1.title { font-size: 28px; line-height: 1.2; margin: 0 0 14px; font-weight: 700; }
-  p.lead { font-size: 15px; line-height: 1.6; color: var(--muted); margin: 0 0 22px; }
-  label.field-label { display: block; font-size: 13px; color: var(--ink-soft); margin-bottom: 6px; font-weight: 600; }
-  input.text-input {
-    width: 100%; padding: 12px 14px; border-radius: 10px; border: 1.5px solid var(--line);
-    font-size: 15px; color: var(--ink); background: var(--surface); margin-bottom: 22px;
-  }
-  input.text-input:focus { outline: none; border-color: var(--gold); }
-  .btn {
-    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-    padding: 13px 26px; border-radius: 10px; border: none; font-size: 15px; font-weight: 600;
-    cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease;
-  }
-  .btn-primary { background: var(--ink); color: #fff; width: 100%; }
-  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 10px 20px -12px rgba(30,39,97,0.6); }
-  .btn-ghost { background: transparent; color: var(--muted); font-weight: 500; padding: 8px 4px; }
-  .btn-ghost:hover { color: var(--ink); }
-  .btn-secondary { background: var(--surface); color: var(--ink); border: 1.5px solid var(--line); }
-  .meta-row { display: flex; gap: 22px; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line); }
-  .meta-item .num { font-weight: 700; font-size: 16px; }
-  .meta-item .lbl { font-size: 12px; color: var(--muted); }
-  .legend-row { display: flex; gap: 18px; margin-top: 4px; margin-bottom: 22px; }
-  .legend-item { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--muted); }
-  .legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-
-  /* Quiz */
-  .progress-track { height: 5px; background: var(--line); border-radius: 4px; overflow: hidden; margin-bottom: 26px; }
-  .progress-fill { height: 100%; background: var(--gold); border-radius: 4px; transition: width 0.35s ease; }
-  .step-count { font-size: 13px; color: var(--muted); margin-bottom: 18px; }
-  .statement { font-size: 21px; line-height: 1.45; font-weight: 600; margin: 0 0 34px; min-height: 96px; }
-  .scale-row { display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; margin-bottom: 10px; }
-  .dot-btn {
-    flex: 1; aspect-ratio: 1; border-radius: 50%; border: 2px solid var(--line); background: #fff;
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: 15px; color: var(--ink-soft); transition: all 0.15s ease;
-    max-width: 58px; margin: 0 auto;
-  }
-  .dot-btn:hover { border-color: var(--gold); }
-  .dot-btn.selected { background: var(--gold); border-color: var(--gold); color: #fff; transform: scale(1.08); }
-  .scale-labels { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 30px; }
-  .quiz-nav { display: flex; justify-content: space-between; align-items: center; }
-
-  /* Results */
-  .result-name { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
-  .macro-block { margin-bottom: 18px; }
-  .macro-label { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
-  .macro-name { font-size: 15px; font-weight: 700; }
-  .macro-score { font-size: 13px; color: var(--muted); }
-  .macro-track { height: 16px; background: var(--surface); border-radius: 8px; overflow: hidden; border: 1px solid var(--line); }
-  .macro-fill { height: 100%; border-radius: 8px; transition: width 0.8s ease; }
-  .macro-fill.t { background: var(--gold); }
-  .macro-fill.tr { background: var(--teal); }
-
-  .sub-grid { display: flex; gap: 10px; margin-top: 22px; }
-  @media (max-width: 480px) { .sub-grid { flex-wrap: wrap; } }
-  .sub-card { flex: 1; min-width: 130px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
-  .sub-card .sub-name { font-size: 11.5px; color: var(--muted); font-weight: 600; margin-bottom: 4px; line-height: 1.3; }
-  .sub-card .sub-value { font-size: 18px; font-weight: 700; color: var(--ink); }
-
-  .profile-card { margin-top: 26px; padding: 20px 22px; border-radius: 14px; background: var(--ink); color: #fff; }
-  .profile-card .pc-label { font-size: 12px; color: var(--gold-soft); margin-bottom: 4px; }
-  .profile-card .pc-style { font-size: 19px; font-weight: 700; margin-bottom: 10px; }
-  .profile-card p { font-size: 13.5px; line-height: 1.55; color: #DCE1F5; margin: 0; }
-
-  .save-note { font-size: 12.5px; color: var(--muted); margin-top: 18px; text-align: center; }
-  .result-actions { display: flex; gap: 12px; margin-top: 26px; }
-  .result-actions .btn { flex: 1; }
-  .teacher-link {
-    display: block; text-align: center; margin-top: 22px; font-size: 12.5px; color: var(--muted);
-    text-decoration: underline; cursor: pointer; background: none; border: none;
-  }
-
-  /* Teacher view */
-  .teacher-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
-  table.results-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-  table.results-table th { text-align: left; font-size: 11px; color: var(--muted); font-weight: 600; padding: 7px 6px; border-bottom: 2px solid var(--line); }
-  table.results-table td { padding: 8px 6px; border-bottom: 1px solid var(--line); }
-  .tag { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; background: var(--gold-soft); color: #7A5A16; }
-  .empty-note { text-align: center; color: var(--muted); font-size: 13.5px; padding: 30px 0; }
-  .icon-btn { background: none; border: 1.5px solid var(--line); border-radius: 8px; padding: 7px 13px; font-size: 12.5px; color: var(--ink); cursor: pointer; }
-  .icon-btn:hover { border-color: var(--gold); }
-  .table-scroll { overflow-x: auto; }
-</style>
-</head>
-<body>
-<div id="app"></div>
-
+:root{--ink:#1E2761;--ink2:#384080;--bg:#F3F6FC;--card:#fff;--gold:#C9962C;--mut:#5B6685;--line:#DDE4F5;--hero:#1E2761;box-sizing:border-box;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#E8ECFF;--ink2:#B9C2F0;--bg:#10142B;--card:#1A2040;--gold:#E0AE45;--mut:#A3ADD3;--line:#2E3664;--hero:#2B3575}}
+:root[data-theme="dark"]{--ink:#E8ECFF;--ink2:#B9C2F0;--bg:#10142B;--card:#1A2040;--gold:#E0AE45;--mut:#A3ADD3;--line:#2E3664;--hero:#2B3575}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 -apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+.serif{font-family:Cambria,Georgia,serif}#app{display:flex;justify-content:center;padding:28px 16px}.st{width:100%;max-width:680px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:34px 30px;box-shadow:0 18px 40px -26px rgba(30,39,97,.4)}
+@media(max-width:480px){.card{padding:24px 18px}}
+.k{font-size:13px;color:var(--mut);margin:0 0 8px}h1{font-size:27px;line-height:1.2;margin:0 0 12px}h2{font-size:18px;margin:28px 0 10px}p{margin:0 0 12px}.mut{color:var(--mut)}.sm{font-size:14px}
+input,textarea{width:100%;padding:12px 14px;border-radius:10px;border:1.5px solid var(--line);font:inherit;font-size:15px;color:var(--ink);background:var(--bg)}
+.btn{display:inline-flex;justify-content:center;align-items:center;padding:13px 22px;border-radius:10px;border:1.5px solid var(--line);font:inherit;font-weight:600;font-size:15px;cursor:pointer;background:var(--bg);color:var(--ink)}
+.pri{background:var(--ink);color:var(--bg);border-color:var(--ink);width:100%}.ghost{background:none;border:none;color:var(--mut);font-weight:500;padding:8px 4px}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.row .btn{flex:1;min-width:140px}
+.ex{background:var(--bg);border:1px dashed var(--line);border-radius:12px;padding:12px 14px;font-size:14px;margin:0 0 18px}
+.pg{height:6px;background:var(--line);border-radius:4px;overflow:hidden;margin-bottom:18px}.pg i{display:block;height:100%;background:var(--gold);transition:width .3s}
+.stmt{font-size:21px;line-height:1.4;font-weight:600;min-height:112px;margin:8px 0 26px}
+.opts{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:22px}
+.opt{display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:none;cursor:pointer;font:inherit;font-size:12px;color:var(--mut);padding:0}
+.opt b{width:100%;max-width:56px;aspect-ratio:1;border-radius:50%;border:2px solid var(--line);background:var(--card);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--ink2);transition:.15s}
+.opt:hover b{border-color:var(--gold)}.opt.on b{background:var(--gold);border-color:var(--gold);color:#fff;transform:scale(1.08)}.opt:focus-visible b{outline:3px solid var(--ink2);outline-offset:2px}
+.nav{display:flex;justify-content:space-between;align-items:center}
+.bar{margin-bottom:12px}.bl{display:flex;justify-content:space-between;font-size:14px;font-weight:600;margin-bottom:4px}.bt{height:12px;background:var(--bg);border:1px solid var(--line);border-radius:7px;overflow:hidden}.bt i{display:block;height:100%;border-radius:7px}
+.hero{background:var(--hero);color:#fff;border-radius:14px;padding:20px 22px;margin-top:18px}.hero p{color:#DCE1F5;font-size:14.5px}.hero b{color:#fff}.hero .lb{font-size:12px;color:#F3E4C6;font-weight:700}.hero .nm{font-size:22px;font-weight:700;margin:2px 0 10px}
+.box{margin-top:14px;padding:14px 16px;border-radius:12px;background:var(--bg);border:1px solid var(--line);font-size:14px}
+details{border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:8px}summary{cursor:pointer;font-weight:600}details p{font-size:14px;margin:8px 0 0}
+.case{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}.case p{font-size:14.5px}
+.ch{display:flex;flex-wrap:wrap;gap:6px}.ch button{flex:1;min-width:105px;padding:8px;border:1.5px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit;font-size:13px;cursor:pointer}
+.fb{margin-top:10px;font-size:14px}table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:left}
+svg text{fill:var(--mut);font-family:inherit}.link{display:block;margin:18px auto 0;background:none;border:none;color:var(--mut);font-size:13px;text-decoration:underline;cursor:pointer}
+.ch button{display:flex;flex-direction:column;align-items:center;gap:3px}.ch button:disabled{opacity:.55;cursor:default}.ch button.sel{opacity:1;border-color:var(--gold);border-width:2px}.ov{position:fixed;inset:0;background:rgba(10,14,40,.62);display:flex;align-items:center;justify-content:center;padding:20px;z-index:9}.ov .card{max-height:90vh;overflow:auto}
+</style></head><body><div id="app"></div>
 <script>
-(function () {
-  // ---------------- Model ----------------
-  // T1 = Натхнення та бачення, T2 = Індивідуальний підхід і розвиток (обидва -> Трансформаційне)
-  // R1 = Умовна винагорода, R2 = Управління за відхиленнями (обидва -> Транзакційне)
-  var SUB_NAMES = {
-    T1: "Натхнення та бачення",
-    T2: "Індивідуальний підхід і розвиток",
-    R1: "Умовна винагорода",
-    R2: "Управління за відхиленнями"
-  };
-  var MACRO_OF = { T1: "T", T2: "T", R1: "Tr", R2: "Tr" };
-  var MACRO_NAMES = { T: "Трансформаційне лідерство", Tr: "Транзакційне лідерство" };
-
-  var ITEMS_BY_ID = {
-    T1_1: { sub: "T1", text: "Я формулюю чітке й надихаюче бачення майбутнього для команди." },
-    T1_2: { sub: "T1", text: "Люди в моїй команді пишаються тим, що працюють зі мною." },
-    T1_3: { sub: "T1", text: "Я говорю з ентузіазмом про те, чого можна досягти разом." },
-    T1_4: { sub: "T1", text: "Моя команда довіряє мені навіть у складних і невизначених ситуаціях." },
-    T1_5: { sub: "T1", text: "Я особистим прикладом демонструю цінності, які проповідую." },
-
-    T2_1: { sub: "T2", text: "Я приділяю увагу індивідуальним потребам і сильним сторонам кожного члена команди." },
-    T2_2: { sub: "T2", text: "Я заохочую людей ставити під сумнів звичні підходи й пропонувати нові ідеї." },
-    T2_3: { sub: "T2", text: "Я допомагаю членам команди розвивати їхні сильні сторони, а не лише виправляти слабкі." },
-    T2_4: { sub: "T2", text: "Я сприймаю помилки команди як можливість для навчання, а не привід для покарання." },
-    T2_5: { sub: "T2", text: "Я витрачаю час на менторство і розвиток окремих людей, а не лише команди загалом." },
-
-    R1_1: { sub: "R1", text: "Я чітко пояснюю, що саме людина отримає за виконання конкретного завдання." },
-    R1_2: { sub: "R1", text: "Я домовляюся з командою про конкретні критерії успіху ще до початку роботи." },
-    R1_3: { sub: "R1", text: "Я визнаю і винагороджую тих, хто виконав завдання відповідно до домовленостей." },
-    R1_4: { sub: "R1", text: "У моїй команді чітко зрозуміло, яка винагорода прив'язана до якого результату." },
-    R1_5: { sub: "R1", text: "Я вважаю, що чіткі угоди про очікування й винагороду — основа ефективної роботи." },
-
-    R2_1: { sub: "R2", text: "Я уважно стежу за відхиленнями від стандартів і втручаюся, щойно їх помічаю." },
-    R2_2: { sub: "R2", text: "Я зосереджуюся на виявленні помилок і невідповідностей у роботі команди." },
-    R2_3: { sub: "R2", text: "Я втручаюся в процес лише тоді, коли щось іде не за планом." },
-    R2_4: { sub: "R2", text: "Я регулярно перевіряю, чи команда дотримується встановлених процедур." },
-    R2_5: { sub: "R2", text: "Моя основна увага як лідера — контроль дотримання стандартів і термінів." }
-  };
-
-  // Порядок показу — перемішаний за чотирма підшкалами
-  var DISPLAY_ORDER = [
-    "T2_1", "R1_1", "T1_1", "R2_1", "T1_2",
-    "R2_2", "T2_2", "R1_2", "R2_3", "T1_3",
-    "T2_3", "R1_3", "T1_4", "R2_4", "T2_4",
-    "R1_4", "T1_5", "T2_5", "R2_5", "R1_5"
-  ];
-  var ITEMS = DISPLAY_ORDER.map(function (id) {
-    var base = ITEMS_BY_ID[id];
-    return { id: id, sub: base.sub, text: base.text };
-  });
-
-  var SUB_DESC = {
-    T1: "Ви формулюєте надихаюче бачення і викликаєте довіру особистим прикладом — класична складова харизматичного лідерства.",
-    T2: "Ви приділяєте увагу розвитку кожної людини окремо і заохочуєте нестандартне мислення в команді.",
-    R1: "Ви чітко пов'язуєте винагороду з конкретним результатом — команда завжди знає, чого від неї очікують.",
-    R2: "Ви активно відстежуєте відхилення від стандартів і втручаєтесь, щойно щось іде не за планом."
-  };
-
-  var PROFILE_TEXT = {
-    both_high: "Обидва показники високі — це augmentation-ефект, який описав Бернард Басс: трансформаційні якості підсилюють транзакційну основу. За дослідженнями, саме таке поєднання дає найвищу ефективність — чіткі угоди про винагороду плюс натхнення й розвиток команди.",
-    mostly_t: "Переважає трансформаційний компонент: ви більше надихаєте, ніж домовляєтесь про конкретні умови. Це сильна сторона в періоди змін, але команді може бракувати чіткості щодо очікувань і винагороди.",
-    mostly_tr: "Переважає транзакційний компонент: ви більше домовляєтесь про чіткі умови й контролюєте виконання, ніж надихаєте баченням. Це ефективно в стабільних, рутинних процесах, але може обмежувати ініціативу й залученість команди.",
-    balanced_moderate: "Обидва показники помірні, без яскраво вираженого домінування жодного підходу — гнучкий, ситуативний профіль, який можна свідомо розвивати в будь-якому напрямку.",
-    both_low: "Обидва показники відносно невисокі. За моделлю Басса це ближче до пасивного стилю (management-by-exception passive / laissez-faire) — мінімальне втручання і мінімум надихання. Варто свідомо підсилити хоча б один із двох підходів."
-  };
-
-  var STORAGE_PREFIX = "transform-transact-quiz:";
-
-  // ---------------- State ----------------
-  var state = {
-    screen: "intro",
-    studentName: "",
-    index: 0,
-    answers: {},
-    result: null,
-    saveStatus: "idle",
-    teacherRows: null,
-    teacherLoading: false
-  };
-
-  var app = document.getElementById("app");
-
-  function el(html) {
-    var t = document.createElement("template");
-    t.innerHTML = html.trim();
-    return t.content.firstElementChild;
-  }
-
-  // ---------------- Scoring ----------------
-  function computeResult() {
-    var subs = { T1: 0, T2: 0, R1: 0, R2: 0 };
-    ITEMS.forEach(function (item) {
-      subs[item.sub] += state.answers[item.id] || 0;
-    });
-    var T = subs.T1 + subs.T2;
-    var Tr = subs.R1 + subs.R2;
-    var tPct = T / 50, trPct = Tr / 50;
-
-    var profileKey;
-    var highT = tPct >= 0.7, highTr = trPct >= 0.7;
-    var lowT = tPct <= 0.5, lowTr = trPct <= 0.5;
-    if (highT && highTr) profileKey = "both_high";
-    else if (lowT && lowTr) profileKey = "both_low";
-    else if (highT && !highTr) profileKey = "mostly_t";
-    else if (highTr && !highT) profileKey = "mostly_tr";
-    else profileKey = "balanced_moderate";
-
-    return { subs: subs, T: T, Tr: Tr, profileKey: profileKey };
-  }
-
-  // ---------------- Persistence ----------------
-  function saveResultToStorage(result) {
-    if (!window.storage) return;
-    state.saveStatus = "saving";
-    var key = STORAGE_PREFIX + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
-    var payload = {
-      name: state.studentName || "Анонім",
-      subs: result.subs, T: result.T, Tr: result.Tr,
-      profileKey: result.profileKey, timestamp: Date.now()
-    };
-    window.storage.set(key, JSON.stringify(payload), true).then(function (r) {
-      state.saveStatus = r ? "saved" : "failed";
-      render();
-    }).catch(function () {
-      state.saveStatus = "failed";
-      render();
-    });
-  }
-
-  function loadTeacherRows() {
-    state.teacherLoading = true;
-    render();
-    if (!window.storage) {
-      state.teacherRows = [];
-      state.teacherLoading = false;
-      render();
-      return;
-    }
-    window.storage.list(STORAGE_PREFIX, true).then(function (listRes) {
-      var keys = (listRes && listRes.keys) || [];
-      if (keys.length === 0) {
-        state.teacherRows = [];
-        state.teacherLoading = false;
-        render();
-        return;
-      }
-      var promises = keys.map(function (k) {
-        return window.storage.get(k, true).then(function (r) {
-          try { return JSON.parse(r.value); } catch (e) { return null; }
-        }).catch(function () { return null; });
-      });
-      Promise.all(promises).then(function (rows) {
-        rows = rows.filter(Boolean).sort(function (a, b) { return b.timestamp - a.timestamp; });
-        state.teacherRows = rows;
-        state.teacherLoading = false;
-        render();
-      });
-    }).catch(function () {
-      state.teacherRows = [];
-      state.teacherLoading = false;
-      render();
-    });
-  }
-
-  function downloadCsv() {
-    var rows = state.teacherRows || [];
-    var header = ["Ім'я", "T1", "T2", "R1", "R2", "Трансформаційне (T)", "Транзакційне (Tr)", "Профіль", "Дата"];
-    var lines = [header.join(";")];
-    var profileShort = {
-      both_high: "Аугментований (обидва високі)",
-      mostly_t: "Переважно трансформаційний",
-      mostly_tr: "Переважно транзакційний",
-      balanced_moderate: "Збалансований помірний",
-      both_low: "Обидва низькі (пасивний)"
-    };
-    rows.forEach(function (r) {
-      lines.push([
-        r.name, r.subs.T1, r.subs.T2, r.subs.R1, r.subs.R2, r.T, r.Tr,
-        profileShort[r.profileKey] || r.profileKey,
-        new Date(r.timestamp).toLocaleString("uk-UA")
-      ].join(";"));
-    });
-    var blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8;" });
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement("a");
-    a.href = url; a.download = "transform-transact-results.csv";
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }
-
-  // ---------------- Screens ----------------
-  function renderIntro() {
-    var card = el(
-      '<div class="stage"><div class="card">' +
-      '<p class="kicker">Практичне заняття 1 · Бізнес-лідерство</p>' +
-      '<h1 class="title serif">Трансформаційне чи транзакційне лідерство?</h1>' +
-      '<p class="lead">20 тверджень. Оцініть, наскільки кожне з них описує вашу типову поведінку в ролі лідера, за шкалою від 1 до 5.</p>' +
-      '<div class="legend-row">' +
-        '<div class="legend-item"><span class="legend-dot" style="background:#C9962C;"></span>Трансформаційне</div>' +
-        '<div class="legend-item"><span class="legend-dot" style="background:#2E7D6B;"></span>Транзакційне</div>' +
-      '</div>' +
-      '<label class="field-label">Ваше ім\'я (необов\'язково)</label>' +
-      '<input type="text" class="text-input" id="name-input" placeholder="Наприклад, Олена К." value="' + state.studentName.replace(/"/g,'&quot;') + '" />' +
-      '<button class="btn btn-primary" id="start-btn">Почати опитування</button>' +
-      '<div class="meta-row">' +
-        '<div class="meta-item"><div class="num">20</div><div class="lbl">тверджень</div></div>' +
-        '<div class="meta-item"><div class="num">~6 хв</div><div class="lbl">орієнтовно</div></div>' +
-        '<div class="meta-item"><div class="num">2</div><div class="lbl">стилі лідерства</div></div>' +
-      '</div>' +
-      '</div></div>'
-    );
-    card.querySelector("#start-btn").addEventListener("click", function () {
-      state.studentName = card.querySelector("#name-input").value.trim();
-      state.screen = "quiz";
-      state.index = 0;
-      render();
-    });
-    return card;
-  }
-
-  function renderQuiz() {
-    var item = ITEMS[state.index];
-    var progressPct = Math.round((state.index / ITEMS.length) * 100);
-    var selected = state.answers[item.id];
-
-    var dotsHtml = "";
-    for (var v = 1; v <= 5; v++) {
-      dotsHtml += '<button class="dot-btn' + (selected === v ? " selected" : "") + '" data-value="' + v + '">' + v + "</button>";
-    }
-
-    var card = el(
-      '<div class="stage"><div class="card">' +
-      '<div class="progress-track"><div class="progress-fill" style="width:' + progressPct + '%"></div></div>' +
-      '<p class="step-count">Твердження ' + (state.index + 1) + ' із ' + ITEMS.length + '</p>' +
-      '<p class="statement serif">' + item.text + '</p>' +
-      '<div class="scale-row">' + dotsHtml + '</div>' +
-      '<div class="scale-labels"><span>Зовсім не про мене</span><span>Повністю про мене</span></div>' +
-      '<div class="quiz-nav">' +
-        '<button class="btn btn-ghost" id="back-btn" ' + (state.index === 0 ? "disabled style=\"visibility:hidden\"" : "") + '>← Назад</button>' +
-        '<span></span>' +
-      '</div>' +
-      '</div></div>'
-    );
-
-    card.querySelectorAll(".dot-btn").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        var val = parseInt(btn.getAttribute("data-value"), 10);
-        state.answers[item.id] = val;
-        setTimeout(function () {
-          if (state.index < ITEMS.length - 1) {
-            state.index += 1;
-            render();
-          } else {
-            state.result = computeResult();
-            state.screen = "results";
-            state.saveStatus = "idle";
-            render();
-            saveResultToStorage(state.result);
-          }
-        }, 180);
-        render();
-      });
-    });
-
-    var backBtn = card.querySelector("#back-btn");
-    if (backBtn) {
-      backBtn.addEventListener("click", function () {
-        if (state.index > 0) { state.index -= 1; render(); }
-      });
-    }
-
-    return card;
-  }
-
-  function renderResults() {
-    var result = state.result;
-    var tPct = Math.round((result.T / 50) * 100);
-    var trPct = Math.round((result.Tr / 50) * 100);
-
-    var profileTitle = {
-      both_high: "Аугментований профіль",
-      mostly_t: "Переважно трансформаційний",
-      mostly_tr: "Переважно транзакційний",
-      balanced_moderate: "Збалансований помірний профіль",
-      both_low: "Пасивний профіль"
-    }[result.profileKey];
-
-    var subOrder = ["T1", "T2", "R1", "R2"];
-    var subCardsHtml = subOrder.map(function (key) {
-      return (
-        '<div class="sub-card">' +
-          '<div class="sub-name">' + SUB_NAMES[key] + '</div>' +
-          '<div class="sub-value">' + result.subs[key] + ' / 25</div>' +
-        '</div>'
-      );
-    }).join("");
-
-    var saveNote = "";
-    if (state.saveStatus === "saving") saveNote = "Зберігаємо результат…";
-    else if (state.saveStatus === "saved") saveNote = "Результат збережено.";
-    else if (state.saveStatus === "failed") saveNote = "Результат порахований, але не вдалося зберегти для викладача.";
-
-    var card = el(
-      '<div class="stage"><div class="card">' +
-      (state.studentName ? '<p class="result-name">' + state.studentName + '</p>' : "") +
-      '<h1 class="title serif">Ваш профіль лідерства</h1>' +
-      '<div style="margin-top:20px;">' +
-        '<div class="macro-block">' +
-          '<div class="macro-label"><span class="macro-name">' + MACRO_NAMES.T + '</span><span class="macro-score">' + result.T + ' / 50</span></div>' +
-          '<div class="macro-track"><div class="macro-fill t" style="width:' + tPct + '%"></div></div>' +
-        '</div>' +
-        '<div class="macro-block">' +
-          '<div class="macro-label"><span class="macro-name">' + MACRO_NAMES.Tr + '</span><span class="macro-score">' + result.Tr + ' / 50</span></div>' +
-          '<div class="macro-track"><div class="macro-fill tr" style="width:' + trPct + '%"></div></div>' +
-        '</div>' +
-      '</div>' +
-      '<div class="sub-grid">' + subCardsHtml + '</div>' +
-      '<div class="profile-card">' +
-        '<div class="pc-label">Ваш профіль</div>' +
-        '<div class="pc-style">' + profileTitle + '</div>' +
-        '<p>' + PROFILE_TEXT[result.profileKey] + '</p>' +
-      '</div>' +
-      (saveNote ? '<p class="save-note">' + saveNote + '</p>' : "") +
-      '<div class="result-actions">' +
-        '<button class="btn btn-secondary" id="retake-btn">Пройти ще раз</button>' +
-      '</div>' +
-      '<button class="teacher-link" id="teacher-link">Перегляд результатів групи (для викладача)</button>' +
-      '</div></div>'
-    );
-
-    card.querySelector("#retake-btn").addEventListener("click", function () {
-      state.screen = "intro"; state.index = 0; state.answers = {}; state.result = null;
-      render();
-    });
-    card.querySelector("#teacher-link").addEventListener("click", function () {
-      state.screen = "teacher"; render(); loadTeacherRows();
-    });
-
-    return card;
-  }
-
-  function renderTeacher() {
-    var rows = state.teacherRows;
-    var bodyHtml;
-    if (state.teacherLoading) {
-      bodyHtml = '<p class="empty-note">Завантаження результатів…</p>';
-    } else if (!rows || rows.length === 0) {
-      bodyHtml = '<p class="empty-note">Поки що ніхто не пройшов опитування за цим посиланням.</p>';
-    } else {
-      var profileShort = {
-        both_high: "Аугментований", mostly_t: "Трансформ.", mostly_tr: "Транзакц.",
-        balanced_moderate: "Збалансов.", both_low: "Пасивний"
-      };
-      var trs = rows.map(function (r) {
-        return (
-          '<tr>' +
-            '<td>' + r.name + '</td>' +
-            '<td>' + r.T + '</td>' +
-            '<td>' + r.Tr + '</td>' +
-            '<td><span class="tag">' + (profileShort[r.profileKey] || r.profileKey) + '</span></td>' +
-          '</tr>'
-        );
-      }).join("");
-      bodyHtml =
-        '<div class="table-scroll"><table class="results-table">' +
-          '<thead><tr><th>Студент</th><th>T /50</th><th>Tr /50</th><th>Профіль</th></tr></thead>' +
-          '<tbody>' + trs + '</tbody>' +
-        '</table></div>';
-    }
-
-    var card = el(
-      '<div class="stage"><div class="card">' +
-      '<div class="teacher-header">' +
-        '<h1 class="title serif" style="margin:0;font-size:22px;">Результати групи</h1>' +
-        '<button class="icon-btn" id="refresh-btn">Оновити</button>' +
-      '</div>' +
-      bodyHtml +
-      '<div class="result-actions">' +
-        '<button class="btn btn-secondary" id="csv-btn"' + ((!rows || rows.length === 0) ? " disabled" : "") + '>Завантажити CSV</button>' +
-        '<button class="btn btn-secondary" id="back-to-quiz-btn">← Назад</button>' +
-      '</div>' +
-      '</div></div>'
-    );
-
-    card.querySelector("#refresh-btn").addEventListener("click", loadTeacherRows);
-    card.querySelector("#back-to-quiz-btn").addEventListener("click", function () {
-      state.screen = state.result ? "results" : "intro"; render();
-    });
-    var csvBtn = card.querySelector("#csv-btn");
-    if (csvBtn && rows && rows.length > 0) csvBtn.addEventListener("click", downloadCsv);
-
-    return card;
-  }
-
-  function render() {
-    app.innerHTML = "";
-    var view;
-    if (state.screen === "intro") view = renderIntro();
-    else if (state.screen === "quiz") view = renderQuiz();
-    else if (state.screen === "results") view = renderResults();
-    else view = renderTeacher();
-    app.appendChild(view);
-  }
-
-  render();
+(function(){
+var ORD=["T1","T2","R1","R2","P"],L=["Ніколи","Рідко","Іноді","Часто","Майже завжди"];
+var C={
+T1:{n:"Натхнення й бачення",e:"🌟",c:"#C9962C",g:"T",d:"Ви формулюєте бачення, пояснюєте сенс роботи й підтверджуєте слова власним прикладом.",w:"Бачення, спільний сенс і власний приклад цінностей — це натхнення та ідеалізований вплив (трансформаційне лідерство)."},
+T2:{n:"Індивідуальний підхід",e:"🌱",c:"#2E7D6B",g:"T",d:"Ви уважні до кожної людини, розвиваєте її сильні сторони й заохочуєте нові ідеї.",w:"Увага до кожної людини, розвиток сильних сторін і заохочення нових ідей — це індивідуальний підхід та інтелектуальна стимуляція (трансформаційне)."},
+R1:{n:"Умовна винагорода",e:"🤝",c:"#384080",g:"R",d:"Ви домовляєтеся про чіткі очікування й пов'язуєте винагороду з результатом.",w:"Чітка угода «результат → винагорода» — це умовна винагорода (транзакційне лідерство)."},
+R2:{n:"Управління за відхиленнями",e:"🔍",c:"#B3492F",g:"R",d:"Ви активно стежите за відхиленнями від стандартів і втручаєтеся, щойно їх помічаєте.",w:"Активний пошук відхилень від стандартів і негайне втручання — це управління за відхиленнями (транзакційне)."},
+P:{n:"Пасивне / уникаюче",e:"⏸️",c:"#8891B5",g:"P",d:"Ви втручаєтеся пізно, відкладаєте рішення й нечасто задаєте орієнтири.",w:"Втручання запізно, уникання рішень або відсутність орієнтирів — це пасивно-уникаючий стиль."}};
+var T={
+T1_1:["T1","Я формулюю для команди чітке й надихаюче бачення майбутнього."],T1_2:["T1","Я пояснюю команді, чому наша робота важлива й для чого ми це робимо."],T1_3:["T1","Я говорю з ентузіазмом про те, чого можна досягти разом."],T1_4:["T1","Я особистим прикладом демонструю цінності, про які говорю."],T1_5:["T1","Я вселяю в команду впевненість у складних і невизначених ситуаціях."],
+T2_1:["T2","Я приділяю увагу індивідуальним потребам і сильним сторонам кожного члена команди."],T2_2:["T2","Я заохочую людей ставити під сумнів звичні підходи й пропонувати нові ідеї."],T2_3:["T2","Я допомагаю членам команди розвивати їхні сильні сторони, а не лише виправляти слабкі."],T2_4:["T2","Я сприймаю помилки як можливість для навчання, а не привід для покарання."],T2_5:["T2","Я витрачаю час на менторство окремих людей, а не лише команди загалом."],
+R1_1:["R1","Я чітко пояснюю, що людина отримає за виконання конкретного завдання."],R1_2:["R1","Я домовляюся з командою про критерії успіху ще до початку роботи."],R1_3:["R1","Я визнаю й винагороджую тих, хто виконав завдання за домовленістю."],R1_4:["R1","У моїй команді зрозуміло, яка винагорода пов'язана з яким результатом."],R1_5:["R1","Я укладаю з командою чіткі угоди про очікування й винагороду."],
+R2_1:["R2","Я уважно стежу за відхиленнями від стандартів і реагую, щойно їх помічаю."],R2_2:["R2","Я зосереджуюся на виявленні помилок і невідповідностей у роботі команди."],R2_3:["R2","Я регулярно перевіряю, чи команда дотримується встановлених процедур."],R2_4:["R2","Я веду облік помилок і відхилень, щоб вчасно їх виправляти."],R2_5:["R2","Моя основна увага як лідера спрямована на контроль дотримання стандартів і термінів."],
+P1:["P","Я втручаюся лише тоді, коли проблема вже стала серйозною."],P2:["P","Я відкладаю складні рішення, поки ситуація сама не загостриться."],P3:["P","Я не завжди на зв'язку, коли команді потрібне рішення."],P4:["P","Я уникаю пояснень, що саме очікується від команди."],P5:["P","Я не даю команді чітких орієнтирів, вважаючи, що люди самі розберуться."]};
+var ITEMS=["T1_1","R2_1","P1","T2_1","R1_1","R2_2","T1_2","P2","R1_2","T2_2","P3","T2_3","R1_3","T1_3","R2_3","R1_4","P4","T2_4","R2_4","T1_4","T2_5","R1_5","T1_5","P5","R2_5"].map(function(id){return{id:id,s:T[id][0],t:T[id][1]}});
+function c(b,t){return{b:b,t:t}}
+var SIT=[
+c("T1","Перед запуском складного проєкту керівниця зібрала команду й розповіла, яку різницю він зробить для клієнтів через рік і чому кожен у цьому важливий."),
+c("T1","У період реорганізації директор сам працює допізна поруч із командою й відкрито говорить, яких цінностей компанія не порушить, навіть якщо це дорого коштує."),
+c("T1","Під час кризи лідер спокійно каже: «Складно, але ми впораємося, ось чому я в цьому впевнений», і люди повертаються до роботи з новою енергією."),
+c("T1","Тренер перед фіналом нагадує команді, заради чого вони стільки тренувалися, і малює спільну картину перемоги."),
+c("T1","Керівник відмовляється від вигідної, але нечесної угоди й пояснює команді, що це суперечить цінностям, які вони разом сформулювали."),
+c("T2","Менеджерка кожному в команді окремо розповіла, які навички він може розвинути цього року, і запропонувала індивідуальний план."),
+c("T2","Керівник просить команду поставити під сумнів звичний процес: «Що, якщо ми зробимо це зовсім інакше?», і приймає навіть найсміливіші ідеї до обговорення."),
+c("T2","Після невдалого запуску тімлід збирає команду не шукати винних, а розібрати, чого вони навчилися."),
+c("T2","Старший спеціаліст щотижня виділяє годину на розмову з молодшим колегою про його професійні цілі."),
+c("T2","Керівник помічає, що тиха співробітниця сильна в аналітиці, і підбирає їй проєкт, який розкриє цю сильну сторону."),
+c("R1","Менеджер на початку кварталу домовляється з продавцями про цілі й повідомляє, що за 110% плану буде бонус."),
+c("R1","Керівниця перед початком проєкту узгодила з усіма критерії прийняття роботи й що саме вважатиметься успіхом."),
+c("R1","Після завершення спринту лідер подякував тим, хто виконав усі домовлені завдання, і виплатив обіцяну премію."),
+c("R1","У відділі діє чітка система: за кожну закриту задачу певного рівня складності нараховуються бали, які конвертуються в оплату."),
+c("R1","Керівник каже виконавцю: «Якщо здасте звіт до п'ятниці в узгодженому форматі, отримаєте додатковий вихідний»."),
+c("R2","Менеджер щотижня переглядає звіти й одразу пише тим, у кого знайшов відхилення від стандартів оформлення."),
+c("R2","Керівник контролю якості веде таблицю всіх помилок команди й оперативно обговорює кожну з виконавцем."),
+c("R2","Лідер перевіряє, чи дотримано процедуру безпеки на кожному етапі, і втручається, щойно бачить порушення."),
+c("R2","Керівник регулярно звіряє терміни виконання з планом і негайно реагує на кожне запізнення."),
+c("R2","Тімлід проводить вибіркову перевірку коду й записує всі невідповідності стандартам, щоб виправити їх до релізу."),
+c("P","Менеджерка помітила, що дедлайн проєкту під загрозою, але вирішила нічого не казати, поки проблема не стане критичною."),
+c("P","Керівник тиждень не відповідав на запитання команди про пріоритети, а коли відповів, було вже запізно."),
+c("P","Коли двоє співробітників почали конфліктувати, лідер відклав розмову, сподіваючись, що все владнається само."),
+c("P","Керівник сказав команді: «Розбирайтеся самі, я не втручаюся», хоча люди просили чітких вказівок."),
+c("P","Ніхто в команді не знав, чого від нього очікують, бо лідер ніколи не формулював цілей і критеріїв.")];
+var PR={
+aug:["Аугментований профіль","Ви поєднуєте натхнення й розвиток людей із чіткими угодами та контролем. За моделлю Басса (ефект аугментації) трансформаційні якості підсилюють транзакційну основу, і саме таке поєднання дослідники загалом пов'язують із найвищою ефективністю лідерів.","Перевірте, чи надмірний контроль не заважає натхненню: одну звичну перевірку замініть розмовою про розвиток людини."],
+tf:["Переважно трансформаційний","Ви більше надихаєте й розвиваєте, ніж домовляєтеся про конкретні умови. Це сильна сторона в періоди змін, але команді може бракувати чітких очікувань і зв'язку «результат — винагорода».","Наприкінці наступної наради чітко проговоріть, що саме очікується від кожного й за якими критеріями."],
+tr:["Переважно транзакційний","Ви чітко задаєте очікування та контролюєте виконання. Це ефективно в стабільній рутинній роботі, але може обмежувати ініціативу й залученість, якщо бракує натхнення й уваги до розвитку людей.","Поясніть команді «навіщо» за одним звичайним завданням і запитайте, що кожен хоче розвинути."],
+mod:["Помірний профіль","Жодна група підходів не виражена яскраво: профіль гнучкий і ситуативний, і його можна свідомо розвивати в будь-якому напрямку.","Оберіть один підхід і послідовно застосовуйте його протягом тижня."],
+passive:["Виражена пасивна складова","Найвиразніша в профілі пасивно-уникаюча складова: втручання відкладається, а орієнтири не завжди чіткі. У дослідженнях цей стиль пов'язують із нижчою ефективністю лідера й задоволеністю команди, тож варто підсилити хоча б один із двох активних підходів.","Оберіть одну відкладену розмову чи рішення й призначте на це час уже цього тижня."]};
+function sh(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
+function makeRounds(){var a=sh(SIT),R=[];for(var i=0;i<5;i++)R.push(a.slice(i*5,i*5+5).map(function(x){return{b:x.b,t:x.t,a:""}}));return R}
+var st={s:"intro",n:"",i:0,a:{},r:null,lock:0,saved:0,rd:null,ri:0,ok:0,an:0};
+try{var d=JSON.parse(localStorage.getItem("tt1"));if(d&&d.a&&Object.keys(d.a).length){st.a=d.a;st.i=d.i||0;st.n=d.n||"";st.saved=1}}catch(e){}
+var app=document.getElementById("app");
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+function fmt(x){return x.toFixed(1).replace(".",",")}
+function lv(x){return x>=6.25?"високий":x>=3.75?"середній":"низький"}
+function save(){try{localStorage.setItem("tt1",JSON.stringify({a:st.a,i:st.i,n:st.n}))}catch(e){}}
+function calc(R){var s={};ORD.forEach(function(k){s[k]=(R[k]-5)/20*10});
+var Tt=(s.T1+s.T2)/2,Tr=(s.R1+s.R2)/2,P=s.P,key=P>=6.25&&P>=Math.max(Tt,Tr)?"passive":Tt>=6.25&&Tr>=6.25?"aug":Tt>=6.25?"tf":Tr>=6.25?"tr":"mod";
+var mx=Math.max.apply(0,ORD.map(function(k){return s[k]}));
+return{s:s,T:Tt,Tr:Tr,P:P,key:key,top:ORD.filter(function(k){return s[k]===mx}),all:(s.T1+s.T2+s.R1+s.R2+s.P)/5}}
+function petal(r){var cx=210,cy=200,s=r.s,g='<svg viewBox="-30 0 480 400" role="img" aria-label="Діаграма складових" style="width:100%;max-width:480px;display:block;margin:0 auto">';
+var sh=function(l){var w=l*.3;return"M0 0C"+w+" "+(-l*.3)+" "+w*.7+" "+(-l*.8)+" 0 "+(-l)+"C"+(-w*.7)+" "+(-l*.8)+" "+(-w)+" "+(-l*.3)+" 0 0Z"};
+ORD.forEach(function(k,i){g+='<g transform="translate('+cx+' '+cy+') rotate('+i*72+')"><path d="'+sh(108)+'" fill="none" stroke="var(--line)" stroke-dasharray="4 4"/></g>'});
+ORD.forEach(function(k,i){var on=r.top.indexOf(k)>=0;g+='<g transform="translate('+cx+' '+cy+') rotate('+i*72+')"><path d="'+sh(18+90*s[k]/10)+'" fill="'+C[k].c+'" fill-opacity="'+(on?.8:.45)+'" stroke="'+C[k].c+'" stroke-width="'+(on?3:1.5)+'"/></g>'});
+g+='<circle cx="'+cx+'" cy="'+cy+'" r="28" fill="var(--card)" stroke="#C9962C" stroke-width="2.5"/><text x="'+cx+'" y="'+(cy+3)+'" font-size="17" font-weight="700" text-anchor="middle" style="fill:var(--ink)">'+fmt(r.all)+'</text><text x="'+cx+'" y="'+(cy+17)+'" font-size="9.5" text-anchor="middle">із 10</text>';
+ORD.forEach(function(k,i){var a=i*72*Math.PI/180,x=cx+168*Math.sin(a),y=cy-168*Math.cos(a)-6;g+='<text x="'+x+'" y="'+y+'" font-size="22" text-anchor="middle">'+C[k].e+'</text><text x="'+x+'" y="'+(y+17)+'" font-size="12" font-weight="700" text-anchor="middle" style="fill:var(--ink)">'+C[k].n+'</text><text x="'+x+'" y="'+(y+31)+'" font-size="11.5" text-anchor="middle">'+fmt(s[k])+' / 10</text>'});
+return g+'</svg>'}
+function qmap(r){var X=function(v){return 40+v*28},Y=function(v){return 300-v*28},bx=X(6.25),by=Y(6.25),q=function(x,y,w,h,f,t,tx,ty){return'<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" fill="'+f+'"/><text x="'+tx+'" y="'+ty+'" font-size="11" text-anchor="middle">'+t+'</text>'};
+var g='<svg viewBox="0 0 360 345" role="img" aria-label="Карта профілю" style="width:100%;max-width:400px;display:block;margin:0 auto"><rect x="40" y="20" width="280" height="280" rx="12" fill="none" stroke="var(--line)"/>';
+g+=q(40,by,bx-40,300-by,"rgba(136,145,181,.12)","Помірний / пасивний",(40+bx)/2,(by+300)/2)+q(bx,by,320-bx,300-by,"rgba(56,64,128,.16)","Транзакційний",(bx+320)/2,(by+300)/2)+q(40,20,bx-40,by-20,"rgba(46,125,107,.16)","Трансформаційний",(40+bx)/2,(20+by)/2)+q(bx,20,320-bx,by-20,"rgba(201,150,44,.22)","Аугментований",(bx+320)/2,(20+by)/2);
+g+='<circle cx="'+X(r.Tr)+'" cy="'+Y(r.T)+'" r="10" fill="#C9962C" stroke="#fff" stroke-width="3"/><text x="'+X(r.Tr)+'" y="'+(Y(r.T)-15)+'" font-size="12" font-weight="700" text-anchor="middle" style="fill:var(--ink)">Ви</text><text x="180" y="338" font-size="11.5" text-anchor="middle">Транзакційне →</text><text transform="translate(12 160) rotate(-90)" font-size="11.5" text-anchor="middle">Трансформаційне →</text></svg>';return g}
+var LN=["Низька","Середня","Висока"];
+function ax(ic,n,q,v,ks,r,txt){var z=v>=6.25?2:v>=3.75?1:0,P=function(x){return Math.min(97,Math.max(3,x*10))},
+dots=ks.length>1?ks.map(function(k){return'<i title="'+C[k].n+'" style="position:absolute;top:-1px;left:calc('+P(r.s[k])+'% - 7px);width:14px;height:14px;border-radius:50%;background:'+C[k].c+';border:2px solid var(--card)"></i>'}).join(""):"",
+vs=ks.map(function(k){return r.s[k]}),sp=Math.max.apply(0,vs)-Math.min.apply(0,vs);
+return'<div class="box" style="margin-top:12px"><div style="font-weight:700;font-size:15px">'+ic+' '+n+'</div><div class="mut sm" style="margin-bottom:12px">'+q+'</div><div style="position:relative;height:12px;border-radius:7px;background:linear-gradient(90deg,var(--line) 0 37.5%,color-mix(in srgb,var(--ink2) 28%,var(--line)) 37.5% 62.5%,color-mix(in srgb,var(--ink2) 55%,var(--line)) 62.5%)">'+dots+'<i style="position:absolute;top:-4px;left:calc('+P(v)+'% - 10px);width:20px;height:20px;border-radius:50%;background:var(--gold);border:3px solid var(--card)"></i></div><div class="mut" style="display:flex;font-size:11.5px;margin:7px 0 12px;text-align:center"><span style="flex:37.5">Низька</span><span style="flex:25">Середня</span><span style="flex:37.5">Висока</span></div><div><b>'+LN[z]+' · '+fmt(v)+' із 10.</b> '+txt[z]+'</div>'+(ks.length>1&&sp>=3?'<div class="box" style="margin-top:10px"><b>Зверніть увагу:</b> складові в цій групі помітно відрізняються, тож середній бал приховує різницю. Дивіться на кольорові точки.</div>':'')+'<div class="mut sm" style="margin-top:8px">Золота точка — середнє'+(ks.length>1?", кольорові — окремі складові":"")+'.</div></div>'}
+function intro(){return'<div class="card"><p class="k">Практичне заняття 1 · Бізнес-лідерство</p><h1 class="serif">Трансформаційне чи транзакційне лідерство?</h1><p class="mut">25 коротких тверджень про те, як ви зазвичай керуєте командою чи групою. Це навчальна самооцінка за мотивами моделі Басса й Аволіо (повний спектр лідерства), а не офіційний опитувальник MLQ.</p><ul class="mut sm" style="padding-left:20px;margin:0 0 16px"><li>Правильних відповідей немає: відповідайте так, як є, а не як мало б бути.</li><li>Якщо лідерського досвіду мало, згадайте проєкти, групові завдання, волонтерство чи спорт.</li><li>Перша думка зазвичай найточніша. Можна натискати клавіші 1–5.</li></ul><div class="ex"><b>Приклад.</b> «Я пояснюю команді, навіщо ми це робимо». Оберіть, як часто це про вас: від «Ніколи» до «Майже завжди».</div><label class="sm" for="nm"><b>Ім\'я або псевдонім</b> <span class="mut">(необов\'язково)</span></label><input id="nm" maxlength="40" placeholder="Наприклад, Олена К." value="'+esc(st.n)+'" style="margin:6px 0 18px">'+(st.saved?'<button class="btn pri" data-a="cont" style="margin-bottom:10px">Продовжити з твердження '+(st.i+1)+'</button><button class="btn" data-a="start" style="width:100%">Почати спочатку</button>':'<button class="btn pri" data-a="start">Почати</button>')+'<p class="mut sm" style="margin:18px 0 0;text-align:center">25 тверджень · близько 6 хвилин</p></div>'}
+function quiz(){var it=ITEMS[st.i],sel=st.a[it.id];
+var o=L.map(function(l,j){return'<button class="opt'+(sel===j+1?" on":"")+'" data-a="v" data-v="'+(j+1)+'"><b>'+(j+1)+'</b>'+l+'</button>'}).join("");
+return'<div class="card"><div class="pg"><i style="width:'+Math.round(st.i/25*100)+'%"></i></div><p class="k">Твердження '+(st.i+1)+' із 25 · залишилось '+(24-st.i)+'</p><p class="stmt serif">'+it.t+'</p><p class="mut sm" style="margin-bottom:10px">Як часто це про вас?</p><div class="opts">'+o+'</div><div class="nav"><button class="btn ghost" data-a="back"'+(st.i?"":' style="visibility:hidden"')+'>← Назад</button><span class="mut sm">Відповідайте чесно</span></div></div>'}
+function casesHtml(){var R=st.rd[st.ri];
+return'<p class="mut sm" style="margin:0 0 10px"><b>Раунд '+(st.ri+1)+' із 5</b> · яка складова моделі проявляється в сцені?</p>'+R.map(function(x,i){return'<div class="case"><p><b>Сцена '+(i+1)+'.</b> '+x.t+'</p><div class="ch">'+ORD.map(function(k){return'<button data-a="cs" data-c="'+i+'" data-k="'+k+'"'+(x.a?" disabled":"")+(x.a===k?' class="sel"':"")+'><span style="font-size:22px;line-height:1.2">'+C[k].e+'</span><span>'+C[k].n+'</span></button>'}).join("")+'</div>'+(x.a?'<div class="fb">'+(x.a===x.b?"✓ <b>Правильно.</b> ":"Не зовсім: тут проявляється <b>"+C[x.b].e+" "+C[x.b].n+"</b>. ")+C[x.b].w+'</div>':"")+'</div>'}).join("")+'<button class="btn pri" data-a="next" style="margin-top:6px">'+(st.ri<4?"🔄 Оновити: наступні 5 сцен":"Завершити 🎉")+'</button>'}
+function showEnd(){var m=document.createElement("div");m.id="end";m.className="ov";m.innerHTML='<div class="card" style="max-width:460px;text-align:center"><div style="font-size:42px">🎉</div><h1 class="serif" style="font-size:24px">Дякуємо, що пройшли до кінця!</h1><p class="mut">Ви пройшли всі 5 раундів і побачили, як моделі Басса виглядають у реальних сценах.'+(st.an?' Складову ви визначили правильно в '+st.ok+' із '+st.an+' сцен.':'')+'</p><p>Бажаємо вам надихати людей і водночас давати їм ясність: чіткі очікування разом із довірою роблять команду сильнішою.</p><div class="row"><button class="btn" data-a="close">Закрити</button><button class="btn pri" data-a="retake" style="width:auto">Пройти ще раз</button></div></div>';app.appendChild(m)}
+function results(){var r=st.r,s=r.s,p=PR[r.key];
+var bars=ORD.map(function(k){return'<div class="bar"><div class="bl"><span>'+C[k].e+" "+C[k].n+'</span><span>'+fmt(s[k])+' / 10 · '+lv(s[k])+'</span></div><div class="bt"><i style="width:'+s[k]*10+'%;background:'+C[k].c+';opacity:'+(r.top.indexOf(k)>=0?1:.55)+'"></i></div></div>'}).join("");
+var acc=ORD.map(function(k){return'<details><summary>'+C[k].e+" "+C[k].n+" · "+fmt(s[k])+' / 10</summary><p>'+C[k].d+'</p><p class="mut">'+C[k].w+'</p></details>'}).join("");
+return'<div class="card">'+(st.n?'<p class="k">'+esc(st.n)+'</p>':"")+'<h1 class="serif">Ваш профіль лідерства</h1><p class="mut sm">Кожна пелюстка — складова моделі (від 0 до 10, пунктир — максимум). У центрі — середній бал. Рівні: нижче 3,75 — низький, від 3,75 до 6,25 — середній, від 6,25 — високий («Часто» і частіше).</p>'+petal(r)+'<h2>Ваші бали</h2>'+bars+'<h2>Карта профілю</h2><p class="mut sm">За моделлю Басса трансформаційне й транзакційне лідерство не протилежності: вони доповнюють одне одного. Точка «Ви» стоїть там, де перетинаються ваші два середні бали.</p>'+qmap(r)+'<div class="hero"><div class="lb">ВАШ ПРОФІЛЬ</div><div class="nm">'+p[0]+'</div><p>'+p[1]+'</p><p><b>🎯 Дія тижня:</b> '+p[2]+'</p></div><h2>Три групи підходів</h2>'+ax("🌟","Трансформаційне лідерство","Натхнення + індивідуальний підхід",r.T,["T1","T2"],r,["Ви рідше надихаєте й індивідуально розвиваєте людей: корисно частіше пояснювати «навіщо» й говорити про розвиток.","Ви іноді надихаєте й розвиваєте людей, але не систематично.","Ви регулярно надихаєте команду баченням і вкладаєтеся в розвиток людей."])+ax("🤝","Транзакційне лідерство","Умовна винагорода + управління за відхиленнями",r.Tr,["R1","R2"],r,["Ви рідше домовляєтеся про чіткі умови й стежите за виконанням: команді може бракувати ясності очікувань.","Ви помірно користуєтеся чіткими угодами й контролем.","Ви послідовно задаєте чіткі очікування, пов'язуєте винагороду з результатом і стежите за стандартами."])+ax("⏸️","Пасивне / уникаюче","Запізніле втручання й відсутність орієнтирів",r.P,["P"],r,["Ви рідко залишаєте команду без орієнтирів.","Іноді ви відкладаєте втручання чи рішення, що може залишати команду без орієнтирів.","Ви часто відкладаєте втручання чи залишаєте команду без орієнтирів. У дослідженнях цей стиль пов'язують із нижчою ефективністю лідера."])+'<h2>Усі п\'ять складових</h2>'+acc+'<div class="box" style="margin-top:14px"><b>Пам\'ятайте:</b> це самооцінка, а не вимірювання вашої ефективності. Дослідження загалом пов\'язують із ефективністю трансформаційне лідерство й умовну винагороду, слабше активне управління за відхиленнями, а пасивний стиль негативно.</div><h2>Застосуйте на практиці</h2><p class="mut sm">Для кожної сцени оберіть складову моделі й прочитайте пояснення. Усього 5 раундів по 5 сцен, щоразу випадкові.</p><div id="cases">'+casesHtml()+'</div><div class="row"><button class="btn" data-a="retake">Пройти ще раз</button></div></div>'}
+function render(){app.innerHTML='<div class="st">'+({intro:intro,quiz:quiz,results:results}[st.s])()+'</div>';window.scrollTo(0,0)}
+function pick(v){if(st.lock)return;var it=ITEMS[st.i];st.a[it.id]=v;st.lock=1;save();document.querySelectorAll(".opt").forEach(function(o){o.classList.toggle("on",+o.dataset.v===v)});
+setTimeout(function(){st.lock=0;if(st.s!=="quiz")return;if(st.i<24){st.i++;save();render()}else{var R={T1:0,T2:0,R1:0,R2:0,P:0};ITEMS.forEach(function(x){R[x.s]+=st.a[x.id]||0});st.r=calc(R);st.rd=makeRounds();st.ri=0;st.ok=0;st.an=0;st.s="results";try{localStorage.removeItem("tt1")}catch(e){}render()}},200)}
+function back(){if(st.s==="quiz"&&st.i>0){st.i--;render()}}
+app.addEventListener("click",function(e){var b=e.target.closest("[data-a]");if(!b)return;var a=b.dataset.a;
+if(a==="start"){st.n=document.getElementById("nm").value.trim();st.a={};st.i=0;st.saved=0;st.s="quiz";save();render()}
+else if(a==="cont"){st.n=document.getElementById("nm").value.trim();st.s="quiz";render()}
+else if(a==="v")pick(+b.dataset.v);else if(a==="back")back();
+else if(a==="retake"){st.a={};st.i=0;st.r=null;st.saved=0;st.s="intro";render()}
+else if(a==="cs"){var q=st.rd[st.ri][+b.dataset.c];if(q.a)return;q.a=b.dataset.k;st.an++;if(q.a===q.b)st.ok++;document.getElementById("cases").innerHTML=casesHtml()}
+else if(a==="next"){if(st.ri<4){st.ri++;var cc=document.getElementById("cases");cc.innerHTML=casesHtml();cc.scrollIntoView({behavior:"smooth",block:"start"})}else showEnd()}
+else if(a==="close"){var m=document.getElementById("end");if(m)m.remove()}});
+document.addEventListener("keydown",function(e){if(st.s!=="quiz"||/INPUT|TEXTAREA/.test(e.target.tagName))return;if(/^[1-5]$/.test(e.key))pick(+e.key);else if(e.key==="Backspace"||e.key==="ArrowLeft")back()});
+render();
 })();
-</script>
-</body>
-</html>
+</script></body></html>
