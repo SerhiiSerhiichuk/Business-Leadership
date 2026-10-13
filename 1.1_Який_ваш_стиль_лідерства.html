@@ -1,0 +1,113 @@
+<!DOCTYPE html><html lang="uk"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Який ваш стиль лідерства?</title>
+<style>
+:root{--ink:#1E2761;--ink2:#384080;--bg:#F3F6FC;--card:#fff;--gold:#C9962C;--mut:#5B6685;--line:#DDE4F5;--hero:#1E2761;box-sizing:border-box;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#E8ECFF;--ink2:#B9C2F0;--bg:#10142B;--card:#1A2040;--gold:#E0AE45;--mut:#A3ADD3;--line:#2E3664;--hero:#2B3575}}
+:root[data-theme="dark"]{--ink:#E8ECFF;--ink2:#B9C2F0;--bg:#10142B;--card:#1A2040;--gold:#E0AE45;--mut:#A3ADD3;--line:#2E3664;--hero:#2B3575}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 -apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+.serif{font-family:Cambria,Georgia,serif}#app{display:flex;justify-content:center;padding:28px 16px}.st{width:100%;max-width:680px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:34px 30px;box-shadow:0 18px 40px -26px rgba(30,39,97,.4)}
+@media(max-width:480px){.card{padding:24px 18px}}
+.k{font-size:13px;color:var(--mut);margin:0 0 8px}h1{font-size:27px;line-height:1.2;margin:0 0 12px}h2{font-size:18px;margin:28px 0 10px}p{margin:0 0 12px}.mut{color:var(--mut)}.sm{font-size:14px}
+input,textarea{width:100%;padding:12px 14px;border-radius:10px;border:1.5px solid var(--line);font:inherit;font-size:15px;color:var(--ink);background:var(--bg)}
+.btn{display:inline-flex;justify-content:center;align-items:center;padding:13px 22px;border-radius:10px;border:1.5px solid var(--line);font:inherit;font-weight:600;font-size:15px;cursor:pointer;background:var(--bg);color:var(--ink)}
+.pri{background:var(--ink);color:var(--bg);border-color:var(--ink);width:100%}.ghost{background:none;border:none;color:var(--mut);font-weight:500;padding:8px 4px}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.row .btn{flex:1;min-width:140px}
+.ex{background:var(--bg);border:1px dashed var(--line);border-radius:12px;padding:12px 14px;font-size:14px;margin:0 0 18px}
+.pg{height:6px;background:var(--line);border-radius:4px;overflow:hidden;margin-bottom:18px}.pg i{display:block;height:100%;background:var(--gold);transition:width .3s}
+.stmt{font-size:21px;line-height:1.4;font-weight:600;min-height:112px;margin:8px 0 26px}
+.opts{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:22px}
+.opt{display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:none;cursor:pointer;font:inherit;font-size:12px;color:var(--mut);padding:0}
+.opt b{width:100%;max-width:56px;aspect-ratio:1;border-radius:50%;border:2px solid var(--line);background:var(--card);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--ink2);transition:.15s}
+.opt:hover b{border-color:var(--gold)}.opt.on b{background:var(--gold);border-color:var(--gold);color:#fff;transform:scale(1.08)}.opt:focus-visible b{outline:3px solid var(--ink2);outline-offset:2px}
+.nav{display:flex;justify-content:space-between;align-items:center}
+.bar{margin-bottom:12px}.bl{display:flex;justify-content:space-between;font-size:14px;font-weight:600;margin-bottom:4px}.bt{height:12px;background:var(--bg);border:1px solid var(--line);border-radius:7px;overflow:hidden}.bt i{display:block;height:100%;border-radius:7px}
+.hero{background:var(--hero);color:#fff;border-radius:14px;padding:20px 22px;margin-top:18px}.hero p{color:#DCE1F5;font-size:14.5px}.hero b{color:#fff}.hero .lb{font-size:12px;color:#F3E4C6;font-weight:700}.hero .nm{font-size:22px;font-weight:700;margin:2px 0 10px}
+.box{margin-top:14px;padding:14px 16px;border-radius:12px;background:var(--bg);border:1px solid var(--line);font-size:14px}
+details{border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:8px}summary{cursor:pointer;font-weight:600}details p{font-size:14px;margin:8px 0 0}
+.case{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}.case p{font-size:14.5px}
+.ch{display:flex;flex-wrap:wrap;gap:6px}.ch button{flex:1;min-width:105px;padding:8px;border:1.5px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit;font-size:13px;cursor:pointer}
+.fb{margin-top:10px;font-size:14px}table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:left}
+svg text{fill:var(--mut);font-family:inherit}.link{display:block;margin:18px auto 0;background:none;border:none;color:var(--mut);font-size:13px;text-decoration:underline;cursor:pointer}
+.ch button{display:flex;flex-direction:column;align-items:center;gap:3px}.ch button:disabled{opacity:.55;cursor:default}.ch button.sel{opacity:1;border-color:var(--gold);border-width:2px}.ov{position:fixed;inset:0;background:rgba(10,14,40,.62);display:flex;align-items:center;justify-content:center;padding:20px;z-index:9}.ov .card{max-height:90vh;overflow:auto}
+</style></head><body><div id="app"></div>
+<script>
+(function(){
+var ORD=["A","D","L"],L=["Ніколи","Рідко","Іноді","Часто","Майже завжди"];
+var S={
+A:{n:"Авторитарний",nm:"Капітан",e:"🧭",c:"#B3492F",q:"«Ось план, виконуємо»",ok:"Криза, обмежений час, команда без досвіду або потреба в чіткому напрямку.",rk:"Пригнічує ініціативу, створює залежність від одного лідера, знижує залученість.",tip:"Перед наступним рішенням поставте команді одне запитання: «Що тут можна зробити інакше?»"},
+D:{n:"Демократичний",nm:"Диригент",e:"🎼",c:"#2E7D6B",q:"«Давайте разом знайдемо найкраще рішення»",ok:"Складні завдання, де потрібні різні погляди й згода команди, а часу достатньо.",rk:"Повільніше ухвалення рішень, ризик нескінченних обговорень без відповідальності.",tip:"Перед обговоренням визначте, що саме команда вирішує, а що вже вирішено, і обмежте час на дискусію."},
+L:{n:"Ліберальний",nm:"Садівник",e:"🌱",c:"#7A4FA0",q:"«Ви експерти, діяйте самостійно»",ok:"Досвідчені самомотивовані фахівці й творчі завдання, коли ви довіряєте команді.",rk:"З новачками чи без чітких цілей виникають хаос, розмита відповідальність і дрейф.",tip:"Домовтеся про ясні цілі й контрольні точки, а між ними не втручайтеся."}};
+var PAIR={AD:"Ви поєднуєте чіткий контроль із залученням команди: зазвичай радитеся, а в критичний момент берете рішення на себе. Слідкуйте, щоб команда розуміла, коли саме ви змінюєте режим.",AL:"Ви поєднуєте власну ініціативу з довірою до команди: або беретеся за все самі, або повністю відпускаєте. Корисно визначити, де потрібен ваш контроль, а де автономія, щоб команда не відчувала різких коливань.",DL:"Ви орієнтовані на команду й цінуєте її думку та самостійність. Це сильна сторона для досвідчених команд, але в кризі чи з новачками може знадобитися чіткіше керівництво."};
+var T={
+A1:["A","Коли потрібне швидке рішення, я ухвалюю його самостійно, щоб не втрачати час."],A2:["A","Я даю команді чіткі інструкції щодо того, що, як і в які строки робити."],A3:["A","У кризовій ситуації я беру відповідальність на себе й розподіляю ролі."],A4:["A","Я перевіряю хід виконання завдань на проміжних етапах, а не лише за результатом."],A5:["A","Я вважаю, що в команді має бути той, хто остаточно вирішує спірні питання."],A6:["A","Я сам визначаю пріоритети команди та порядок роботи."],A7:["A","Коли рішення вже ухвалене, я очікую, що команда виконуватиме його без довгих дискусій."],
+D1:["D","Перш ніж ухвалити важливе рішення, я збираю думки членів команди."],D2:["D","Я вважаю, що найкращі ідеї народжуються в спільному обговоренні."],D3:["D","Мені важливо, щоб кожен у команді відчував, що його думку почули."],D4:["D","Я відкрито обговорюю з командою помилки й шукаю рішення разом."],D5:["D","Я запитую пропозиції команди, навіть коли це подовжує процес."],D6:["D","Я вважаю, що люди краще виконують рішення, до вироблення яких долучилися."],D7:["D","Спірні питання я виношу на спільне обговорення й прагну домовитися."],
+L1:["L","Я надаю команді свободу самій обирати, як виконувати завдання."],L2:["L","Я втручаюся в роботу лише тоді, коли про це просять або є серйозна проблема."],L3:["L","Я вважаю, що досвідчені фахівці працюють краще без постійного контролю."],L4:["L","Я довіряю команді самій планувати строки й організовувати свою роботу."],L5:["L","Я бачу свою роль у створенні умов і ресурсів, а не в керівництві процесом."],L6:["L","Я довіряю членам команди ухвалювати рішення без попереднього погодження зі мною."],L7:["L","Я охоче лишаю за командою вибір методів, навіть якщо вони відрізняються від моїх."]};
+var ITEMS=["D2","A1","L1","D1","A3","L3","D3","A2","L5","D4","A4","L2","D6","A5","L4","D5","A7","L6","D7","A6","L7"].map(function(id){return{id:id,s:T[id][0],t:T[id][1]}});
+function c(b,t,w){return{b:b,t:t,w:w}}
+var SIT=[
+c("A","У серверній стався збій перед запуском продукту для клієнта, лишилося дві години, а команда розгублена.","Криза й дефіцит часу: потрібні чіткі вказівки й одна відповідальна людина. Обговорення забере час, якого немає."),
+c("A","У команду прийшли троє новачків, які ще не знають процесів, а проєкт має жорсткі стандарти якості.","Новачкам потрібні чіткі інструкції й контроль, поки вони не освоять процеси."),
+c("A","Під час пожежної тривоги в офісі треба евакуювати всіх за три хвилини.","Безпека й лічені секунди: єдиний керівник дає чіткі команди без дискусій."),
+c("A","Двоє керівників відділів не можуть домовитися, а рішення потрібне до кінця дня, бо від нього залежить договір.","Часу мало, а розбіжність блокує роботу: лідер має остаточно вирішити."),
+c("A","Команда затягує початок важливої задачі, а дедлайн завтра: усі чекають, хто візьме відповідальність.","Коли ніхто не призначений відповідальним, а час спливає, лідер має чітко розподілити ролі й завдання."),
+c("D","Команда має вибрати нову стратегію для продукту, яка змінить роботу всіх. До рішення є три тижні.","Рішення стосується всіх і потребує різних поглядів: залучення команди підвищує якість і прихильність."),
+c("D","Виникла складна проблема в процесі, і ніхто не знає причини. У команді різний досвід.","Складна невизначена проблема виграє від спільного пошуку, бо різні погляди допомагають знайти причину."),
+c("D","Ви змінюєте графік роботи, який вплине на всіх, і хочете, щоб команда прийняла зміни.","Коли рішення зачіпає всіх, участь команди у виробленні рішення підвищує прийняття й зменшує опір."),
+c("D","Після невдалого проєкту треба зробити висновки й зрозуміти, що змінити надалі.","Розбір помилок працює найкраще у відкритому обговоренні, де кожен може поділитися баченням."),
+c("D","Команда хоче втілити нову ідею, але думки розходяться, а часу достатньо.","Є час і різні думки: обговорення допоможе знайти спільне рішення, яке команда прийме."),
+c("L","Ваша команда складається з досвідчених інженерів, які знають технічні деталі краще за вас.","Експерти, які знають завдання краще за вас, працюють ефективніше з автономією й довірою."),
+c("L","Креативна група розробляє нову концепцію бренду, і результат залежить від свободи ідей.","Творча робота потребує простору, тому мінімальне втручання лідера підвищує якість ідей."),
+c("L","Відділ стабільно виконує плани вже два роки, а ви хочете підтримати самостійність і розвиток людей.","Самомотивована команда з надійним досвідом розвивається, коли їй надають автономію."),
+c("L","Надійний фахівець просить дозволу самому обрати спосіб розв'язання завдання, а мету й терміни вже узгоджено.","Мета й терміни ясні, а виконавець компетентний: довіра й автономія найкращі."),
+c("L","Ви запустили нову дослідницьку групу з сильних науковців, яким потрібні ресурси й свобода експериментувати.","Дослідницька діяльність потребує свободи й ресурсів, а не детального контролю.")];
+function sh(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
+function makeRounds(){var a=sh(SIT),R=[];for(var i=0;i<3;i++)R.push(a.slice(i*5,i*5+5).map(function(x){return{b:x.b,t:x.t,w:x.w,a:""}}));return R}
+var st={s:"intro",n:"",i:0,a:{},r:null,lock:0,saved:0,rd:null,ri:0,ok:0,an:0};
+try{var d=JSON.parse(localStorage.getItem("ls1"));if(d&&d.a&&Object.keys(d.a).length){st.a=d.a;st.i=d.i||0;st.n=d.n||"";st.saved=1}}catch(e){}
+var app=document.getElementById("app");
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+function fmt(x){return x.toFixed(1).replace(".",",")}
+function lv(x){return x>=6.25?"високий":x>=3.75?"середній":"низький"}
+function save(){try{localStorage.setItem("ls1",JSON.stringify({a:st.a,i:st.i,n:st.n}))}catch(e){}}
+function calc(R){var s={};ORD.forEach(function(k){s[k]=(R[k]-7)/28*10});
+var o=ORD.slice().sort(function(a,b){return s[b]-s[a]}),mx=s[o[0]],mn=s[o[2]],flat=mx-mn<=2.5,pair=!flat&&mx-s[o[1]]<=1;
+return{s:s,o:o,flat:flat,pair:pair,all:(s.A+s.D+s.L)/3}}
+function petal(r){var cx=210,cy=190,A={A:0,D:120,L:240},s=r.s,g='<svg viewBox="-30 0 480 340" role="img" aria-label="Діаграма стилів лідерства" style="width:100%;max-width:480px;display:block;margin:0 auto">';
+var sh=function(l){var w=l*.36;return"M0 0C"+w+" "+(-l*.3)+" "+w*.7+" "+(-l*.8)+" 0 "+(-l)+"C"+(-w*.7)+" "+(-l*.8)+" "+(-w)+" "+(-l*.3)+" 0 0Z"};
+ORD.forEach(function(k){g+='<g transform="translate('+cx+' '+cy+') rotate('+A[k]+')"><path d="'+sh(115)+'" fill="none" stroke="var(--line)" stroke-dasharray="4 4"/></g>'});
+ORD.forEach(function(k){var on=r.flat||r.o[0]===k||(r.pair&&r.o[1]===k);g+='<g transform="translate('+cx+' '+cy+') rotate('+A[k]+')"><path d="'+sh(20+95*s[k]/10)+'" fill="'+S[k].c+'" fill-opacity="'+(on?.8:.45)+'" stroke="'+S[k].c+'" stroke-width="'+(on&&!r.flat?3:1.5)+'"/></g>'});
+g+='<circle cx="'+cx+'" cy="'+cy+'" r="26" fill="var(--card)" stroke="#C9962C" stroke-width="2.5"/><text x="'+cx+'" y="'+(cy+3)+'" font-size="16" font-weight="700" text-anchor="middle" style="fill:var(--ink)">'+fmt(r.all)+'</text><text x="'+cx+'" y="'+(cy+16)+'" font-size="9.5" text-anchor="middle">із 10</text>';
+var P={A:[210,22],D:[357,262],L:[63,262]};
+ORD.forEach(function(k){var p=P[k];g+='<text x="'+p[0]+'" y="'+p[1]+'" font-size="22" text-anchor="middle">'+S[k].e+'</text><text x="'+p[0]+'" y="'+(p[1]+17)+'" font-size="12.5" font-weight="700" text-anchor="middle" style="fill:var(--ink)">'+S[k].n+'</text><text x="'+p[0]+'" y="'+(p[1]+31)+'" font-size="11.5" text-anchor="middle">'+fmt(s[k])+' / 10</text>'});
+return g+'</svg>'}
+function intro(){return'<div class="card"><p class="k">Практичне заняття 1 · Бізнес-лідерство</p><h1 class="serif">Який ваш стиль лідерства?</h1><p class="mut">21 коротке твердження про те, як ви зазвичай керуєте командою чи групою. Це навчальна самооцінка за мотивами класичної моделі Курта Левіна (авторитарний, демократичний, ліберальний стилі), а не діагноз.</p><ul class="mut sm" style="padding-left:20px;margin:0 0 16px"><li>Правильних відповідей немає: відповідайте так, як є, а не як мало б бути.</li><li>Якщо лідерського досвіду мало, згадайте проєкти, групові завдання, волонтерство чи спорт.</li><li>Перша думка зазвичай найточніша. Можна натискати клавіші 1–5.</li></ul><div class="ex"><b>Приклад.</b> «Я збираю думки команди перед рішенням». Оберіть, як часто це про вас: від «Ніколи» до «Майже завжди».</div><label class="sm" for="nm"><b>Ім\'я або псевдонім</b> <span class="mut">(необов\'язково)</span></label><input id="nm" maxlength="40" placeholder="Наприклад, Олена К." value="'+esc(st.n)+'" style="margin:6px 0 18px">'+(st.saved?'<button class="btn pri" data-a="cont" style="margin-bottom:10px">Продовжити з твердження '+(st.i+1)+'</button><button class="btn" data-a="start" style="width:100%">Почати спочатку</button>':'<button class="btn pri" data-a="start">Почати</button>')+'<p class="mut sm" style="margin:18px 0 0;text-align:center">21 твердження · близько 5 хвилин</p></div>'}
+function quiz(){var it=ITEMS[st.i],sel=st.a[it.id];
+var o=L.map(function(l,j){return'<button class="opt'+(sel===j+1?" on":"")+'" data-a="v" data-v="'+(j+1)+'"><b>'+(j+1)+'</b>'+l+'</button>'}).join("");
+return'<div class="card"><div class="pg"><i style="width:'+Math.round(st.i/21*100)+'%"></i></div><p class="k">Твердження '+(st.i+1)+' із 21 · залишилось '+(20-st.i)+'</p><p class="stmt serif">'+it.t+'</p><p class="mut sm" style="margin-bottom:10px">Як часто це про вас?</p><div class="opts">'+o+'</div><div class="nav"><button class="btn ghost" data-a="back"'+(st.i?"":' style="visibility:hidden"')+'>← Назад</button><span class="mut sm">Відповідайте чесно</span></div></div>'}
+function casesHtml(){var R=st.rd[st.ri];
+return'<p class="mut sm" style="margin:0 0 10px"><b>Раунд '+(st.ri+1)+' із 3</b> · який стиль найкращий у цій ситуації?</p>'+R.map(function(x,i){return'<div class="case"><p><b>Ситуація '+(i+1)+'.</b> '+x.t+'</p><div class="ch">'+ORD.map(function(k){return'<button data-a="cs" data-c="'+i+'" data-k="'+k+'"'+(x.a?" disabled":"")+(x.a===k?' class="sel"':"")+'><span style="font-size:22px;line-height:1.2">'+S[k].e+'</span><span>'+S[k].n+'</span></button>'}).join("")+'</div>'+(x.a?'<div class="fb">'+(x.a===x.b?"✓ <b>Добрий вибір.</b> ":"Можливо, але найкраще тут підійде <b>"+S[x.b].e+" "+S[x.b].n+"</b>. ")+x.w+'</div>':"")+'</div>'}).join("")+'<button class="btn pri" data-a="next" style="margin-top:6px">'+(st.ri<2?"🔄 Оновити: наступні 5 ситуацій":"Завершити 🎉")+'</button>'}
+function showEnd(){var m=document.createElement("div");m.id="end";m.className="ov";m.innerHTML='<div class="card" style="max-width:460px;text-align:center"><div style="font-size:42px">🎉</div><h1 class="serif" style="font-size:24px">Дякуємо, що пройшли до кінця!</h1><p class="mut">Ви пройшли всі 3 раунди й побачили, що найкращий стиль залежить від ситуації.'+(st.an?' Найдоречніший стиль ви обрали в '+st.ok+' із '+st.an+' ситуацій.':'')+'</p><p>Бажаємо вам бути гнучким лідером: уміти і швидко вести за собою, і слухати команду, і вчасно довіряти. Нехай ваша команда росте разом із вами.</p><div class="row"><button class="btn" data-a="close">Закрити</button><button class="btn pri" data-a="retake" style="width:auto">Пройти ще раз</button></div></div>';app.appendChild(m)}
+function results(){var r=st.r,s=r.s,o=r.o;
+var bars=ORD.map(function(k){return'<div class="bar"><div class="bl"><span>'+S[k].e+" "+S[k].n+'</span><span>'+fmt(s[k])+' / 10 · '+lv(s[k])+'</span></div><div class="bt"><i style="width:'+s[k]*10+'%;background:'+S[k].c+';opacity:'+(r.flat||o[0]===k||(r.pair&&o[1]===k)?1:.55)+'"></i></div></div>'}).join("");
+var hero;
+if(r.flat)hero='<div class="lb">ПРОФІЛЬ</div><div class="nm">Рівномірний профіль</div><p>Ваші бали майже однакові: ви можете гнучко змінювати стиль залежно від ситуації, а можете давати «серединні» відповіді. Згадайте три реальні ситуації й подивіться, який стиль ви застосовували насправді.</p>';
+else if(r.pair){var a=o[0],b=o[1];hero='<div class="lb">ЗМІШАНИЙ ПРОФІЛЬ</div><div class="nm">'+S[a].e+" "+S[a].n+" + "+S[b].e+" "+S[b].n+'</div><p>'+PAIR[[a,b].sort().join("")]+'</p><p><b>🎯 Дія тижня:</b> '+S[a].tip+'</p>'}
+else{var k=o[0];hero='<div class="lb">ДОМІНУЮЧИЙ СТИЛЬ</div><div class="nm">'+S[k].e+" "+S[k].nm+" · "+S[k].n+'</div><p><b>Ваша фраза:</b> '+S[k].q+'</p><p><b>Коли доречний:</b> '+S[k].ok+'</p><p><b>Коли ризикований:</b> '+S[k].rk+'</p><p><b>🎯 Дія тижня:</b> '+S[k].tip+'</p>'}
+var acc=ORD.map(function(k){return'<details><summary>'+S[k].e+" "+S[k].nm+" · "+S[k].n+" · "+lv(s[k])+'</summary><p><b>'+S[k].q+'</b></p><p>Доречний: '+S[k].ok+'</p><p>Ризик: '+S[k].rk+'</p></details>'}).join("");
+return'<div class="card">'+(st.n?'<p class="k">'+esc(st.n)+'</p>':"")+'<h1 class="serif">Ваш профіль лідерства</h1><p class="mut sm">Кожна пелюстка показує, наскільки виражений стиль (від 0 до 10, пунктир — максимум). Рівна «квітка» означає гнучкий профіль. У центрі — середній бал. Рівні: нижче 3,75 — низький, від 3,75 до 6,25 — середній, від 6,25 — високий («Часто» і частіше).</p>'+petal(r)+'<h2>Ваші бали</h2>'+bars+'<div class="hero">'+hero+'</div><div class="box"><b>Пам\'ятайте:</b> це схильності, а не «тип людини». Дослідники лідерства показують, що найкращий лідер змінює стиль залежно від ситуації та готовності команди.</div><h2>Усі три стилі</h2>'+acc+'<h2>Застосуйте на практиці</h2><p class="mut sm">Для кожної ситуації оберіть найкращий стиль і прочитайте пояснення. Усього 3 раунди по 5 ситуацій: стилі й ситуації випадають випадково.</p><div id="cases">'+casesHtml()+'</div><div class="row"><button class="btn" data-a="retake">Пройти ще раз</button></div></div>'}
+function render(){app.innerHTML='<div class="st">'+({intro:intro,quiz:quiz,results:results}[st.s])()+'</div>';window.scrollTo(0,0)}
+function pick(v){if(st.lock)return;var it=ITEMS[st.i];st.a[it.id]=v;st.lock=1;save();document.querySelectorAll(".opt").forEach(function(o){o.classList.toggle("on",+o.dataset.v===v)});
+setTimeout(function(){st.lock=0;if(st.s!=="quiz")return;if(st.i<20){st.i++;save();render()}else{var R={A:0,D:0,L:0};ITEMS.forEach(function(x){R[x.s]+=st.a[x.id]||0});st.r=calc(R);st.rd=makeRounds();st.ri=0;st.ok=0;st.an=0;st.s="results";try{localStorage.removeItem("ls1")}catch(e){}render()}},200)}
+function back(){if(st.s==="quiz"&&st.i>0){st.i--;render()}}
+app.addEventListener("click",function(e){var b=e.target.closest("[data-a]");if(!b)return;var a=b.dataset.a;
+if(a==="start"){st.n=document.getElementById("nm").value.trim();st.a={};st.i=0;st.saved=0;st.s="quiz";save();render()}
+else if(a==="cont"){st.n=document.getElementById("nm").value.trim();st.s="quiz";render()}
+else if(a==="v")pick(+b.dataset.v);else if(a==="back")back();
+else if(a==="retake"){st.a={};st.i=0;st.r=null;st.saved=0;st.s="intro";render()}
+else if(a==="cs"){var q=st.rd[st.ri][+b.dataset.c];if(q.a)return;q.a=b.dataset.k;st.an++;if(q.a===q.b)st.ok++;document.getElementById("cases").innerHTML=casesHtml()}
+else if(a==="next"){if(st.ri<2){st.ri++;var cc=document.getElementById("cases");cc.innerHTML=casesHtml();cc.scrollIntoView({behavior:"smooth",block:"start"})}else showEnd()}
+else if(a==="close"){var m=document.getElementById("end");if(m)m.remove()}});
+document.addEventListener("keydown",function(e){if(st.s!=="quiz")return;if(/^[1-5]$/.test(e.key))pick(+e.key);else if(e.key==="Backspace"||e.key==="ArrowLeft")back()});
+render();
+})();
+</script></body></html>
