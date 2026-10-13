@@ -1,0 +1,116 @@
+<!DOCTYPE html><html lang="uk"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Ситуативне лідерство</title>
+<style>
+:root{--ink:#1E2761;--ink2:#384080;--bg:#F3F6FC;--card:#fff;--gold:#C9962C;--mut:#5B6685;--line:#DDE4F5;--hero:#1E2761;box-sizing:border-box;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#E8ECFF;--ink2:#B9C2F0;--bg:#10142B;--card:#1A2040;--gold:#E0AE45;--mut:#A3ADD3;--line:#2E3664;--hero:#2B3575}}
+:root[data-theme="dark"]{--ink:#E8ECFF;--ink2:#B9C2F0;--bg:#10142B;--card:#1A2040;--gold:#E0AE45;--mut:#A3ADD3;--line:#2E3664;--hero:#2B3575}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 -apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+.serif{font-family:Cambria,Georgia,serif}#app{display:flex;justify-content:center;padding:28px 16px}.st{width:100%;max-width:680px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:34px 30px;box-shadow:0 18px 40px -26px rgba(30,39,97,.4)}
+@media(max-width:480px){.card{padding:24px 18px}}
+.k{font-size:13px;color:var(--mut);margin:0 0 8px}h1{font-size:27px;line-height:1.2;margin:0 0 12px}h2{font-size:18px;margin:28px 0 10px}p{margin:0 0 12px}.mut{color:var(--mut)}.sm{font-size:14px}
+input,textarea{width:100%;padding:12px 14px;border-radius:10px;border:1.5px solid var(--line);font:inherit;font-size:15px;color:var(--ink);background:var(--bg)}
+.btn{display:inline-flex;justify-content:center;align-items:center;padding:13px 22px;border-radius:10px;border:1.5px solid var(--line);font:inherit;font-weight:600;font-size:15px;cursor:pointer;background:var(--bg);color:var(--ink)}
+.pri{background:var(--ink);color:var(--bg);border-color:var(--ink);width:100%}.ghost{background:none;border:none;color:var(--mut);font-weight:500;padding:8px 4px}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.row .btn{flex:1;min-width:140px}
+.ex{background:var(--bg);border:1px dashed var(--line);border-radius:12px;padding:12px 14px;font-size:14px;margin:0 0 18px}
+.pg{height:6px;background:var(--line);border-radius:4px;overflow:hidden;margin-bottom:18px}.pg i{display:block;height:100%;background:var(--gold);transition:width .3s}
+.stmt{font-size:21px;line-height:1.4;font-weight:600;min-height:112px;margin:8px 0 26px}
+.opts{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:22px}
+.opt{display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:none;cursor:pointer;font:inherit;font-size:12px;color:var(--mut);padding:0}
+.opt b{width:100%;max-width:56px;aspect-ratio:1;border-radius:50%;border:2px solid var(--line);background:var(--card);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--ink2);transition:.15s}
+.opt:hover b{border-color:var(--gold)}.opt.on b{background:var(--gold);border-color:var(--gold);color:#fff;transform:scale(1.08)}.opt:focus-visible b{outline:3px solid var(--ink2);outline-offset:2px}
+.nav{display:flex;justify-content:space-between;align-items:center}
+.bar{margin-bottom:12px}.bl{display:flex;justify-content:space-between;font-size:14px;font-weight:600;margin-bottom:4px}.bt{height:12px;background:var(--bg);border:1px solid var(--line);border-radius:7px;overflow:hidden}.bt i{display:block;height:100%;border-radius:7px}
+.hero{background:var(--hero);color:#fff;border-radius:14px;padding:20px 22px;margin-top:18px}.hero p{color:#DCE1F5;font-size:14.5px}.hero b{color:#fff}.hero .lb{font-size:12px;color:#F3E4C6;font-weight:700}.hero .nm{font-size:22px;font-weight:700;margin:2px 0 10px}
+.box{margin-top:14px;padding:14px 16px;border-radius:12px;background:var(--bg);border:1px solid var(--line);font-size:14px}
+details{border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:8px}summary{cursor:pointer;font-weight:600}details p{font-size:14px;margin:8px 0 0}
+.case{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}.case p{font-size:14.5px}
+.ch{display:flex;flex-wrap:wrap;gap:6px}.ch button{flex:1;min-width:105px;padding:8px;border:1.5px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit;font-size:13px;cursor:pointer}
+.fb{margin-top:10px;font-size:14px}table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:left}
+svg text{fill:var(--mut);font-family:inherit}.link{display:block;margin:18px auto 0;background:none;border:none;color:var(--mut);font-size:13px;text-decoration:underline;cursor:pointer}
+.ch button{display:flex;flex-direction:column;align-items:center;gap:3px}.ch button:disabled{opacity:.55;cursor:default}.ch button.sel{opacity:1;border-color:var(--gold);border-width:2px}.ov{position:fixed;inset:0;background:rgba(10,14,40,.62);display:flex;align-items:center;justify-content:center;padding:20px;z-index:9}.ov .card{max-height:90vh;overflow:auto}
+</style></head><body><div id="app"></div>
+<script>
+(function(){
+var SO=["S1","S2","S3","S4"];
+var S={
+S1:{n:"Директивний",en:"Telling",e:"🧭",c:"#B3492F",d:"Чіткі вказівки й контроль",full:"Ви даєте чіткі, конкретні інструкції та тримаєте близький контроль над виконанням.",rk:"Демотивує досвідчених фахівців і створює відчуття недовіри."},
+S2:{n:"Навчальний",en:"Coaching",e:"🎓",c:"#C9962C",d:"Пояснюю, веду й слухаю",full:"Ви поєднуєте чіткі вказівки з поясненням логіки рішень і підтримкою.",rk:"Якщо затягнути, людина може звикнути до опіки й не набути самостійності."},
+S3:{n:"Підтримуючий",en:"Participating",e:"🤝",c:"#2E7D6B",d:"Радимося й додаю впевненості",full:"Ви менше вказуєте, більше залучаєте людину до рішень і підтримуєте її впевненість.",rk:"З тими, кому бракує вмінь, цього замало: потрібні чіткіші інструкції."},
+S4:{n:"Делегувальний",en:"Delegating",e:"🚀",c:"#384080",d:"Довіряю й не втручаюсь",full:"Ви надаєте високу автономію та мінімально втручаєтеся в процес.",rk:"Для новачків або невпевнених людей це може виглядати як залишення напризволяще."}};
+var RN={
+1:{n:"Не вміє й невпевнений",w:"Людині бракує і вмінь, і впевненості. Найкраще працює директивний стиль: чіткі інструкції, конкретні кроки й близький контроль, поки зростає компетентність."},
+2:{n:"Не вміє, але мотивований",w:"Бажання є, а вмінь ще немає. Навчальний стиль поєднує вказівки з поясненням логіки й підтримкою, щоб не згасити ентузіазм."},
+3:{n:"Вміє, але невпевнений",w:"Вмінь достатньо, проблема в упевненості чи мотивації. Підтримуючий стиль: менше інструкцій, більше розмови, довіри до рішень людини й заохочення."},
+4:{n:"Вміє й мотивований",w:"Людина компетентна й мотивована. Делегувальний стиль: чітка мета й автономія, мінімум контролю та звітності."}};
+var BANK=[{r:1,t:"Новий член студентської проєктної команди отримав перше завдання з підготовки звіту і не знає, з чого почати, кілька разів перепитує базові речі."},
+{r:1,t:"Молодший аналітик уперше готує презентацію для важливого клієнта і відверто нервує, побоюючись помилитися."},
+{r:1,t:"Волонтер, який щойно приєднався до організації заходу, губиться серед процесів і уникає ухвалювати будь-які рішення самостійно."},
+{r:2,t:"Стажер з ентузіазмом узявся вести соціальні мережі компанії, але ще не знає деяких технічних нюансів і припускається помилок у публікаціях."},
+{r:2,t:"Новий менеджер проєкту охоче береться за комунікацію з підрядниками, хоча ще не має досвіду ведення перемовин."},
+{r:2,t:"Студент-практикант зацікавлений розробити маркетинговий план, але раніше цим не займався і потребує наставництва."},
+{r:3,t:"Досвідчений спеціаліст відділу продажів стабільно виконує план, але останнім часом уникає складних клієнтів, посилаючись на невпевненість."},
+{r:3,t:"Керівник підгрупи має всі навички для впровадження нового процесу, але сумнівається у власному рішенні і відкладає початок."},
+{r:3,t:"Провідний розробник команди технічно готовий очолити новий модуль проєкту, але не хоче брати на себе додаткову відповідальність через побоювання не впоратися."},
+{r:4,t:"Найдосвідченіший член команди самостійно виявив проблему в проєкті і вже підготував план її вирішення."},
+{r:4,t:"Керівник відділу з багаторічним досвідом успішно веде кілька проєктів одночасно і сам ініціює покращення процесів."},
+{r:4,t:"Провідний фахівець команди підготував інноваційну пропозицію та впевнено відстоює її на нараді."}].concat([
+{r:1,t:"Нова співробітниця бухгалтерії вперше складає квартальний звіт, не розуміє вимог і відверто каже, що боїться навіть починати."},
+{r:1,t:"Студент уперше бере участь у хакатоні, не знає інструментів команди й мовчить на обговореннях, бо вважає, що нічого не зможе запропонувати."},
+{r:2,t:"Новий копірайтер із запалом береться за серію статей для блогу, але ще не знає редакційних стандартів компанії."},
+{r:2,t:"Студентка-волонтерка з ентузіазмом пропонує очолити збір пожертв, але ніколи не працювала з бюджетом і звітністю."},
+{r:3,t:"Досвідчена менеджерка проєктів чудово веде проєкти, але після невдалої презентації не наважується виступати перед керівництвом."},
+{r:3,t:"Сильний інженер, який успішно закрив десяток задач, раптом утратив інтерес до роботи й відкладає навіть звичні завдання."},
+{r:4,t:"Старша менеджерка з продажів роками перевиконує план і сама пропонує, як вдосконалити роботу з ключовими клієнтами."},
+{r:4,t:"Досвідчений редактор упевнено керує випуском видання, самостійно залагоджує проблеми й завжди дотримується термінів."}]);
+var st={s:"intro",n:"",i:0,tasks:[],ans:[],dc:-1,dm:-1};
+var app=document.getElementById("app");
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
+function fmt(x){return x.toFixed(1).replace(".",",")}
+function lv(x){return x>=6.25?"високий":x>=3.75?"середній":"низький"}
+function avg(a){return a.reduce(function(t,x){return t+x},0)/a.length}
+function mkPos(){var p;do{p=shuffle([0,1,2,3,0,1,2,3,0,1,2,3])}while(p.some(function(x,i){return i&&x===p[i-1]}));return p}
+function build(){var T=[];[1,2,3,4].forEach(function(r){shuffle(BANK.filter(function(x){return x.r===r})).slice(0,3).forEach(function(x){T.push({r:r,t:x.t})})});T=shuffle(T);var p=mkPos();T.forEach(function(x,i){var rec="S"+x.r,o=shuffle(SO.filter(function(k){return k!==rec}));o.splice(p[i],0,rec);x.ord=o});return T}
+function bar(n,v){return'<div class="bar"><div class="bl"><span>'+n+'</span><span>'+fmt(v)+' / 10 · '+lv(v)+'</span></div><div class="bt"><i style="width:'+v*10+'%;background:var(--ink2)"></i></div></div>'}
+function intro(){return'<div class="card"><p class="k">Практичне заняття 1 · Бізнес-лідерство</p><h1 class="serif">Ситуативне лідерство</h1><p class="mut">12 коротких ситуацій із робочого життя. Це навчальна гра за мотивами моделі Херсі та Бланшара (не офіційний опитувальник LEAD): найкращий стиль керівництва залежить від готовності людини до конкретного завдання.</p><div class="box" style="margin:0 0 14px"><b>Кожна ситуація має два кроки.</b><div class="sm" style="margin-top:6px">1. Оцініть готовність співробітника: його компетентність і мотивацію.<br>2. Оберіть стиль керівництва. Після відповіді ви побачите пояснення.</div></div><label class="sm" for="nm"><b>Ім\'я або псевдонім</b> <span class="mut">(необов\'язково)</span></label><input id="nm" maxlength="40" placeholder="Наприклад, Олена К." value="'+esc(st.n)+'" style="margin:6px 0 18px"><button class="btn pri" data-a="start">Почати (12 ситуацій) →</button></div>'}
+function head(k){return'<div class="pg"><i style="width:'+Math.round((st.i+(k||0))/12*100)+'%"></i></div>'}
+function d1(){var t=st.tasks[st.i];
+var row=function(a,q){return'<p class="sm mut" style="margin:12px 0 6px">'+q+'</p><div class="ch"><button data-a="'+a+'" data-v="0">Низька</button><button data-a="'+a+'" data-v="1">Висока</button></div>'};
+return'<div class="card">'+head(0)+'<p class="k">Ситуація '+(st.i+1)+' із 12 · крок 1 із 2</p><div class="box" style="margin:0 0 14px;font-size:15.5px">'+t.t+'</div><p style="font-weight:700;margin:0">Оцініть готовність співробітника до цього завдання</p>'+row("dc","Компетентність (знання й досвід)")+row("dm","Мотивація й упевненість")+'<div id="hint" class="sm" style="color:#B3492F;min-height:22px;margin-top:8px"></div><button class="btn pri" data-a="to2">Далі →</button></div>'}
+function d2(){var t=st.tasks[st.i],R=1+st.dc*2+st.dm;
+return'<div class="card">'+head(.5)+'<p class="k">Ситуація '+(st.i+1)+' із 12 · крок 2 із 2</p><div class="box" style="margin:0 0 12px;font-size:14.5px">'+t.t+'</div><p class="sm mut" style="margin:0 0 12px">Ваша оцінка готовності: <b>R'+R+' · '+RN[R].n+'</b></p><p style="font-weight:700;margin:0 0 10px">Який стиль керівництва ви оберете?</p><div class="ch">'+t.ord.map(function(k){return'<button data-a="sty" data-k="'+k+'"><span style="font-size:22px;line-height:1.2">'+S[k].e+'</span><span><b>'+S[k].n+'</b></span><span class="mut" style="font-size:12px;font-weight:400">'+S[k].d+'</span></button>'}).join("")+'</div></div>'}
+function fb(){var a=st.ans[st.i],last=st.i>=11,col=function(s){return s>=1?"#2E7D6B":s>=.5?"#C9962C":"#B3492F"};
+var dm=a.d>=1?"✓ Діагностику визначено точно":a.d>=.5?"≈ Частково: одна з двох ознак визначена правильно":"✕ Діагностика не збіглася";
+var sm=a.s>=1?"✓ Рекомендований стиль":a.s>=.5?"≈ Сусідній стиль: близько до рекомендованого":"✕ Стиль далекий від рекомендованого";
+return'<div class="card">'+head(1)+'<p class="k">Ситуація '+(st.i+1)+' із 12</p><div class="box" style="border-left:4px solid '+col(a.d)+'"><b>'+dm+'</b><div class="mut sm" style="margin-top:4px">Ваша оцінка: R'+a.dR+' · Правильна: <b>R'+a.r+' · '+RN[a.r].n+'</b></div></div><div class="box" style="margin-top:10px;border-left:4px solid '+col(a.s)+'"><b>'+sm+'</b><div class="mut sm" style="margin-top:4px">Ваш вибір: '+S[a.k].e+' '+S[a.k].n+' · Рекомендовано: '+S["S"+a.r].e+' <b>'+S["S"+a.r].n+'</b></div></div><div class="box" style="margin-top:10px"><div class="sm">'+RN[a.r].w+'</div></div><button class="btn pri" data-a="next" style="margin-top:14px">'+(last?"Дивитися результат →":"Наступна ситуація →")+'</button></div>'}
+function star(C,sc){var cx=210,cy=200,A={S1:-45,S2:45,S3:135,S4:225},P={S1:[86,70],S2:[334,70],S3:[334,318],S4:[86,318]},g='<svg viewBox="-30 0 480 400" role="img" aria-label="Скільки разів обрано кожен стиль" style="width:100%;max-width:480px;display:block;margin:0 auto">';
+var sh=function(l){var w=l*.28;return"M0 0C"+w+" "+(-l*.3)+" "+w*.7+" "+(-l*.8)+" 0 "+(-l)+"C"+(-w*.7)+" "+(-l*.8)+" "+(-w)+" "+(-l*.3)+" 0 0Z"};
+var len=function(n){return 20+Math.min(n,6)/6*100};
+SO.forEach(function(k){g+='<g transform="translate('+cx+' '+cy+') rotate('+A[k]+')"><path d="'+sh(120)+'" fill="none" stroke="var(--line)" stroke-dasharray="4 4"/><path d="'+sh(len(3))+'" fill="none" stroke="#C9962C" stroke-width="1.5" stroke-dasharray="3 3"/></g>'});
+SO.forEach(function(k){g+='<g transform="translate('+cx+' '+cy+') rotate('+A[k]+')"><path d="'+sh(len(C[k]))+'" fill="'+S[k].c+'" fill-opacity=".75" stroke="'+S[k].c+'" stroke-width="2"/></g>'});
+g+='<circle cx="'+cx+'" cy="'+cy+'" r="28" fill="var(--card)" stroke="#C9962C" stroke-width="2.5"/><text x="'+cx+'" y="'+(cy+3)+'" font-size="17" font-weight="700" text-anchor="middle" style="fill:var(--ink)">'+fmt(sc)+'</text><text x="'+cx+'" y="'+(cy+17)+'" font-size="9.5" text-anchor="middle">із 10</text>';
+SO.forEach(function(k){var p=P[k];g+='<text x="'+p[0]+'" y="'+p[1]+'" font-size="22" text-anchor="middle">'+S[k].e+'</text><text x="'+p[0]+'" y="'+(p[1]+17)+'" font-size="12.5" font-weight="700" text-anchor="middle" style="fill:var(--ink)">'+S[k].n+'</text><text x="'+p[0]+'" y="'+(p[1]+31)+'" font-size="11.5" text-anchor="middle">обрано '+C[k]+' з 12</text>'});
+return g+'</svg>'}
+function results(){var A=st.ans,C={S1:0,S2:0,S3:0,S4:0},M={},sg=[],rs={};
+[1,2,3,4].forEach(function(r){M[r]=[0,0,0,0,0];rs[r]=[]});
+A.forEach(function(a){C[a.k]++;M[a.r][+a.k[1]]++;sg.push(+a.k[1]-a.r);rs[a.r].push(a.s)});
+var d10=avg(A.map(function(a){return a.d}))*10,s10=avg(A.map(function(a){return a.s}))*10,tn=avg(sg),
+hard=[1,2,3,4].sort(function(x,y){return avg(rs[x])-avg(rs[y])})[0],hv=avg(rs[hard]);
+var tt=tn<=-.3?["Схильність до контролю","У ситуаціях, де людина вже готова до самостійності, ви частіше обирали стилі з більшим контролем, ніж рекомендує модель. Це може сприйматися як недовіра й гасити ініціативу."]:tn>=.3?["Схильність до довіри","Ви частіше обирали стилі з більшою автономією, ніж потрібно людині. Ризик: невпевнені чи недосвідчені співробітники можуть лишитися без достатньої опори."]:["Збалансований профіль","Ваші помилки (якщо вони були) розподілені в обидва боки: ви не схильні ані надмірно контролювати, ані надмірно відпускати."];
+var tbl='<div style="overflow-x:auto"><table style="text-align:center"><tr><th></th>'+SO.map(function(k){return'<th>'+S[k].e+'<br>'+S[k].n+'</th>'}).join("")+'</tr>'+[1,2,3,4].map(function(r){return'<tr><td style="text-align:left"><b>R'+r+'</b> '+RN[r].n+'</td>'+[1,2,3,4].map(function(s){var n=M[r][s];return'<td style="background:rgba(201,150,44,'+n*.28+');'+(r===s?'outline:2px solid var(--gold);outline-offset:-2px;':'')+'font-weight:700">'+(n||"·")+'</td>'}).join("")+'</tr>'}).join("")+'</table></div><p class="mut sm">Рамка — стиль, який рекомендує модель для цього рівня готовності. Цифра — скільки разів ви його обрали (з трьох ситуацій на рівень).</p>';
+var acc=SO.map(function(k,i){return'<details><summary>'+S[k].e+' '+S[k].n+' ('+S[k].en+') · для R'+(i+1)+'</summary><p>'+S[k].full+'</p><p><b>Доречний, коли:</b> '+RN[i+1].n.toLowerCase()+'.</p><p><b>Ризик:</b> '+S[k].rk+'</p></details>'}).join("");
+return'<div class="card">'+(st.n?'<p class="k">'+esc(st.n)+'</p>':"")+'<h1 class="serif">Ваш результат</h1>'+bar("🔎 Діагностика готовності",d10)+bar("🎯 Вибір стилю",s10)+'<h2>Які стилі ви обирали</h2><p class="mut sm">Пелюстка показує, скільки разів ви обрали стиль. Золотий пунктир — «ідеал»: по 3 рази кожен (по 3 ситуації на рівень готовності). Рівна зірка означає, що ви застосовували різні стилі залежно від ситуації. У центрі — бал за вибір стилю.</p>'+star(C,s10)+'<h2>Готовність → ваш вибір</h2>'+tbl+'<div class="hero"><div class="lb">ВАША ТЕНДЕНЦІЯ</div><div class="nm">'+tt[0]+'</div><p>'+tt[1]+'</p>'+(hv<1?'<p><b>Найскладніше для вас:</b> R'+hard+' · '+RN[hard].n+'. '+RN[hard].w+'</p>':"")+'</div><h2>Усі чотири стилі</h2>'+acc+'<div class="box" style="margin-top:14px"><b>Пам\'ятайте:</b> готовність стосується конкретного завдання, а не людини загалом. Емпіричні перевірки моделі дали змішані результати, тому користуйтеся нею як інструментом для роздумів, а не формулою.</div><div class="box" style="margin-top:14px;text-align:center"><b>Дякуємо за гру!</b><div class="sm" style="margin-top:6px">Бажаємо вам помічати, що потрібно людям насправді, і щоразу обирати стиль, який допомагає їм рости.</div></div><div class="row"><button class="btn" data-a="retry">Зіграти ще раз</button></div></div>'}
+function render(){app.innerHTML='<div class="st">'+({intro:intro,d1:d1,d2:d2,fb:fb,results:results}[st.s])()+'</div>';window.scrollTo(0,0)}
+function sel(b){[].forEach.call(b.parentNode.children,function(x){x.classList.toggle("sel",x===b)})}
+app.addEventListener("click",function(e){var b=e.target.closest("[data-a]");if(!b)return;var a=b.dataset.a;
+if(a==="start"){st.n=document.getElementById("nm").value.trim();st.tasks=build();st.ans=[];st.i=0;st.dc=-1;st.dm=-1;st.s="d1";render()}
+else if(a==="dc"){st.dc=+b.dataset.v;sel(b)}else if(a==="dm"){st.dm=+b.dataset.v;sel(b)}
+else if(a==="to2"){if(st.dc<0||st.dm<0){document.getElementById("hint").textContent="Оберіть обидві ознаки.";return}st.s="d2";render()}
+else if(a==="sty"){var t=st.tasks[st.i],R=1+st.dc*2+st.dm,k=b.dataset.k,dist=Math.abs(+k[1]-t.r),tdc=t.r>=3?1:0,tdm=t.r%2===0?1:0;
+st.ans.push({r:t.r,dR:R,k:k,d:(st.dc===tdc?.5:0)+(st.dm===tdm?.5:0),s:dist===0?1:dist===1?.5:0});st.s="fb";render()}
+else if(a==="next"){if(st.i>=11)st.s="results";else{st.i++;st.dc=-1;st.dm=-1;st.s="d1"}render()}
+else if(a==="retry"){st.s="intro";render()}});
+render();
+})();
+</script></body></html>
