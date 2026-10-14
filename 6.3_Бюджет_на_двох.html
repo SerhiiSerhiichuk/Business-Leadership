@@ -1,0 +1,1579 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Бюджет на двох: переговорний симулятор</title>
+<style>
+  :root {
+    --ink: #1E2761; --ink-soft: #384080; --surface: #F3F6FC; --card: #FFFFFF;
+    --gold: #C9962C; --gold-soft: #F3E4C6; --muted: #5B6685; --line: #DDE4F5;
+    --red: #B3492F; --green: #2E7D6B;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; min-height: 100%; background: var(--surface);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+  }
+  .serif { font-family: Cambria, Georgia, "Times New Roman", serif; }
+  #app { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 32px 18px; }
+  .stage-wrap { width: 100%; max-width: 660px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 36px 34px; box-shadow: 0 18px 40px -24px rgba(30,39,97,0.35); }
+  @media (max-width: 480px) { .card { padding: 24px 18px; } }
+
+  .kicker { font-size: 13px; color: var(--muted); margin: 0 0 10px; }
+  h1.title { font-size: 26px; line-height: 1.25; margin: 0 0 14px; font-weight: 700; }
+  p.lead { font-size: 15px; line-height: 1.6; color: var(--muted); margin: 0 0 22px; }
+  label.field-label { display: block; font-size: 13px; color: var(--ink-soft); margin-bottom: 6px; font-weight: 600; }
+  input.text-input {
+    width: 100%; padding: 12px 14px; border-radius: 10px; border: 1.5px solid var(--line);
+    font-size: 15px; color: var(--ink); background: var(--surface); margin-bottom: 20px;
+  }
+  input.text-input:focus { outline: none; border-color: var(--gold); }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 13px 24px; border-radius: 10px; border: none; font-size: 14.5px; font-weight: 600;
+    cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .btn-primary { background: var(--ink); color: #fff; width: 100%; }
+  .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 10px 20px -12px rgba(30,39,97,0.6); }
+  .btn-secondary { background: var(--surface); color: var(--ink); border: 1.5px solid var(--line); }
+  .note-box { margin: 0 0 20px; padding: 12px 14px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+
+  /* DISC primer */
+  .primer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+  @media (max-width: 480px) { .primer-grid { grid-template-columns: 1fr; } }
+  .primer-item { display: flex; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); align-items: flex-start; }
+  .primer-letter { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; color: #fff; flex-shrink: 0; }
+  .primer-letter.D { background: var(--red); } .primer-letter.I { background: var(--gold); } .primer-letter.S { background: var(--green); } .primer-letter.C { background: var(--ink); }
+  .primer-text { font-size: 11.5px; line-height: 1.4; color: var(--muted); }
+  .primer-text b { color: var(--ink); }
+
+  /* Quiz */
+  .progress-track { height: 5px; background: var(--line); border-radius: 4px; overflow: hidden; margin-bottom: 22px; }
+  .progress-fill { height: 100%; background: var(--gold); border-radius: 4px; transition: width 0.4s ease; }
+  .step-count { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .cand-name-big { font-size: 20px; font-weight: 700; margin-bottom: 14px; }
+  .desc-box { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; margin-bottom: 22px; }
+  .desc-box p { font-size: 14px; line-height: 1.65; margin: 0; color: var(--ink-soft); }
+  .disc-choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 480px) { .disc-choice-grid { grid-template-columns: 1fr; } }
+  .disc-choice-btn {
+    display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 12px;
+    border: 1.5px solid var(--line); background: #fff; cursor: pointer; transition: all 0.15s ease; text-align: left;
+  }
+  .disc-choice-btn:hover { border-color: var(--gold); background: var(--gold-soft); }
+  .disc-choice-btn .dc-badge { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; color: #fff; flex-shrink: 0; }
+  .disc-choice-btn .dc-badge.D { background: var(--red); } .disc-choice-btn .dc-badge.I { background: var(--gold); } .disc-choice-btn .dc-badge.S { background: var(--green); } .disc-choice-btn .dc-badge.C { background: var(--ink); }
+  .disc-choice-btn .dc-title { font-weight: 700; font-size: 13.5px; }
+  .disc-choice-btn .dc-sub { font-size: 11px; color: var(--muted); }
+
+  /* Consequence */
+  .consequence-box { border-radius: 14px; padding: 18px 20px; margin-bottom: 20px; color: #fff; }
+  .consequence-box.correct { background: var(--green); }
+  .consequence-box.incorrect { background: var(--red); }
+  .consequence-box .cq-label { font-size: 11px; font-weight: 700; margin-bottom: 8px; letter-spacing: 0.3px; opacity: 0.85; }
+  .consequence-box p { font-size: 13.5px; line-height: 1.55; margin: 0; }
+  .consequence-box .cq-your { font-size: 12px; margin-bottom: 8px; opacity: 0.9; }
+
+  /* Results */
+  table.results-recap { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-bottom: 20px; }
+  table.results-recap th { text-align: left; font-size: 11px; color: var(--muted); font-weight: 600; padding: 7px 6px; border-bottom: 2px solid var(--line); }
+  table.results-recap td { padding: 8px 6px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  .mini-badge { width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 11px; color: #fff; }
+  .mini-badge.D { background: var(--red); } .mini-badge.I { background: var(--gold); } .mini-badge.S { background: var(--green); } .mini-badge.C { background: var(--ink); }
+  .result-icon { font-weight: 800; }
+  .result-icon.ok { color: var(--green); } .result-icon.no { color: var(--red); }
+
+  .tier-card { margin-top: 4px; padding: 20px 22px; border-radius: 14px; background: var(--ink); color: #fff; margin-bottom: 20px; }
+  .tier-card .t-label { font-size: 11px; color: var(--gold-soft); font-weight: 700; margin-bottom: 8px; letter-spacing: 0.3px; }
+  .tier-card .t-title { font-size: 19px; font-weight: 700; margin-bottom: 8px; }
+  .tier-card p { font-size: 13.5px; line-height: 1.55; color: #DCE1F5; margin: 0; }
+  .score-big { text-align: center; margin-bottom: 4px; }
+  .score-big .num { font-size: 40px; font-weight: 800; color: var(--ink); }
+  .score-big .den { font-size: 16px; color: var(--muted); }
+
+  .save-note { font-size: 12.5px; color: var(--muted); margin-top: 14px; text-align: center; }
+  .result-actions { display: flex; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
+  .result-actions .btn { flex: 1; min-width: 140px; }
+  .teacher-link { display: block; text-align: center; margin-top: 20px; font-size: 12.5px; color: var(--muted); text-decoration: underline; cursor: pointer; background: none; border: none; }
+
+  .teacher-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+  table.results-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.results-table th { text-align: left; font-size: 10.5px; color: var(--muted); font-weight: 600; padding: 7px 6px; border-bottom: 2px solid var(--line); }
+  table.results-table td { padding: 8px 6px; border-bottom: 1px solid var(--line); }
+  .tag { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; background: var(--gold-soft); color: #7A5A16; }
+  .empty-note { text-align: center; color: var(--muted); font-size: 13.5px; padding: 30px 0; }
+  .icon-btn { background: none; border: 1.5px solid var(--line); border-radius: 8px; padding: 7px 13px; font-size: 12.5px; color: var(--ink); cursor: pointer; }
+  .icon-btn:hover { border-color: var(--gold); }
+  .table-scroll { overflow-x: auto; }
+
+
+
+  .fb-hint { font-size: 12px; color: var(--muted); font-style: italic; margin: 4px 0 0; }
+  .next-box { margin: 20px 0 14px; padding: 16px 18px; border-radius: 14px; background: var(--gold-soft); border: 1px solid #E5CE9B; }
+  .next-box .nb-title { font-size: 15px; font-weight: 800; margin-bottom: 4px; }
+  .next-box p { font-size: 13px; line-height: 1.55; color: var(--ink-soft); margin: 0 0 12px; }
+  .next-box .result-actions { margin-top: 0; }
+  .deep { margin: 6px 0 18px; border: 1.5px solid var(--line); border-radius: 14px; background: #fff; }
+  .deep > summary { cursor: pointer; font-weight: 700; font-size: 14px; padding: 14px 18px; color: var(--ink); list-style: none; }
+  .deep > summary::-webkit-details-marker { display: none; }
+  .deep > summary::before { content: "▸ "; color: var(--gold); }
+  .deep[open] > summary::before { content: "▾ "; }
+  .deep-body { padding: 0 16px 16px; }
+  .deep-lead { font-size: 12.5px; color: var(--muted); line-height: 1.55; margin: 0 0 14px; }
+
+  /* ---------- Stepper & roadmap ---------- */
+  .stepper { display: flex; align-items: center; margin-bottom: 14px; }
+  .st-item { display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 40px; }
+  .st-ico { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; border: 2px solid var(--line); background: var(--surface); filter: grayscale(1); opacity: 0.55; }
+  .st-lab { font-size: 10px; font-weight: 700; color: var(--muted); }
+  .st-item.done .st-ico { filter: none; opacity: 1; background: #DCEFE9; border-color: #6FB8A2; }
+  .st-item.cur .st-ico { filter: none; opacity: 1; background: var(--gold-soft); border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,150,44,0.25); }
+  .st-item.cur .st-lab { color: var(--ink); }
+  .st-line { flex: 1; height: 2px; background: var(--line); margin: 0 2px 14px; min-width: 6px; }
+  .roadmap { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 18px; }
+  @media (max-width: 560px) { .roadmap { grid-template-columns: 1fr; } }
+  .rm-item { display: flex; gap: 10px; align-items: center; padding: 9px 11px; border-radius: 10px; border: 1.5px solid var(--line); background: #fff; }
+  .rm-ico { width: 36px; height: 36px; border-radius: 50%; background: var(--surface); border: 2px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+  .rm-name { font-weight: 700; font-size: 12.5px; } .rm-desc { font-size: 11.5px; color: var(--muted); line-height: 1.4; }
+
+  /* ---------- SBI-I icons ---------- */
+  .el-S { --ic-bg: #E6EAF8; --ic-bd: #7C8BC9; } .el-B { --ic-bg: #FBF1D6; --ic-bd: #D7B25A; } .el-I { --ic-bg: #DCEFE9; --ic-bd: #6FB8A2; }
+  .el-N { --ic-bg: #EADFF5; --ic-bd: #A98BD1; } .el-frame { --ic-bg: #E3F0FA; --ic-bd: #78AEDB; } .el-E { --ic-bg: #FBE3EA; --ic-bd: #E08BA4; }
+  .el-Q { --ic-bg: #E0F2F1; --ic-bd: #5FB5AE; } .el-A { --ic-bg: #E7F3D9; --ic-bd: #8DBB5A; } .el-F { --ic-bg: #EEE9DD; --ic-bd: #B6A472; }
+  .lv-bad { --ic-bg: #F6DCD4; --ic-bd: #D9826A; } .lv-soft { --ic-bg: #FBEBD6; --ic-bd: #E2A867; }
+  .el-list { display: grid; gap: 8px; margin-bottom: 18px; }
+  .el-card { display: flex; gap: 14px; padding: 12px 14px; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; }
+  .el-ico, .t-ico, .mp-ico, .r-ico, .fi-ico { background: var(--ic-bg); border: 2px solid var(--ic-bd); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .el-ico { width: 46px; height: 46px; font-size: 22px; }
+  .el-name { font-weight: 800; font-size: 13.5px; margin-bottom: 3px; }
+  .el-def { font-size: 12.5px; line-height: 1.5; color: var(--ink-soft); }
+  .el-ex { font-size: 12px; line-height: 1.5; color: var(--muted); font-style: italic; margin-top: 4px; }
+  .flaw-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-bottom: 16px; }
+  @media (max-width: 560px) { .flaw-grid { grid-template-columns: 1fr 1fr; } }
+  .flaw-item { display: flex; align-items: center; gap: 8px; font-size: 11.5px; font-weight: 600; padding: 6px 9px; border-radius: 10px; border: 1.5px solid; }
+  .flaw-item.bad { background: #FCF1EE; border-color: #E8B5A4; color: #7A2E1A; } .flaw-item.soft { background: #FEF6EA; border-color: #EBC995; color: #6B4A12; }
+  .fi-ico { width: 26px; height: 26px; font-size: 14px; border-width: 1.5px; }
+  .flaw-item.bad .fi-ico { --ic-bg: #F6DCD4; --ic-bd: #D9826A; } .flaw-item.soft .fi-ico { --ic-bg: #FBEBD6; --ic-bd: #E2A867; }
+
+  .tiles-title { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 0.2px; margin: 12px 0 6px; }
+  .tile { display: flex; gap: 10px; align-items: center; padding: 9px 11px; border-radius: 10px; border: 1.5px solid var(--line); background: #fff; margin-bottom: 6px; }
+  .t-ico { width: 36px; height: 36px; font-size: 17px; }
+  .t-body { flex: 1; min-width: 0; }
+  .t-name { font-size: 12.5px; font-weight: 700; }
+  .t-what { font-size: 11.5px; color: var(--muted); line-height: 1.4; }
+  .t-mark { font-weight: 800; font-size: 16px; padding-left: 6px; }
+  .tile.present { border-color: #8FC4B3; background: #F2FAF7; } .tile.present .t-mark { color: var(--green); }
+  .tile.missing { border-style: dashed; background: #FAFAFB; } .tile.missing .t-ico { filter: grayscale(1); opacity: 0.5; } .tile.missing .t-name { color: var(--muted); } .tile.missing .t-mark { color: var(--red); }
+  .tile.soft { border-color: #E2A867; background: #FEF6EA; } .tile.soft .t-mark { color: #A8741A; }
+  .tile.flaw { border-color: #D9826A; background: #FCF1EE; } .tile.flaw .t-mark { color: var(--red); }
+
+  .remind { margin-bottom: 14px; font-size: 12.5px; }
+  .remind summary { cursor: pointer; font-weight: 700; color: var(--muted); }
+  .remind-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .remind-item { display: inline-flex; align-items: center; gap: 7px; padding: 4px 11px 4px 5px; border-radius: 20px; border: 1.5px solid var(--ic-bd); background: var(--ic-bg); font-weight: 700; font-size: 12px; }
+  .r-ico { width: 24px; height: 24px; font-size: 13px; background: #fff; border-width: 1.5px; }
+
+  .mp-row { display: flex; gap: 12px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.12); }
+  .mp-row:last-child { border-bottom: none; }
+  .mp-ico { width: 34px; height: 34px; font-size: 16px; }
+  .mp-text { font-size: 13.5px; line-height: 1.6; color: #DCE1F5; }
+  .mp-tag { display: block; font-size: 10.5px; font-weight: 700; color: var(--gold-soft); letter-spacing: 0.3px; margin-bottom: 2px; }
+
+  /* ---------- SBI game ---------- */
+  .primer-letter.sbi-S { background: var(--ink); } .primer-letter.sbi-B { background: var(--gold); } .primer-letter.sbi-I { background: var(--green); }
+  .sbi-grid { grid-template-columns: 1fr 1fr 1fr; }
+  @media (max-width: 560px) { .sbi-grid { grid-template-columns: 1fr; } }
+
+  .scenario-list { display: grid; gap: 10px; margin-bottom: 8px; }
+  .scenario-card { display: flex; gap: 14px; align-items: center; text-align: left; padding: 14px 16px; border-radius: 14px; border: 1.5px solid var(--line); background: #fff; cursor: pointer; transition: all 0.15s ease; }
+  .scenario-card:hover { border-color: var(--gold); background: var(--gold-soft); transform: translateY(-1px); }
+  .sc-emoji { width: 46px; height: 46px; border-radius: 50%; background: var(--surface); border: 1.5px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+  .sc-title { font-weight: 700; font-size: 14.5px; color: var(--ink); }
+  .sc-sub { font-size: 12px; color: var(--muted); margin: 2px 0 6px; line-height: 1.4; }
+  .sc-meta { font-size: 11.5px; color: var(--ink-soft); display: flex; align-items: center; gap: 6px; }
+
+  .person { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+  .avatar { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; color: #fff; flex-shrink: 0; }
+  .avatar.D { background: var(--red); } .avatar.I { background: var(--gold); } .avatar.S { background: var(--green); } .avatar.C { background: var(--ink); }
+  .p-info { flex: 1; min-width: 120px; }
+  .p-name { font-weight: 700; font-size: 15px; }
+  .p-sub { font-size: 11.5px; color: var(--muted); }
+  .mood-chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px 5px 8px; border-radius: 20px; font-size: 12px; font-weight: 700; border: 1.5px solid; }
+  .mood-emoji { font-size: 15px; }
+  .mood-chip.neutral { background: #EEF1FA; border-color: #C9D2EE; color: #3B4577; }
+  .mood-chip.open { background: #DCEFE9; border-color: #8FC4B3; color: #1F5245; }
+  .mood-chip.defensive { background: #F9E3C9; border-color: #E2A867; color: #7A4A0F; }
+  .mood-chip.withdrawn { background: #F6DCD4; border-color: #D9826A; color: #7A2E1A; }
+  .mood-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+  .mood-arrow { color: var(--muted); font-weight: 700; }
+
+  .metrics { display: grid; gap: 9px; margin-bottom: 16px; }
+  .m-head { display: flex; justify-content: space-between; align-items: center; font-size: 12px; margin-bottom: 4px; }
+  .m-name { color: var(--ink-soft); font-weight: 600; }
+  .m-val { font-weight: 800; color: var(--ink); display: inline-flex; align-items: center; gap: 6px; }
+  .m-delta { font-size: 11px; font-weight: 800; padding: 1px 7px; border-radius: 10px; }
+  .m-delta.up { background: #DCEFE9; color: #1F5245; } .m-delta.down { background: #F6DCD4; color: #7A2E1A; }
+  .m-track { height: 8px; background: var(--line); border-radius: 6px; overflow: hidden; }
+  .m-fill { height: 100%; border-radius: 6px; transition: width 0.5s ease; }
+
+  .setup-box { margin-bottom: 14px; padding: 12px 14px; border-radius: 10px; background: var(--gold-soft); border: 1px solid #E5CE9B; font-size: 12.5px; line-height: 1.55; color: #5C4510; }
+  .bubble { padding: 12px 15px; border-radius: 14px; font-size: 13.5px; line-height: 1.55; margin-bottom: 10px; max-width: 94%; }
+  .bubble .b-who { font-size: 11px; font-weight: 700; margin-bottom: 3px; opacity: 0.75; }
+  .bubble.emp { background: var(--surface); border: 1px solid var(--line); border-top-left-radius: 4px; color: var(--ink); }
+  .bubble.emp.open { background: #E7F4EF; border-color: #8FC4B3; }
+  .bubble.emp.defensive { background: #FBEBD6; border-color: #E2A867; }
+  .bubble.emp.withdrawn { background: #F8E4DE; border-color: #D9826A; }
+  .bubble.mgr { background: var(--ink); color: #fff; margin-left: auto; border-top-right-radius: 4px; }
+  .mood-note { font-size: 12px; color: var(--muted); margin: -2px 0 12px; font-style: italic; }
+  .retry-note { font-size: 12px; color: #7A4A0F; background: #F9E3C9; border-radius: 8px; padding: 7px 11px; margin-bottom: 10px; }
+  .ctx-box { margin-bottom: 18px; padding: 10px 14px; border-left: 4px solid var(--gold); background: var(--surface); border-radius: 0 10px 10px 0; font-size: 13px; line-height: 1.5; color: var(--ink-soft); }
+
+  .reply-list { display: grid; gap: 10px; }
+  .reply-btn { display: flex; gap: 12px; align-items: flex-start; text-align: left; padding: 13px 15px; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; cursor: pointer; transition: all 0.15s ease; font-size: 13.5px; line-height: 1.5; color: var(--ink); }
+  .reply-btn:hover { border-color: var(--gold); background: var(--gold-soft); }
+  .reply-num { width: 24px; height: 24px; border-radius: 50%; background: var(--surface); border: 1.5px solid var(--line); font-weight: 800; font-size: 11.5px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .reply-text { flex: 1; }
+
+  .verdict-card { border-radius: 16px; padding: 20px 22px; color: #fff; margin-bottom: 18px; }
+  .verdict-card.great { background: var(--green); } .verdict-card.partial { background: #A8741A; } .verdict-card.fail { background: var(--red); }
+  .verdict-card .v-label { font-size: 11px; font-weight: 700; letter-spacing: 0.3px; opacity: 0.85; margin-bottom: 6px; }
+  .verdict-card .v-title { font-size: 21px; font-weight: 800; margin-bottom: 8px; }
+  .verdict-card p { font-size: 13.5px; line-height: 1.55; margin: 0 0 10px; }
+  .verdict-card .v-score { font-size: 12.5px; opacity: 0.95; } .verdict-card .v-score span { font-size: 22px; font-weight: 800; }
+  .end-mood { margin-top: 4px; }
+  .chart-box { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px; margin-bottom: 18px; }
+  .chart-legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 11px; color: var(--muted); margin-top: 6px; }
+  .chart-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+
+  .sbi-row { display: flex; gap: 12px; padding: 11px 13px; border-radius: 10px; border: 1px solid var(--line); margin-bottom: 8px; background: #fff; }
+  .sbi-row.ok { border-left: 4px solid var(--green); } .sbi-row.no { border-left: 4px solid var(--red); background: #FBF1EE; }
+  .sbi-title { font-weight: 700; font-size: 13px; margin-bottom: 3px; }
+  .sbi-quote { font-size: 12px; color: var(--ink-soft); line-height: 1.5; }
+  .sbi-hint { font-size: 12px; color: #7A2E1A; line-height: 1.5; }
+
+  .tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .tag-chip { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+  .tag-chip.good { background: #DCEFE9; color: #1F5245; } .tag-chip.bad { background: #F6DCD4; color: #7A2E1A; }
+  .step-card { border: 1px solid var(--line); border-left: 4px solid var(--red); border-radius: 12px; padding: 13px 15px; margin-bottom: 12px; background: #fff; }
+  .step-card.best { border-left-color: var(--green); }
+  .step-card.neutral { border-left-color: var(--gold); }
+  .fb-live { border: 1px solid var(--line); border-left: 4px solid var(--gold); border-radius: 12px; padding: 13px 15px; margin-bottom: 16px; background: #fff; }
+  .fb-live.best { border-left-color: var(--green); } .fb-live.bad { border-left-color: var(--red); }
+  .fb-live-title { font-size: 11px; font-weight: 700; letter-spacing: 0.3px; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; }
+  .kind-row { margin-bottom: 8px; }
+  .kind-badge { display: inline-block; font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 20px; }
+  .kind-badge.best { background: #DCEFE9; color: #1F5245; } .kind-badge.neutral { background: #FBF1D6; color: #6B5314; } .kind-badge.bad { background: #F6DCD4; color: #7A2E1A; }
+  .verdict-card .v-reason { background: rgba(255,255,255,0.18); border-radius: 8px; padding: 8px 11px; font-size: 12.5px !important; }
+  .verdict-card .v-kinds { margin-top: 8px; font-size: 12px; opacity: 0.92; }
+
+  .sc-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; margin-bottom: 8px; }
+  .sc-n { width: 22px; height: 22px; border-radius: 50%; background: var(--ink); color: #fff; font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
+  .sc-mood { margin-left: auto; font-size: 11.5px; color: var(--muted); }
+  .sc-line { font-size: 13px; line-height: 1.55; color: var(--ink); background: var(--surface); border-radius: 8px; padding: 9px 12px; }
+  .sc-why { font-size: 12.5px; line-height: 1.55; color: var(--ink-soft); margin: 4px 0 8px; }
+  .sc-reply { font-size: 12px; line-height: 1.5; color: var(--muted); font-style: italic; }
+  .sc-best { margin-top: 8px; font-size: 12.5px; line-height: 1.55; color: #1F5245; background: #EEF8F4; border-radius: 8px; padding: 8px 12px; }
+  .model-box { margin: 18px 0; padding: 16px 18px; border-radius: 12px; background: var(--ink); color: #fff; }
+  .model-box .mb-title { font-size: 11px; font-weight: 700; color: var(--gold-soft); letter-spacing: 0.3px; margin-bottom: 8px; }
+  .model-box p { font-size: 13.5px; line-height: 1.6; color: #DCE1F5; margin: 0; }
+  .review-ok { margin-bottom: 18px; padding: 12px 14px; border-radius: 10px; background: #DCEFE9; color: #1F5245; font-size: 13px; }
+  .insight-box { margin-bottom: 18px; padding: 14px 16px; border-radius: 12px; background: var(--gold-soft); border: 1px solid #E5CE9B; }
+  .insight-box .ib-title { font-size: 11px; font-weight: 700; letter-spacing: 0.3px; color: #7A5A16; margin-bottom: 6px; }
+
+
+  /* ---------- Negotiation game ---------- */
+  .st-comp { --ic-bg: #F6DCD4; --ic-bd: #D9826A; } .st-coll { --ic-bg: #DCEFE9; --ic-bd: #6FB8A2; } .st-comp2 { --ic-bg: #FBF1D6; --ic-bd: #D7B25A; }
+  .st-avoid { --ic-bg: #E6EAF8; --ic-bd: #7C8BC9; } .st-accom { --ic-bg: #EADFF5; --ic-bd: #A98BD1; }
+  .tki-list { display: grid; gap: 8px; margin-bottom: 16px; }
+  .tki-card { display: flex; gap: 14px; padding: 11px 14px; border-radius: 12px; border: 1.5px solid var(--ic-bd); background: var(--ic-bg); }
+  .tki-ico { width: 44px; height: 44px; border-radius: 50%; background: #fff; border: 2px solid var(--ic-bd); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+  .tki-name { font-weight: 800; font-size: 13.5px; margin-bottom: 2px; }
+  .tki-def { font-size: 12.5px; line-height: 1.45; color: var(--ink-soft); }
+  .tki-when { font-size: 11.5px; line-height: 1.45; color: var(--muted); margin-top: 3px; }
+  .style-tile { display: flex; gap: 10px; align-items: center; padding: 9px 12px; border-radius: 10px; border: 1.5px solid var(--ic-bd); background: var(--ic-bg); margin-bottom: 8px; }
+  .stt-ico { width: 38px; height: 38px; border-radius: 50%; background: #fff; border: 2px solid var(--ic-bd); display: flex; align-items: center; justify-content: center; font-size: 19px; flex-shrink: 0; }
+  .stt-name { font-weight: 800; font-size: 13px; } .stt-def { font-size: 11.5px; color: var(--ink-soft); line-height: 1.4; }
+  .style-chip { display: inline-block; font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 20px; background: var(--ic-bg); border: 1.5px solid var(--ic-bd); margin-left: 6px; }
+  .remind-item.st-comp, .remind-item.st-coll, .remind-item.st-comp2, .remind-item.st-avoid, .remind-item.st-accom { border-color: var(--ic-bd); background: var(--ic-bg); }
+  .reply-body { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+  .reply-tactic { font-size: 10.5px; font-weight: 800; letter-spacing: 0.3px; text-transform: uppercase; color: #A8741A; }
+  .stepper .st-lab { font-size: 9px; text-align: center; max-width: 54px; line-height: 1.15; }
+  .st-item { min-width: 34px; }
+  .brief-box { margin-bottom: 14px; padding: 12px 14px; border-radius: 10px; background: #fff; border: 1.5px solid var(--line); }
+  .bb-title { font-size: 12px; font-weight: 800; margin-bottom: 8px; }
+  .bb-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  @media (max-width: 560px) { .bb-grid { grid-template-columns: 1fr; } }
+  .bb-item { font-size: 12px; line-height: 1.5; color: var(--ink-soft); background: var(--surface); border-radius: 8px; padding: 8px 10px; }
+  .bb-item span { display: block; font-size: 10.5px; font-weight: 700; color: var(--muted); letter-spacing: 0.2px; text-transform: uppercase; margin-bottom: 2px; }
+  .walkout-box { margin-bottom: 14px; padding: 10px 14px; border-radius: 10px; background: #F6DCD4; color: #7A2E1A; font-size: 13px; font-weight: 600; }
+  .factor-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .factor { font-size: 10.5px; font-weight: 700; padding: 2px 9px; border-radius: 20px; background: var(--surface); border: 1px solid var(--line); color: var(--ink-soft); }
+  .factor.high { background: #FBEFD0; border-color: #E5CE9B; } .factor.low { background: #EEF1FA; }
+  .tki-analysis { margin-bottom: 18px; }
+  .ta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; margin-bottom: 12px; }
+  @media (max-width: 640px) { .ta-grid { grid-template-columns: 1fr; } }
+  .style-bars { display: grid; gap: 8px; }
+  .sb-row { display: grid; grid-template-columns: 112px 1fr 56px; gap: 8px; align-items: center; font-size: 12px; }
+  .sb-row.dom .sb-lab { font-weight: 800; }
+  .sb-track { height: 10px; background: var(--line); border-radius: 6px; overflow: hidden; }
+  .sb-fill { height: 100%; border-radius: 6px; background: var(--ic-bd); }
+  .sb-num { font-size: 11px; color: var(--muted); text-align: right; }
+  .dom-box { padding: 12px 15px; border-radius: 12px; border: 1.5px solid var(--ic-bd); background: var(--ic-bg); margin-bottom: 10px; }
+  .dom-title { font-weight: 800; font-size: 14px; margin-bottom: 4px; }
+  .dom-box p { font-size: 12.5px; line-height: 1.55; color: var(--ink-soft); margin: 0 0 6px; }
+  .dom-advice { font-style: italic; }
+  .fit-row { font-size: 12.5px; padding: 9px 13px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); }
+  .verdict-card.fail { background: #7A5A16; } .verdict-card.walkout { background: var(--red); }
+  .v-split { margin-top: 8px; font-size: 12.5px; opacity: 0.95; }
+  .int-list { display: grid; gap: 8px; margin-bottom: 14px; }
+  .int-item { display: flex; gap: 10px; padding: 9px 12px; border-radius: 10px; border: 1.5px solid var(--line); background: #fff; font-size: 12.5px; line-height: 1.45; }
+  .int-item.ok { border-color: #8FC4B3; background: #F2FAF7; } .int-item.no { border-style: dashed; background: #FAFAFB; }
+  .int-mark { font-weight: 800; font-size: 15px; } .int-item.ok .int-mark { color: var(--green); } .int-item.no .int-mark { color: var(--red); }
+  .proto-doc { background: #fff; border: 1.5px solid var(--line); border-radius: 12px; padding: 18px 20px; margin-bottom: 12px; font-size: 12.5px; line-height: 1.55; color: var(--ink-soft); }
+  .pd-head { text-align: center; border-bottom: 2px solid var(--ink); padding-bottom: 10px; margin-bottom: 12px; }
+  .pd-title { font-weight: 800; font-size: 16px; letter-spacing: 1px; color: var(--ink); } .pd-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .pd-sec { margin-bottom: 12px; } .pd-sec b { color: var(--ink); }
+  .pd-sec ul, .pd-sec ol { margin: 4px 0 6px; padding-left: 20px; } .pd-sec li { margin-bottom: 3px; }
+  .pd-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.2px; margin-top: 6px; } .pd-label.warn { color: #A8741A; }
+  .pd-style { font-size: 11px; font-weight: 700; color: #A8741A; }
+  .pd-res { font-weight: 700; margin: 4px 0; } .pd-res.full { color: #1F5245; } .pd-res.weak { color: #8A5A10; } .pd-res.none { color: #7A2E1A; }
+  .pd-sign { margin-top: 16px; padding-top: 10px; border-top: 1px dashed var(--line); }
+
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+(function () {
+  "use strict";
+  // ---------- Дані ----------
+  var STYLE_ORDER = ["competing", "collaborating", "compromising", "avoiding", "accommodating"];
+  var STYLES = {
+    competing: { name: "Конкурування", icon: "🦈", cls: "st-comp", coop: 0.1, assert: 0.9,
+      def: "Наполягаю на своєму: висока наполегливість, низька орієнтація на співпрацю.",
+      when: "Коли питання життєво важливе, потрібне швидке рішення або треба захиститися від експлуатації.",
+      risk: "Псує стосунки й породжує опір, якщо застосовувати його всюди.",
+      advice: "Залишайте жорсткість для справді принципових меж і пояснюйте їх аргументами." },
+    collaborating: { name: "Співпраця", icon: "🦉", cls: "st-coll", coop: 0.9, assert: 0.9,
+      def: "Шукаю рішення, яке повністю задовольняє обидві сторони: висока наполегливість і висока співпраця.",
+      when: "Коли і ваші цілі, і стосунки важливі, є час і можна з'ясувати інтереси.",
+      risk: "Потребує часу й відвертості; у поспіху або з недобросовісним партнером буває марною.",
+      advice: "Починайте з інтересів, а не з позицій, і фіксуйте домовленості конкретно." },
+    compromising: { name: "Компроміс", icon: "🦊", cls: "st-comp2", coop: 0.5, assert: 0.5,
+      def: "Кожен частково поступається: середня наполегливість і середня співпраця.",
+      when: "Коли часу мало, цілі помірно важливі, а сторони рівні за впливом.",
+      risk: "«Середина» може втратити цінні можливості, які дала б співпраця.",
+      advice: "Вдавайтеся до компромісу, коли час справді тисне, а не як до першого кроку." },
+    avoiding: { name: "Уникнення", icon: "🐢", cls: "st-avoid", coop: 0.1, assert: 0.1,
+      def: "Відкладаю або обходжу питання: низька наполегливість і низька співпраця.",
+      when: "Коли тема дріб'язкова чи не до речі, або потрібна пауза, щоб остудити емоції.",
+      risk: "Проблема накопичується, а ваші інтереси лишаються неозвученими.",
+      advice: "Уникайте свідомо й тимчасово: фіксуйте, коли саме поверніться до теми." },
+    accommodating: { name: "Поступливість", icon: "🧸", cls: "st-accom", coop: 0.9, assert: 0.1,
+      def: "Підлаштовуюся під іншу сторону: низька наполегливість, висока співпраця.",
+      when: "Коли питання для іншого важливіше, ви не праві, або хочете накопичити довіру.",
+      risk: "Вас можуть експлуатувати, а власні інтереси залишаться неврахованими.",
+      advice: "Поступайтеся в дрібницях свідомо, обмінюючи їх на довіру, а не заради спокою." }
+  };
+  var METRICS = [
+    { key: "result", label: "Результат для відділу", icon: "📈", color: "#C9962C" },
+    { key: "relation", label: "Стосунки з іншим відділом", icon: "🤝", color: "#1E2761" },
+    { key: "trust", label: "Довіра", icon: "🛡️", color: "#2E7D6B" }
+  ];
+  var MOODS = {
+    neutral: { emoji: "😐", m: "Насторожений", f: "Насторожена" },
+    open: { emoji: "🙂", m: "Відкритий до пошуку", f: "Відкрита до пошуку" },
+    defensive: { emoji: "😤", m: "Тисне й наполягає", f: "Тисне й наполягає" },
+    withdrawn: { emoji: "🔒", m: "Відсторонився", f: "Відсторонилась" }
+  };
+  var MOOD_NOTE = {
+    neutral: { m: "%n уважно слухає, але лишається насторожений.", f: "%n уважно слухає, але лишається насторожена." },
+    open: { m: "%n відкритий до спільного пошуку рішення.", f: "%n відкрита до спільного пошуку рішення." },
+    defensive: { m: "%n тисне й готовий стояти на своєму.", f: "%n тисне й готова стояти на своєму." },
+    withdrawn: { m: "%n відсторонився й відповідає коротко.", f: "%n відсторонилась і відповідає коротко." }
+  };
+  var KIND_META = {
+    best: { label: "Відмінна відповідь", cls: "best" },
+    neutral: { label: "Нейтральна відповідь", cls: "neutral" },
+    bad: { label: "Непідходяща відповідь", cls: "bad" }
+  };
+  var FACTOR_LABEL = {
+    goal: { name: "Важливість мети", icon: "🎯" },
+    relation: { name: "Важливість стосунків", icon: "🤝" },
+    time: { name: "Тиск часу", icon: "⏱️" }
+  };
+  var LEVEL_LABEL = { high: "висока", mid: "середня", low: "низька" };
+  var REPAIR_TITLE = "Розрядження напруги";
+  var REPAIR_ICON = "🩹";
+
+  // o(id, стиль, тактика, репліка, настрій опонента, [результат, стосунки, довіра], відповідь опонента, пояснення, рядок протоколу, тип, додатково)
+  function o(id, style, tactic, text, mood, fx, reply, why, proto, kind, extra) {
+    var r = { id: id, style: style, tactic: tactic, text: text, mood: mood, fx: { result: fx[0], relation: fx[1], trust: fx[2] }, reply: reply, why: why, proto: proto, kind: kind, best: kind === "best" };
+    if (extra) { r.learn = extra.learn || []; r.deal = extra.deal || null; }
+    else { r.learn = []; r.deal = null; }
+    return r;
+  }
+
+  var SCENARIOS = [
+  // ======================= 1. МАРКЕТИНГ ПРОТИ ПРОДАЖІВ =======================
+  {
+    id: "mkt_sales", emoji: "📣", title: "Маркетинг проти Продажів", topic: "Бюджет Q4",
+    you: { dept: "Маркетинг", role: "керівник/ця відділу маркетингу" },
+    npc: { name: "Андрій", gender: "m", disc: "D", dept: "Продажі", role: "директор з продажів", style: "competing" },
+    pool: { amount: 1000000, text: "1 000 000 грн" },
+    preview: "Один дискреційний бюджет на двох: кампанія проти бонусів і нових менеджерів.",
+    setup: "Компанія виділила 1 000 000 грн дискреційного бюджету на четвертий квартал, і його треба розділити між Маркетингом (ви) та Продажами. Ви плануєте кампанію з лідогенерації та бренду й просите 600 000 грн. Андрій, директор з продажів, хоче 650 000 грн на бонуси та двох нових менеджерів. Разом заявки перевищують бюджет, а фінансовий директор чекає спільного рішення наприкінці дня.",
+    brief: {
+      yourPosition: "600 000 грн на кампанію з лідогенерації та бренду",
+      yourInterests: ["Запустити вимірювану кампанію до сезонного піку", "Зберегти бюджет на бренд", "Мати спільні з Продажами показники якості лідів"],
+      minimum: "не менше 400 000 грн: нижче кампанія втрачає сенс",
+      theirPosition: "650 000 грн на бонуси й двох нових менеджерів"
+    },
+    theirInterests: [
+      { id: "quota", text: "Виконати квартальний план продажів (від цього залежать бонуси команди)" },
+      { id: "quality", text: "Отримувати якісніші ліди: зараз менеджери витрачають час на сирі контакти" },
+      { id: "retain", text: "Утримати двох сильних менеджерів, яких переманюють конкуренти" }
+    ],
+    opening: "Андрій заходить до переговорної з ноутбуком: «У мене сорок хвилин. Давайте швидко: мені потрібні 650 тисяч, і я готовий це відстоювати».",
+    start: { result: 50, relation: 50, trust: 50 },
+    steps: [
+      { id: "open", title: "Відкриття", icon: "🧭", factors: { goal: "high", relation: "high", time: "mid" }, canRepair: true,
+        ctx: "Ви починаєте переговори. Тон, який ви задасте, вплине на весь діалог.",
+        options: [
+          o("open_a", "collaborating", "Домовитися про формат", "Андрію, давай спершу домовимося про формат: по черзі скажемо, що кожному потрібно цього кварталу, а потім шукатимемо варіант, який закриє обидві цілі.",
+            "neutral", [4, 8, 8], "Андрій киває: «Гаразд, за сорок хвилин це можна. Тільки без води».",
+            "Ви запропонували спільний формат і назвали обидві цілі. Андрій цінує структуру й швидкість, тому погодився без опору.",
+            "Сторони погодили формат: спочатку інтереси кожної сторони, потім варіанти рішення.", "best"),
+          o("open_b", "avoiding", "Почати з нейтральної розмови", "Андрію, як минув квартал? Чув, ви закрили велику угоду. Давай спокійно поговоримо про загальну ситуацію, а до цифр дійдемо трохи пізніше.",
+            "neutral", [0, 3, -2], "«Дякую, але в мене сорок хвилин. До цифр, будь ласка».",
+            "Невимушена розмова трохи пом'якшила тон, але Андрій, якому бракує часу, сприйняв її як зволікання.",
+            "Сторони обмінялися загальними враженнями про квартал; до змісту переговорів не переходили.", "neutral"),
+          o("open_c", "competing", "Одразу назвати свою цифру", "Андрію, одразу скажу: мені потрібні мої 600 тисяч, без цієї суми кампанія не відбудеться, тож будь-яка розмова про меншу суму для мене нецікава.",
+            "defensive", [-4, -10, -10], "«Мої 650, ваші 350. Інакше не домовимося».",
+            "Ви почали з вимоги й закрили простір для обговорення. Андрій відповів симетрично, і переговори стали боротьбою цифр.",
+            "Маркетинг висунув вимогу 600 000 грн; Продажі заявили 650 000 грн; сторони зафіксували позиції.", "bad")
+        ] },
+      { id: "interests", title: "Інтереси", icon: "🔍", factors: { goal: "high", relation: "high", time: "mid" }, canRepair: true,
+        ctx: "За цифрою Андрія стоять потреби. Час з'ясувати, що саме йому потрібно.",
+        options: [
+          o("interests_a", "collaborating", "Дослідити інтереси", "Андрію, розкажи, будь ласка, що для тебе найважливіше цього кварталу: що саме ці 650 тисяч мають вирішити і що станеться, якщо цього зробити не вдасться?",
+            "open", [8, 8, 10], "Андрій відкидається на спинку: «Якщо чесно, мені треба закрити план: від цього залежать бонуси команди. А ліди від вас приходять сирі, менеджери витрачають на них час».",
+            "Відкрите запитання про інтереси показало, що за «650 тисяч» стоять план продажів і якість лідів. Це відкриває можливість спільного рішення.",
+            "З'ясовано інтереси Продажів: виконання плану кварталу, якість лідів.", "best", { learn: ["quota", "quality"] }),
+          o("interests_b", "compromising", "Одразу запропонувати 50/50", "Андрію, час спливає, тож пропоную поділити порівну: по 500 тисяч кожному. Так нікому не буде образливо, і ми швидко закриємо це питання.",
+            "neutral", [2, 0, -2], "«П'ятсот?.. Мені цього не вистачить на мою задачу. Давай спершу я поясню, що мені потрібно».",
+            "Швидка пропозиція прискорила розмову, але ви не знали інтересів опонента, і вона їх не врахувала.",
+            "Маркетинг запропонував розподіл 50/50 без обговорення потреб; Продажі не прийняли.", "neutral"),
+          o("interests_c", "accommodating", "Піти назустріч одразу", "Андрію, ти краще знаєш продажі, тому скажи, скільки тобі потрібно, і я підлаштую свою кампанію під залишок. Мені важливо, щоб ти лишився задоволений.",
+            "defensive", [-14, -2, -6], "«Ну, 700 мені б не завадило. Решта — ваша».",
+            "Ви віддали ініціативу й свою позицію без обміну. Андрій скористався цим і підвищив вимогу.",
+            "Маркетинг погодився підлаштувати бюджет під потреби Продажів; Продажі підвищили вимогу до 700 000 грн.", "bad")
+        ] },
+      { id: "ultimatum", title: "Тиск", icon: "🔥", factors: { goal: "high", relation: "mid", time: "mid" }, canRepair: true,
+        ctx: "Андрій переходить у наступ: «Або я отримую 70% бюджету, або йду до фінансового директора й кажу, що маркетинг нічого не дає».",
+        options: [
+          o("ultimatum_a", "competing", "Чітко відстояти межу", "Андрію, 70% — це 700 тисяч, і тоді кампанія не відбудеться. Нижче 400 тисяч я не піду, бо інакше ми не отримаємо ліди, потрібні й тобі. Це моя межа.",
+            "neutral", [8, -2, 8], "Андрій на мить замовкає: «Принаймні чесно. Окей, сімсот забудемо. Що ти пропонуєш?»",
+            "Йшлося про вашу ключову межу, тож тверда позиція з аргументом була доречною. Для D-типу чітка межа — ознака сили, і він повернувся до обговорення.",
+            "Маркетинг зафіксував мінімальну межу 400 000 грн і пояснив, що нижча сума унеможливлює кампанію.", "best"),
+          o("ultimatum_b", "avoiding", "Зробити паузу", "Андрію, давай зробимо перерву на десять хвилин: ми обидва емоційні, і мені треба спокійно подумати над цифрами, перш ніж відповідати тобі на такі умови.",
+            "neutral", [0, 0, -4], "«Паузу? У мене сорок хвилин, а не години. Гаразд, десять хвилин, але я не передумаю».",
+            "Пауза зняла напругу, але нічого не змінила по суті. Андрій сприйняв її як відкладання, і тиск лишився.",
+            "Оголошено перерву на 10 хвилин; позиції сторін не змінилися.", "neutral"),
+          o("ultimatum_c", "accommodating", "Поступитися під тиском", "Андрію, не варто йти до фінансового директора. Гаразд, якщо тобі так потрібно, можемо подивитися на 700 тисяч для Продажів, а я якось викручуся з рештою.",
+            "defensive", [-16, -4, -12], "«Ось це розмова. Тоді 700, і не забудь про звіти».",
+            "Ви поступилися в головному питанні під тиском. Андрій побачив, що тиск працює, і лишився на вимозі.",
+            "Маркетинг погодився розглядати 700 000 грн для Продажів; потреби кампанії не обговорювалися.", "bad")
+        ] },
+      { id: "minor", title: "Дрібна вимога", icon: "🎁", factors: { goal: "low", relation: "high", time: "mid" }, canRepair: true,
+        ctx: "Андрій додає: «І ще: ваш відділ має щотижня надсилати нам звіт по лідах. Це дрібниця, але я хочу це в протоколі».",
+        options: [
+          o("minor_a", "accommodating", "Погодитися на дрібницю", "Це легко: Маркетинг надсилатиме короткий звіт по лідах щоп'ятниці. Мені це майже нічого не коштує, а тобі допоможе планувати роботу менеджерів.",
+            "open", [2, 8, 10], "Андрій вперше майже усміхається: «Дякую. Це справді полегшить мені життя».",
+            "Вимога була дешевою для вас і важливою для нього. Поступка в дрібниці будує довіру й готує ґрунт для складніших компромісів.",
+            "Маркетинг погодився щоп'ятниці надсилати Продажам звіт по лідах.", "best"),
+          o("minor_b", "compromising", "Запропонувати рідше", "Щотижневий звіт — забагато для нас. Давай замість цього надсилатимемо його раз на два тижні, а якщо мало — повернемося до щотижневого.",
+            "neutral", [1, -1, 0], "«Раз на два тижні? Ну, хай так, хоча мені хотілося б частіше».",
+            "Компроміс у дрібниці економить вам час, але ви витратили добру волю там, де поступка була майже безкоштовною.",
+            "Сторони домовилися про звіт по лідах раз на два тижні.", "neutral"),
+          o("minor_c", "competing", "Відмовити з принципу", "Ми не звітуємо перед Продажами, у нас окремі процеси. Якщо потрібні дані, їх можна взяти в системі самостійно, а витрачати на це час щотижня я не збираюся.",
+            "defensive", [-4, -10, -8], "«Тобто ти навіть дрібницю не можеш? Тоді нам складно домовитися про велике».",
+            "Принципова відмова в дрібниці коштувала вам стосунків і нічого не дала взамін.",
+            "Маркетинг відмовився надавати регулярний звіт по лідах; Продажі висловили незадоволення.", "bad")
+        ] },
+      { id: "deadline", title: "Дедлайн", icon: "⏱️", factors: { goal: "mid", relation: "mid", time: "high" }, canRepair: true,
+        ctx: "Фінансовий директор пише: «Потрібні цифри за 15 хвилин». Позиції ще розходяться: ви — близько 450 тисяч, Андрій — 550.",
+        options: [
+          o("deadline_a", "compromising", "Зустрітися посередині", "Часу мало, тому пропоную зустрітися посередині: по 500 тисяч кожному, а резерв і деталі уточнимо пізніше. Так ми встигаємо дати цифри фінансовому директору.",
+            "open", [8, 6, 6], "«П'ятсот на п'ятсот... Гаразд, давай. Але деталі потім обов'язково».",
+            "За жорсткого часу й приблизно рівних позицій швидкий компроміс уникнув тупика й дав обом результат.",
+            "Сторони домовилися про базовий розподіл 500 000 / 500 000 грн; деталі уточнюються пізніше.", "best"),
+          o("deadline_b", "collaborating", "Скласти повний пакет за 15 хвилин", "Давай за ці п'ятнадцять хвилин швидко складемо пакет: спільна кампанія, показники по лідах і розподіл за етапами. Якщо не встигнемо, дамо директору попередню цифру.",
+            "neutral", [3, 3, 1], "Андрій дивиться на годинник: «П'ятнадцять хвилин — замало для пакета. Але напрям мені подобається».",
+            "Ідея пакета слушна, але за таких дедлайнів її не встигнути. Ви витратили час, коли треба було швидко зафіксувати базову цифру.",
+            "Сторони почали складати спільний пакет (кампанія, показники, поетапний розподіл), але не завершили до дедлайну.", "neutral"),
+          o("deadline_c", "avoiding", "Попросити перенести", "Скажімо фінансовому директору, що нам потрібен ще день: питання складне, і поспішати з цифрами не варто, бо потім нам обом доведеться все серйозно переробляти.",
+            "defensive", [-8, -4, -8], "«Ще день? Тоді він сам вирішить за нас, і мені це не подобається».",
+            "Перенесення за жорсткого дедлайну віддає рішення третій стороні, а ви втрачаєте вплив.",
+            "Маркетинг запропонував перенести узгодження на наступний день; ризик рішення фінансового директора без участі сторін.", "bad")
+        ] },
+      { id: "close", title: "Угода", icon: "🤝", factors: { goal: "high", relation: "high", time: "mid" }, canRepair: false,
+        ctx: "Ви близько до угоди. Залишилося зафіксувати її так, щоб обидві сторони однаково розуміли, що саме домовлено.",
+        options: [
+          o("close_a", "collaborating", "Зафіксувати пакет письмово", "Підсумую пакет: розподіл визначили, спільна кампанія з лідогенерації, спільний показник по якісних лідах і зустріч через шість тижнів. Протокол надішлю сьогодні.",
+            "open", [10, 10, 12], "«Так, зафіксуємо. Мені подобається, що є показник і дата перегляду. Підписуємо».",
+            "Ви зібрали пакет з конкретними умовами, спільним показником і датою перегляду. Таку угоду легко виконати й перевірити.",
+            "Сторони підписали пакет: розподіл бюджету, спільна кампанія, спільний показник, перегляд через 6 тижнів.", "best", { deal: "full" }),
+          o("close_b", "accommodating", "Погодитися на його умови", "Гаразд, давай зробимо так, як тобі зручніше: розподіл за твоєю схемою, а деталі кампанії я підлаштую пізніше. Головне, щоб ми закрили питання сьогодні.",
+            "neutral", [-8, 4, -2], "«Чудово, тоді підписуємо мою версію».",
+            "Угоду досягнуто, але ви віддали більшу частину бюджету й не зафіксували жодних умов. Крихка угода на користь іншої сторони.",
+            "Угоду досягнуто на умовах Продажів: розподіл за схемою Продажів, показники не зафіксовано.", "neutral", { deal: "weak" }),
+          o("close_c", "competing", "Поставити ультиматум", "Це мої умови: ця схема, цей розподіл і підпис сьогодні. Якщо ти не згоден, я одразу іду до фінансового директора зі своєю версією, і нехай вирішує він сам, без нас.",
+            "defensive", [-12, -14, -16], "«Тоді йди. Обидва прийдемо до директора з різними версіями».",
+            "Ультиматум наприкінці зруйнував спільне, що ви напрацювали. Угоди немає, питання йде третій стороні.",
+            "Сторони не домовилися; питання передано фінансовому директору.", "bad", { deal: "none" })
+        ] }
+    ],
+    repair: {
+      defensive: { ctx: "Андрій підвищив голос і б'є рукою по столу: «Це не розмова!». Потрібно знизити напругу, не віддаючи суті.", options: [
+        o("repair_d_a", "collaborating", "Визнати напругу й повернутися до інтересів", "Бачу, що я тебе зачепив, і це не моя мета. Давай на хвилину відкладемо цифри: скажи, що для тебе зараз найважче в цій розмові, і я постараюся це врахувати.",
+          "neutral", [4, 8, 10], "«Окей... Просто мені дістається з усіх боків. Давай далі».",
+          "Ви визнали напругу й повернулися до інтересів замість боротьби цифр. Захист знизився.",
+          "Сторони зняли напругу й повернулися до обговорення інтересів.", "best"),
+        o("repair_d_b", "compromising", "Швидко запропонувати поділ", "Щоб не сваритися, пропоную просто поділити порівну, і на цьому закриємо суперечку. Мені важливіше зберегти спокій, ніж доводити свою правоту до кінця.",
+          "neutral", [1, 2, 0], "«Порівну? Подумаю... але ми так нічого не з'ясували».",
+          "Швидкий поділ зняв напругу, але не розв'язав причини конфлікту.",
+          "Маркетинг запропонував швидкий поділ порівну, щоб припинити суперечку.", "neutral"),
+        o("repair_d_c", "competing", "Натиснути у відповідь", "Не кричи на мене. Якщо ти не вмієш говорити спокійно, я не розумію, як ми взагалі можемо домовитися, тож ця вимога від Продажів нічого не вирішує.",
+          "defensive", [-6, -14, -12], "«Це ти мене не слухаєш!»",
+          "Тиск у відповідь на тиск лише посилив конфлікт.",
+          "Сторони обмінялися різкими репліками; переговори тимчасово зайшли в глухий кут.", "bad")
+      ] },
+      withdrawn: { ctx: "Андрій замовк, закрив ноутбук і дивиться у вікно. Тиск тут лише закриє розмову остаточно.", options: [
+        o("repair_w_a", "collaborating", "Дати простір і запитати про його погляд", "Бачу, що розмова пішла не так. Не хочу тиснути: скажи, будь ласка, що б ти змінив у тому, як ми зараз говоримо, і я підлаштуюся.",
+          "neutral", [4, 8, 10], "Андрій повертається до вас: «Не люблю, коли тиснуть. Гаразд, давай спокійніше».",
+          "Ви зняли тиск і дали йому вибір, як продовжувати. Це безпечний вхід у діалог.",
+          "Сторони відновили діалог після паузи.", "best"),
+        o("repair_w_b", "accommodating", "Вибачитися й відступити", "Вибач, якщо я перегнув. Давай забудемо про все, що було сказано, а вирішуй сам, що тобі зручніше, і я подивлюся, що з цього можна буде зробити.",
+          "withdrawn", [-2, 3, 0], "«Окей», — коротко відповідає Андрій.",
+          "Вибачення зняло частину напруги, але ви відмовилися від власної позиції без обміну.",
+          "Маркетинг вибачився й відмовився від частини своїх вимог.", "neutral"),
+        o("repair_w_c", "competing", "Вимагати відповіді", "Не мовчи, нам треба закрити питання зараз. Скажи прямо: так чи ні, а інакше я вважатиму, що ти просто тягнеш час і ухиляєшся від рішення.",
+          "withdrawn", [-8, -12, -14], "Андрій мовчки дивиться на вас.",
+          "Вимога відповіді посилила закритість.",
+          "Продажі припинили активну участь в обговоренні.", "bad")
+      ] }
+    },
+    deals: {
+      full: ["Спільна кампанія з лідогенерації з двома рівноправними власниками (Маркетинг і Продажі)", "Спільний показник: кількість кваліфікованих лідів і їхня конверсія", "Частина бюджету Продажів спрямована на утримання двох сильних менеджерів", "Щоп'ятниці Маркетинг надсилає Продажам короткий звіт по лідах", "Огляд результатів через шість тижнів із можливістю перерозподілу резерву"],
+      weak: ["Розподіл бюджету за схемою Продажів", "Показники кампанії та терміни не зафіксовано", "Деталі кампанії Маркетинг узгоджуватиме додатково"],
+      none: ["Угоди не досягнуто", "Питання передано на розгляд фінансовому директору"]
+    },
+    nextSteps: {
+      full: ["Маркетинг надсилає протокол сьогодні, Продажі підтверджують до завтра", "Перший звіт по лідах — найближчої п'ятниці", "Зустріч для огляду результатів — через шість тижнів"],
+      weak: ["Домовитися про терміни й показники кампанії окремою зустріччю", "Повернутися до розподілу, якщо кампанія не матиме ресурсів"],
+      none: ["Кожна сторона готує свою версію для фінансового директора", "Спробувати відновити діалог до його рішення"]
+    },
+    styleNote: "Андрій — тип D із переважно конкурентним стилем. Він поважає чіткі межі, стислість і факти, а поступливість сприймає як слабкість і піднімає вимоги. Відкривається, коли розмова про його цілі й результат, а дрібні поступки отримує як знак поваги."
+  },
+
+  // ======================= 2. ВИРОБНИЦТВО ПРОТИ ЛОГІСТИКИ =======================
+  {
+    id: "prod_log", emoji: "🏭", title: "Виробництво проти Логістики", topic: "Бюджет модернізації",
+    you: { dept: "Виробництво", role: "керівник/ця виробництва" },
+    npc: { name: "Ірина", gender: "f", disc: "S", dept: "Логістика", role: "керівниця логістики", style: "accommodating" },
+    pool: { amount: 800000, text: "800 000 грн" },
+    preview: "Оновлення виробничої лінії проти автоматизації складу. Опонентка уникає конфліктів.",
+    setup: "На модернізацію виділено 800 000 грн. Ви, керівник/ця виробництва, просите 500 000 грн на оновлення лінії та обов'язкову сертифікацію безпеки (120 000 грн). Ірина, керівниця логістики, просить 450 000 грн на автоматизацію складу. Заявки перевищують бюджет. Ірина не любить конфліктів і часто погоджується на словах, а вирішувати треба сьогодні.",
+    brief: {
+      yourPosition: "500 000 грн на оновлення лінії й сертифікацію безпеки",
+      yourInterests: ["Оновити лінію до сезонного піку", "Пройти обов'язкову сертифікацію безпеки", "Мати стабільні поставки комплектуючих"],
+      minimum: "сертифікація безпеки (120 000 грн) не підлягає скороченню: це вимога закону",
+      theirPosition: "450 000 грн на автоматизацію складу"
+    },
+    theirInterests: [
+      { id: "overtime", text: "Скоротити понаднормову роботу складу: люди вигоряють" },
+      { id: "errors", text: "Зменшити помилки відвантаження, за які її критикують клієнти" },
+      { id: "respect", text: "Відчути, що її відділ чують нарівні з виробництвом (торік її заявку скоротили першою)" }
+    ],
+    opening: "Ірина обережно сідає навпроти: «Привіт... Я знаю, що в нас обмежений бюджет. Мені б не хотілося суперечок».",
+    start: { result: 50, relation: 50, trust: 50 },
+    steps: [
+      { id: "open", title: "Відкриття", icon: "🧭", factors: { goal: "high", relation: "high", time: "low" }, canRepair: true,
+        ctx: "Ви починаєте переговори. Ірина насторожена й хоче уникнути суперечок.",
+        options: [
+          o("open_a", "collaborating", "Домовитися про спільну мету", "Ірино, дякую, що прийшла. Я хочу, щоб ми обоє вийшли з цієї розмови з рішенням, яке працює для обох відділів. Давай спершу кожен розкаже, що йому важливо.",
+            "neutral", [4, 8, 8], "Ірина видихає: «Дякую. Мені так легше. Я справді хочу домовитися».",
+            "Ви назвали спільну мету й запросили до рівного діалогу. Для S-типу це безпечний початок.",
+            "Сторони погодили формат: кожна розповідає про свої потреби, потім шукаємо спільне рішення.", "best"),
+          o("open_b", "accommodating", "Дати їй сказати першою", "Ірино, говори першою: що тобі потрібно, і я під це підлаштуюся. Мені важливо, щоб ти почувалася комфортно, а мої заявки можуть трохи зачекати.",
+            "neutral", [-4, 4, 2], "«Ой, дякую... Але так не можна, щоб ти все віддавав. Я не знаю, що відповісти».",
+            "Дружня поступка зняла напругу, але ви відмовилися від власної позиції ще до початку, а Ірина не знає, як її приймати.",
+            "Виробництво запропонувало Логістиці говорити першою й підлаштуватися під її потреби.", "neutral"),
+          o("open_c", "competing", "Одразу назвати свою вимогу", "Ірино, скажу прямо: мені потрібні 500 тисяч, бо виробництво — основа компанії, і без цього всі інші відділи, включно з логістикою, просто не матимуть що возити.",
+            "withdrawn", [4, -12, -14], "Ірина замовкає: «...Добре. Нехай буде так».",
+            "Тиск у перші хвилини змусив Ірину замовкнути. Зовні вона погодилась, але насправді закрилась.",
+            "Виробництво заявило вимогу 500 000 грн, мотивуючи важливістю виробництва; Логістика не заперечувала.", "bad")
+        ] },
+      { id: "interests", title: "Інтереси", icon: "🔍", factors: { goal: "high", relation: "high", time: "low" }, canRepair: true,
+        ctx: "Ірина називає цифру, але не пояснює, навіщо їй ці гроші. Час дізнатися її потреби.",
+        options: [
+          o("interests_a", "collaborating", "М'яко дослідити інтереси", "Ірино, розкажи, будь ласка, що в логістиці зараз найважче і що змінила б автоматизація. Мені важливо зрозуміти не лише суму, а й що за нею стоїть.",
+            "open", [8, 8, 10], "«Склад працює по дванадцять годин, люди вигоряють, а помилки відвантаження щотижня... Я просто хочу, щоб стало легше».",
+            "М'яке відкрите запитання дало Ірині безпеку розкрити справжні потреби: понаднормову роботу й помилки відвантаження.",
+            "З'ясовано інтереси Логістики: скорочення понаднормової роботи складу, зменшення помилок відвантаження.", "best", { learn: ["overtime", "errors"] }),
+          o("interests_b", "avoiding", "Говорити про загальну картину", "Ірино, давай трохи окреслимо загальну картину: бюджет обмежений, заявки перевищують суму, і нам обом непросто. Чи зручно було б спершу обмінятися загальними думками?",
+            "neutral", [0, 2, 0], "«Ну... так. Загалом усім складно».",
+            "Загальна розмова нікого не зачепила, але й не дала нової інформації про потреби Ірини.",
+            "Сторони обмінялися загальними думками щодо обмеженості бюджету.", "neutral"),
+          o("interests_c", "competing", "Вимагати цифри й аргументи", "Ірино, давай без загальних слів: скільки конкретно тобі потрібно і чому ти вважаєш, що це важливіше за мої п'ятсот тисяч? Назви цифри й свої аргументи.",
+            "withdrawn", [2, -8, -12], "«Я... не готова зараз казати цифри. Вибач».",
+            "Вимога аргументів прозвучала як допит. Ірина закрилась, і вашу потребу в інформації це не задовольнило.",
+            "Виробництво вимагало від Логістики обґрунтування цифр; Логістика відмовилася відповідати.", "bad")
+        ] },
+      { id: "falseyes", title: "Занадто швидка згода", icon: "🧩", factors: { goal: "high", relation: "high", time: "mid" }, canRepair: true,
+        ctx: "Ірина каже: «Добре, нехай буде як ви скажете, я не хочу конфліктів». Але її пауза й інтонація свідчать, що вона не зовсім згодна.",
+        options: [
+          o("falseyes_a", "collaborating", "Перевірити справжню згоду", "Ірино, я не хочу, щоб ти погоджувалася лише заради спокою. Мені потрібна угода, яку ми обоє готові виконувати, а не терпіти. Що тебе насправді турбує в такому розподілі?",
+            "open", [6, 8, 12], "«Торік мою заявку скоротили першою, і мене це зачепило. Мені важливо, щоб цього разу її теж було видно».",
+            "Ви не скористалися швидкою згодою й перевірили її справжність. Ірина назвала глибшу потребу: бути почутою.",
+            "З'ясовано інтерес Логістики: відчувати рівну повагу до її заявки.", "best", { learn: ["respect"] }),
+          o("falseyes_b", "compromising", "Запропонувати «справедливий» поділ", "Дякую за гнучкість, але давай по-справедливому: я трохи зменшу свою суму, ти трохи зменшиш свою, і ми зустрінемося посередині, щоб нікому не було образливо.",
+            "neutral", [-2, 2, 0], "«Ну... гаразд. Може, так і краще».",
+            "Пропозиція «посередині» виглядає справедливо, але не торкається причини вагань Ірини, тож її справжня потреба лишилась невідомою.",
+            "Сторони домовилися приблизно про розподіл посередині між заявками.", "neutral"),
+          o("falseyes_c", "competing", "Скористатися її згодою", "Чудово, тоді я беру шістсот тисяч, ти отримуєш решту, і ми закриваємо це швидко. Ми ж обоє не любимо тягнути, а час у мене обмежений сьогодні, тож не тягнімо.",
+            "withdrawn", [8, -14, -16], "«Добре... Як скажеш».",
+            "Ви отримали більше цифр, але Ірина погодилась формально. Така угода крихка: довіра впала, і вона не виконуватиме її від душі.",
+            "Виробництво зафіксувало 600 000 грн; Логістика формально погодилась.", "bad")
+        ] },
+      { id: "minor", title: "Дрібне прохання", icon: "🎁", factors: { goal: "low", relation: "high", time: "low" }, canRepair: true,
+        ctx: "Ірина просить: «Чи можна відкласти поставку обладнання на два тижні? Мені так зручніше розвантажити склад».",
+        options: [
+          o("minor_a", "accommodating", "Піти назустріч у дрібниці", "Так, можна перенести на два тижні: для виробництва це не критично. Хочу, щоб тобі було зручніше, і сподіваюся, що це допоможе складу впоратися з навантаженням.",
+            "open", [2, 8, 10], "Ірина полегшено усміхається: «Дякую. Це справді дуже допоможе».",
+            "Прохання було дешевим для вас і важливим для неї. Поступка в дрібниці створила кредит довіри для складніших питань.",
+            "Виробництво погодилося відкласти поставку обладнання на два тижні.", "best"),
+          o("minor_b", "compromising", "Запропонувати компромісний термін", "Можу відкласти на тиждень, але не на два: так і тобі стане легше, і мені не доведеться перебудовувати графік монтажу. Чи підходить такий варіант?",
+            "neutral", [1, 0, 0], "«Тиждень... Ну, гаразд, постараюся».",
+            "Компроміс у дрібниці не зашкодив, але ви витратили добру волю там, де поступка була майже безкоштовною.",
+            "Сторони домовилися відкласти поставку обладнання на один тиждень.", "neutral"),
+          o("minor_c", "competing", "Відмовити", "Ні, термін поставки ми вже зафіксували, змінювати його не будемо. Якщо складу складно, це проблема логістики, і її треба вирішувати самостійно в межах вашого відділу.",
+            "defensive", [-2, -10, -8], "«Зрозуміло. Тоді я теж не буду йти на поступки».",
+            "Відмова в дрібниці без обміну сприйнялась як байдужість. Ірина стала менш гнучкою.",
+            "Виробництво відмовилося переносити термін поставки; Логістика заявила, що не йтиме на поступки.", "bad")
+        ] },
+      { id: "vital", title: "Принципове питання", icon: "🛡️", factors: { goal: "high", relation: "mid", time: "mid" }, canRepair: true,
+        ctx: "Ірина пропонує скоротити витрати на сертифікацію безпеки, щоб вистачило складу: «Сертифікацію можна відкласти на наступний квартал».",
+        options: [
+          o("vital_a", "competing", "Чітко захистити вимогу", "Сертифікація безпеки коштує 120 тисяч, обов'язкова за законом, і без неї лінія не запрацює. Це моя межа, її я не скорочуватиму, але готовий шукати економію в інших статтях.",
+            "neutral", [10, -2, 8], "«Розумію. Якщо це вимога закону, то це інакше... Що тоді можна скоротити в іншому?»",
+            "Йшлося про вимогу закону, яка не підлягає торгу. Чітка межа з поясненням і готовністю шукати інше повернула розмову в конструктив.",
+            "Виробництво зафіксувало: сертифікація безпеки (120 000 грн) не підлягає скороченню; сторони шукатимуть економію в інших статтях.", "best"),
+          o("vital_b", "compromising", "Скоротити наполовину", "Давай скоротимо сертифікацію наполовину й відкладемо решту на пізніше: так обом стане легше, а ризик залишиться невеликим, і ми швидше домовимося щодо всього іншого.",
+            "neutral", [-4, 2, 0], "«Наполовину... Мабуть, так легше. Дякую».",
+            "Ви поступилися там, де поступатися не можна: регуляторна вимога не торгується, навіть із добрих намірів.",
+            "Сторони домовилися скоротити витрати на сертифікацію наполовину, решту відкласти.", "neutral"),
+          o("vital_c", "accommodating", "Відкласти сертифікацію заради спокою", "Добре, відкладемо сертифікацію: головне, щоб ми домовилися і щоб ти не засмучувалася. Я якось поясню керівництву, що вона буде пізніше, а ризики візьму на себе.",
+            "open", [-16, 4, 0], "Ірина з полегшенням: «Дякую, дуже вдячна, що ти такий розуміючий».",
+            "Стосунки не постраждали, але ви віддали обов'язкову вимогу заради спокою. Результат і безпека втрачені.",
+            "Виробництво погодилося відкласти сертифікацію безпеки на наступний квартал.", "bad")
+        ] },
+      { id: "close", title: "Угода", icon: "🤝", factors: { goal: "high", relation: "high", time: "mid" }, canRepair: false,
+        ctx: "Ви наближаєтеся до угоди. Час зафіксувати її так, щоб Ірина була впевнена, що її почули.",
+        options: [
+          o("close_a", "collaborating", "Зафіксувати пакет письмово", "Підсумую: сертифікація безпеки лишається повністю, склад отримує свою частину, щомісяця звіряємося, а підсумок — наприкінці кварталу. Протокол надішлю, Ірино, перевір.",
+            "open", [10, 10, 12], "«Дякую, що це на папері. Мені спокійніше. Підписую».",
+            "Ви зафіксували пакет письмово, з щомісячним контролем і датою підсумку. Ірина відчула, що її заявку видно.",
+            "Сторони підписали пакет: безпека виробництва, частка на автоматизацію складу, щомісячний контроль, підсумок наприкінці кварталу.", "best", { deal: "full" }),
+          o("close_b", "accommodating", "Погодитися на її схему", "Добре, нехай буде як ти запропонуєш, я підлаштуюся. Головне, щоб тобі було зручно, а я потім якось домовлюся з керівництвом щодо решти потреб виробництва, не хвилюйся.",
+            "neutral", [-8, 4, -2], "«Дякую, дуже мило з твого боку».",
+            "Угоду досягнуто, але ви відмовилися від більшої частини своїх потреб без жодних умов і контролю.",
+            "Угоду досягнуто на умовах Логістики; потреби Виробництва залишено для окремого узгодження.", "neutral", { deal: "weak" }),
+          o("close_c", "avoiding", "Відкласти на потім", "Давай я надішлю тобі пропозицію електронною поштою пізніше, а ти подумаєш і відповіси: так нам обом буде спокійніше, і не доведеться вирішувати все прямо зараз, у поспіху.",
+            "withdrawn", [-6, -4, -8], "«Добре... Напиши».",
+            "Рішення відкладено, і ви втратили момент, коли обидві сторони були готові домовитися. Угоди немає.",
+            "Угоди не досягнуто; Виробництво пообіцяло надіслати пропозицію електронною поштою.", "bad", { deal: "none" })
+        ] }
+    ],
+    repair: {
+      defensive: { ctx: "Ірина різко підвищила голос: «Знову все вирішуєте самі!». Це не схоже на неї, тож варто зупинитися.", options: [
+        o("repair_d_a", "collaborating", "Визнати її біль і запитати", "Ірино, бачу, що я тиснув, і мені шкода. Це не те, чого я хотів. Давай на хвилину зупинимося: що було б для тебе справедливим у цьому розподілі?",
+          "neutral", [4, 8, 10], "«Дякую... Просто мені важливо, щоб мене теж чули».",
+          "Ви зупинилися, визнали тиск і запитали про її бачення справедливості. Напруга впала.",
+          "Сторони зупинили суперечку й повернулися до обговорення справедливого розподілу.", "best"),
+        o("repair_d_b", "compromising", "Швидко запропонувати поділ", "Давай не будемо сваритися: поділимо порівну, і на цьому закінчимо. Мені не хочеться, щоб ми псували стосунки через якісь цифри та суми.",
+          "neutral", [1, 2, 0], "«Порівну... Ну, нехай».",
+          "Швидкий поділ зняв напругу, але не з'ясував, що її зачепило.",
+          "Виробництво запропонувало поділ порівну, щоб припинити суперечку.", "neutral"),
+        o("repair_d_c", "competing", "Наполягти на своєму", "Ірино, ніхто нічого не вирішує за тебе. Просто мої вимоги обґрунтовані, а ти не наводиш жодних аргументів, тож давай не переходити на емоції.",
+          "defensive", [-6, -14, -12], "«Ви завжди так говорите, коли не хочете слухати!»",
+          "Звинувачення в емоційності підлило олії до вогню.",
+          "Сторони обмінялися різкими репліками; переговори зайшли в глухий кут.", "bad")
+      ] },
+      withdrawn: { ctx: "Ірина замовкла й дивиться в стіл. Тиск зараз лише закриє її остаточно.", options: [
+        o("repair_w_a", "collaborating", "Дати час і м'яко запросити до розмови", "Бачу, що зараз важко, і не хочу тиснути. Можемо зробити коротку паузу. Коли будеш готова, скажи, що б ти додала або змінила в тому, що ми обговорюємо.",
+          "neutral", [4, 8, 10], "Ірина повільно піднімає очі: «Дякую, що не поспішаєш. Мені потрібно трохи часу».",
+          "Ви дали час і залишили вибір за нею. Для S-типу це найбезпечніший шлях назад до діалогу.",
+          "Сторони зробили коротку паузу й відновили діалог.", "best"),
+        o("repair_w_b", "accommodating", "Вибачитися й уступити", "Вибач, якщо я перегнув. Давай, як скажеш: я підлаштуюся під тебе, лише б ти не засмучувалась і ми могли закінчити. Мені важливо, щоб тобі було комфортно.",
+          "withdrawn", [-4, 3, 0], "«Дякую... Не варто було так».",
+          "Вибачення зняло напругу, але ви відмовилися від власних інтересів без обміну.",
+          "Виробництво вибачилось і відмовилось від частини своїх вимог.", "neutral"),
+        o("repair_w_c", "competing", "Вимагати відповіді", "Ірино, нам треба закінчити сьогодні. Скажи прямо, так чи ні, бо мовчанка лише марнує час нам обом і не вирішує жодного питання, а нам треба рухатися.",
+          "withdrawn", [-6, -12, -14], "Ірина мовчить ще довше.",
+          "Вимога відповіді посилила закритість.",
+          "Логістика припинила активну участь в обговоренні.", "bad")
+      ] }
+    },
+    deals: {
+      full: ["Сертифікація безпеки виробництва фінансується повністю", "Автоматизація складу отримує узгоджену частину бюджету з пріоритетом на скорочення понаднормової роботи", "Графік поставки обладнання враховує навантаження складу", "Щомісячний контроль витрат за участі обох відділів", "Підсумкова зустріч наприкінці кварталу"],
+      weak: ["Бюджет розподілено за схемою Логістики", "Потреби Виробництва щодо лінії залишено для окремого узгодження", "Умов контролю та термінів не зафіксовано"],
+      none: ["Угоди не досягнуто", "Виробництво пообіцяло надіслати письмову пропозицію пізніше"]
+    },
+    nextSteps: {
+      full: ["Виробництво надсилає протокол, Логістика підтверджує до завтра", "Перший щомісячний огляд витрат — через місяць", "Підсумкова зустріч — наприкінці кварталу"],
+      weak: ["Окремо узгодити фінансування лінії виробництва", "Домовитися про контроль витрат і терміни"],
+      none: ["Виробництво надсилає письмову пропозицію", "Призначити нову зустріч для обговорення інтересів сторін"]
+    },
+    styleNote: "Ірина — тип S з поступливим стилем. Вона уникає конфліктів, погоджується на словах і закривається під тиском. Відкривається там, де безпечно, і коли відчуває, що її справді чують. Швидка згода часто означає прихований опір, тому варто перевіряти її справжність."
+  },
+
+  // ======================= 3. ІТ ПРОТИ НАВЧАННЯ =======================
+  {
+    id: "it_hr", emoji: "💻", title: "ІТ проти Навчання", topic: "Бюджет безпеки й розвитку",
+    you: { dept: "ІТ", role: "керівник/ця ІТ-відділу" },
+    npc: { name: "Марія", gender: "f", disc: "C", dept: "Навчання й розвиток", role: "керівниця відділу навчання та розвитку", style: "compromising" },
+    pool: { amount: 600000, text: "600 000 грн" },
+    preview: "Кібербезпека проти корпоративної платформи навчання. Опонентка вимагає даних.",
+    setup: "Є 600 000 грн, які треба розділити між ІТ (ви) і відділом навчання та розвитку. Ви просите 350 000 грн на закриття критичних вразливостей перед аудитом через два місяці. Марія, керівниця навчання, просить 400 000 грн на корпоративну платформу навчання. Разом заявки перевищують суму. Марія не підтримає жодної цифри без обґрунтування, а директор чекає пропозицію до кінця дня.",
+    brief: {
+      yourPosition: "350 000 грн на кібербезпеку",
+      yourInterests: ["Закрити критичні вразливості до аудиту через два місяці", "Уникнути штрафів і витоку даних", "Мати прозоре обґрунтування кожної статті"],
+      minimum: "не менше 250 000 грн на критичні виправлення",
+      theirPosition: "400 000 грн на платформу навчання"
+    },
+    theirInterests: [
+      { id: "roi", text: "Показати вимірюваний ефект навчання (ROI), інакше бюджет на розвиток скоротять" },
+      { id: "compliance", text: "Забезпечити обов'язкове навчання з кібергігієни для всіх працівників (вимога аудиту)" },
+      { id: "process", text: "Щоб рішення ґрунтувалися на даних, а не на тиску й авторитеті" }
+    ],
+    opening: "Марія розкладає на столі роздруківку з таблицями: «Я підготувала дані. Давайте обговорювати цифри, а не враження».",
+    start: { result: 50, relation: 50, trust: 50 },
+    steps: [
+      { id: "open", title: "Відкриття", icon: "🧭", factors: { goal: "high", relation: "mid", time: "mid" }, canRepair: true,
+        ctx: "Ви починаєте переговори. Марія чекає структури й обґрунтування.",
+        options: [
+          o("open_a", "collaborating", "Запропонувати спільний аналіз", "Маріє, дякую за таблиці. Пропоную: спершу покажемо, на чому ґрунтуються наші заявки, а потім разом знайдемо розподіл, що закриє критичні потреби обох відділів.",
+            "neutral", [4, 8, 8], "Марія киває: «Це логічний порядок. Починайте першими».",
+            "Ви запропонували структуру, у якій дані мають головну роль. Для C-типу це знижує невизначеність і викликає довіру.",
+            "Сторони погодили формат: спершу обґрунтування заявок, потім спільний пошук розподілу.", "best"),
+          o("open_b", "accommodating", "Прийняти її логіку", "Маріє, твої таблиці виглядають переконливо, тож я готовий спершу прийняти твою логіку, а свої цифри підлаштувати по ходу під те, що залишиться після тебе, і не сперечатимусь.",
+            "neutral", [-6, 4, 0], "«Дякую за довіру. Тоді почнемо з моїх розрахунків».",
+            "Ви довірилися її аргументам і відмовилися від власної позиції ще до початку. Хороша атмосфера, але торгуватися стало нічим.",
+            "ІТ погодився прийняти логіку Навчання як основу обговорення.", "neutral"),
+          o("open_c", "competing", "Відкинути аргумент про ROI", "Маріє, таблиці — це добре, але кібербезпека не питання ROI: якщо нас зламають, жодні курси вже нічого не вирішать, тому мої 350 тисяч просто не обговорюються, і давай це зафіксуємо.",
+            "defensive", [-2, -10, -12], "«Тобто мої дані для вас нічого не важать? Тоді навіщо ця розмова».",
+            "Заява, що ваша сума не обговорюється, знецінила її дані. C-тип сприймає це як відмову від аргументів.",
+            "ІТ заявило, що сума 350 000 грн не обговорюється; Навчання поставило під сумнів сенс переговорів.", "bad")
+        ] },
+      { id: "interests", title: "Інтереси", icon: "🔍", factors: { goal: "high", relation: "mid", time: "mid" }, canRepair: true,
+        ctx: "За цифрою Марії стоять її критерії успіху. Час їх з'ясувати.",
+        options: [
+          o("interests_a", "collaborating", "Дізнатися критерії успіху", "Маріє, поясни, будь ласка, за якими показниками ти оцінюватимеш успіх платформи і що станеться, якщо цього бюджету не буде. Мені важливо розуміти, що для тебе критично.",
+            "open", [8, 8, 10], "«Мені потрібно показати вимірюваний ефект: інакше бюджет на розвиток скоротять. І є вимога аудиту щодо навчання з кібергігієни для всіх».",
+            "Ви запитали про критерії успіху. Дізналися про ROI й вимогу аудиту, а це відкриває шлях до спільного рішення.",
+            "З'ясовано інтереси Навчання: підтвердити вимірюваний ефект (ROI), обов'язкове навчання з кібергігієни для аудиту.", "best", { learn: ["roi", "compliance"] }),
+          o("interests_b", "compromising", "Одразу поділити порівну", "Маріє, давай не витрачати час на пояснення й просто поділимо бюджет порівну: по 300 тисяч кожному. Це найпростіший спосіб швидко домовитися без зайвих суперечок і довгих обговорень.",
+            "neutral", [0, 0, -4], "«Порівну без розрахунків? Я не можу це підтримати без обґрунтування».",
+            "Швидкий поділ без даних суперечить логіці C-типу: Марія не прийняла його без обґрунтування.",
+            "ІТ запропонувало поділ порівну без обґрунтування; Навчання не прийняло.", "neutral"),
+          o("interests_c", "avoiding", "Не заглиблюватися в її метрики", "Маріє, давай не заглиблюватися у твої метрики зараз, бо це відведе нас від головного. Краще обговоримо ІТ-частину, а до навчання повернемося трохи пізніше.",
+            "withdrawn", [-2, -8, -12], "«Зрозуміло. Мої метрики не цікавлять. Тоді говоріть без мене».",
+            "Ви відмахнулися від її критеріїв, і Марія відчула знецінення. Ви втратили шанс дізнатися її інтереси.",
+            "ІТ відмовилось обговорювати метрики Навчання; Навчання відсторонилось.", "bad")
+        ] },
+      { id: "evidence", title: "Вимога доказів", icon: "📊", factors: { goal: "high", relation: "mid", time: "mid" }, canRepair: true,
+        ctx: "Марія питає: «Чому саме 350 тисяч? Покажіть розрахунок. Без цього я не можу підтримати цю цифру». У вас є попередній аудит, але не всі розрахунки.",
+        options: [
+          o("evidence_a", "collaborating", "Чесно показати дані", "Ось аудит: три критичні вразливості, оцінка закриття — 250 тисяч. Решту сто тисяч я не можу повністю обґрунтувати, тож давай разом перевіримо цю частину й вирішимо, чи вона потрібна зараз.",
+            "open", [8, 6, 12], "«Дякую за чесність. Критичні 250 я підтримую, а решту перевіримо разом».",
+            "Ви чесно показали, що підтверджено, а що ні. Для C-типу відвертість щодо слабких місць підсилює довіру.",
+            "ІТ надало дані аудиту: три критичні вразливості, оцінка 250 000 грн; решту 100 000 грн сторони перевірять разом.", "best"),
+          o("evidence_b", "compromising", "Одразу зменшити запит", "Раз не всі цифри підтверджені, одразу зменшу запит до 250 тисяч: так нам обом буде простіше, а решту якось закриємо пізніше, якщо виникне потреба, і не будемо зволікати.",
+            "neutral", [-4, 0, -2], "«Це чесно, але ви відмовляєтесь від частини, не перевіривши. Може, вона потрібна».",
+            "Ви відмовилися від частини запиту, не перевіривши її потребу. Результат трохи просів.",
+            "ІТ зменшило запит до 250 000 грн без додаткової перевірки.", "neutral"),
+          o("evidence_c", "competing", "Послатися на експертизу", "Маріє, ця цифра очевидна для кожного, хто розуміється на безпеці. Якщо тобі потрібні розрахунки до копійки, значить, ти не довіряєш моїй експертизі, і ми нічого не вирішимо.",
+            "defensive", [-2, -10, -14], "«Це не питання довіри, а питання даних. Ви ухиляєтесь від відповіді».",
+            "Посилання на експертизу замість даних для C-типу — тиск авторитетом. Довіра впала.",
+            "ІТ відмовилося надати розрахунки, посилаючись на експертизу; Навчання заперечило.", "bad")
+        ] },
+      { id: "tangent", title: "Відхилення від теми", icon: "🌀", factors: { goal: "low", relation: "mid", time: "mid" }, canRepair: true,
+        ctx: "Марія раптом згадує: «А пам'ятаєте минулорічний проєкт, де ІТ перевитратив 80 тисяч? Давайте це теж обговоримо тут». Це не пов'язано з нинішнім бюджетом.",
+        options: [
+          o("tangent_a", "avoiding", "Винести тему на окремий розгляд", "Минулорічний проєкт — окрема тема, і вона заслуговує на окрему розмову з даними. Запишемо її на наступний тиждень, а зараз повернемося до цифр цього бюджету.",
+            "neutral", [2, 6, 8], "«Слушно. Запишу на наступний тиждень. Повертаймося до бюджету».",
+            "Тема не стосувалась поточного бюджету. Ви визнали її важливість і призначили окремий розгляд, не втягуючись у відхилення.",
+            "Питання минулорічного перевитрачання винесено на окрему зустріч наступного тижня.", "best"),
+          o("tangent_b", "accommodating", "Детально вибачитися", "Так, цей проєкт справді перевитратив бюджет, і мені шкода. Я готовий детально вибачитися й це обговорити, навіть якщо ми не встигнемо до цифр цього кварталу, і це нормально.",
+            "neutral", [-4, 4, 2], "«Дякую... Тоді докладно: що саме пішло не так?»",
+            "Вибачення зміцнило стосунки, але забрало час і відвернуло від поточного бюджету.",
+            "ІТ визнало перевитрати минулого проєкту; сторони почали його обговорювати.", "neutral"),
+          o("tangent_c", "competing", "Відбити закид", "Це не має стосунку до нинішнього бюджету, і мені не подобається, що ти використовуєш старі помилки як аргумент. Якщо хочеш це обговорювати, то обговорюй це без мене, будь ласка.",
+            "defensive", [-2, -10, -10], "«Я не використовую, я ставлю питання. Але гаразд, питання зафіксовано».",
+            "Різка відповідь перетворила тему на сварку й коштувала стосунків.",
+            "ІТ відмовилось обговорювати минулий проєкт; Навчання зафіксувало питання як відкрите.", "bad")
+        ] },
+      { id: "deadline", title: "Дедлайн", icon: "⏱️", factors: { goal: "mid", relation: "mid", time: "high" }, canRepair: true,
+        ctx: "Директор чекає пропозицію до кінця дня, а ви розходитеся: ви — 300 тисяч, Марія — 350.",
+        options: [
+          o("deadline_a", "compromising", "Зустрітися посередині", "Часу немає, тому зустрінемося посередині: по 300 тисяч кожному, з обов'язковим модулем кібергігієни в платформі навчання. Деталі розрахунків перевіримо наступного тижня.",
+            "open", [8, 6, 6], "«Згодна, 300 на 300 з обов'язковим модулем. Деталі наступного тижня».",
+            "За жорсткого часу й приблизно рівних позицій компроміс із додатковою умовою дав обом результат і не зіпсував стосунків.",
+            "Сторони домовилися про базовий розподіл 300 000 / 300 000 грн із обов'язковим модулем кібергігієни; розрахунки перевіряються наступного тижня.", "best"),
+          o("deadline_b", "collaborating", "Перерахувати обидві заявки разом", "Давай спробуємо до вечора повністю перерахувати обидві заявки разом і вийти на обґрунтований розподіл. Якщо не встигнемо, подивимося, що можна подати директору.",
+            "neutral", [3, 3, 2], "«Ідея слушна, але до вечора ми не встигнемо. Потрібна проміжна цифра для директора».",
+            "Спільний перерахунок — хороша ідея, але на дедлайні вона не встигає. Ви втратили час.",
+            "Сторони розпочали спільний перерахунок обох заявок; завершити до дедлайну не вдалося.", "neutral"),
+          o("deadline_c", "competing", "Поставити вибір", "Або подаємо мою версію (350 тисяч мені й 250 тобі), або я йду до директора окремо й пояснюю, чому навчання зараз менш критичне за безпеку. Вибирай, будь ласка.",
+            "defensive", [4, -12, -14], "«Це ультиматум. Тоді я подам свою версію, і нехай директор вирішує».",
+            "Ультиматум на дедлайні дав вам короткочасну перевагу, але зруйнував довіру й стосунки.",
+            "ІТ висунуло ультиматум (350 000 / 250 000 грн); Навчання заявило про намір подати власну версію.", "bad")
+        ] },
+      { id: "close", title: "Угода", icon: "🤝", factors: { goal: "high", relation: "high", time: "mid" }, canRepair: false,
+        ctx: "Ви близько до угоди. Залишилося зафіксувати її так, щоб обидві сторони однаково розуміли, що домовлено.",
+        options: [
+          o("close_a", "collaborating", "Зафіксувати пакет письмово", "Підсумую: розподіл визначено, у платформі — обов'язковий модуль кібергігієни, критичні виправлення закриваємо до аудиту, витрати звіряємо щомісяця. Протокол надішлю сьогодні.",
+            "open", [10, 10, 12], "«Дякую, що все чітко. Я підтверджу протокол сьогодні. Мені подобається, що є критерії і дата звірки».",
+            "Ви зафіксували пакет із конкретними умовами, критерієм і датою звірки. Для C-типу це точність, яку цінують.",
+            "Сторони підписали пакет: розподіл бюджету, обов'язковий модуль кібергігієни, критичні виправлення до аудиту, щомісячна звірка.", "best", { deal: "full" }),
+          o("close_b", "accommodating", "Погодитися на її схему", "Гаразд, давай зробимо так, як зручно тобі: розподіл за твоїм розрахунком, а деталі безпеки я якось узгоджу пізніше. Головне, щоб ми закрили питання сьогодні, до кінця робочого дня.",
+            "neutral", [-8, 4, -2], "«Дякую. Тоді підписуємо мою версію».",
+            "Угоду досягнуто, але ви віддали більшу частину бюджету без умов і критеріїв.",
+            "Угоду досягнуто на умовах Навчання; питання безпеки залишено для окремого узгодження.", "neutral", { deal: "weak" }),
+          o("close_c", "avoiding", "Відкласти підписання", "Давай я надішлю тобі підсумок пізніше, а ти ще раз усе перевіриш і відповіси, коли будеш готова: так нам обом буде спокійніше, і ми точно не помилимося в цифрах.",
+            "withdrawn", [-6, -4, -8], "«Добре. Надішліть. Але без підпису це лише обговорення».",
+            "Відкладення підписання залишило домовленості без підтвердження. Без підпису це лише обговорення.",
+            "Угоди не досягнуто; ІТ пообіцяло надіслати підсумок пізніше.", "bad", { deal: "none" })
+        ] }
+    ],
+    repair: {
+      defensive: { ctx: "Марія різко: «Ви не відповідаєте на запитання, ви тиснете!». Потрібно знизити напругу й повернутися до даних.", options: [
+        o("repair_d_a", "collaborating", "Визнати й повернутися до фактів", "Ти права, моє формулювання було розмитим. Давай я зупинюся, назву конкретні дані, а потім уважно вислухаю твої запитання по кожній цифрі.",
+          "neutral", [4, 8, 10], "«Дякую. Так мені значно легше говорити».",
+          "Ви визнали неточність і повернулися до фактів. C-тип відчув справедливість.",
+          "Сторони відновили діалог, повернувшись до обговорення даних.", "best"),
+        o("repair_d_b", "compromising", "Швидко запропонувати поділ", "Щоб не сваритися, пропоную просто поділити порівну, і на цьому закінчимо суперечку. Мені важливіше зберегти спокій, ніж доводити свою правоту до кінця.",
+          "neutral", [1, 2, 0], "«Порівну... без розрахунків? Подумаю».",
+          "Швидкий поділ зняв напругу, але не відповів на її запит про дані.",
+          "ІТ запропонувало швидкий поділ порівну, щоб припинити суперечку.", "neutral"),
+        o("repair_d_c", "competing", "Натиснути у відповідь", "Я не тисну, це ти ставиш забагато запитань. Якщо ти не довіряєш мені, то давай не будемо витрачати час, бо за цифрами тут насправді нічого нового немає.",
+          "defensive", [-6, -14, -12], "«Це не недовіра, це методика. Але я бачу, що вам складно її прийняти».",
+          "Звинувачення її в недовірі посилило конфлікт.",
+          "Сторони обмінялися різкими репліками; переговори зайшли в глухий кут.", "bad")
+      ] },
+      withdrawn: { ctx: "Марія замовкла й щось записує в блокнот. Тиск зараз не допоможе.", options: [
+        o("repair_w_a", "collaborating", "Дати час і запитати про її погляд", "Бачу, що ти замовкла, і розумію, що тобі потрібен час обдумати. Мені важлива твоя перспектива: що б ти додала або виправила з того, що ми обговорювали?",
+          "neutral", [4, 8, 10], "Марія піднімає очі: «Мені потрібно уточнити, що ви вважаєте нормою. Але я готова слухати».",
+          "Ви визнали потребу в паузі й запросили її погляд. C-тип отримав час і безпеку.",
+          "Сторони зробили паузу й відновили діалог.", "best"),
+        o("repair_w_b", "accommodating", "Вибачитися й відступити", "Вибач, якщо я зайшов надто далеко. Давай забудемо сказане: вирішуй, що тобі зручніше, а я подивлюся, що з цього можна буде зробити, і не буду більше тиснути.",
+          "withdrawn", [-2, 3, 0], "«Дякую», — стримано відповідає Марія.",
+          "Вибачення зняло частину напруги, але ви віддали ініціативу без обміну.",
+          "ІТ вибачилось і відмовилось від частини своїх вимог.", "neutral"),
+        o("repair_w_c", "competing", "Вимагати відповіді", "Маріє, не мовчи, нам потрібна відповідь сьогодні. Скажи прямо, підтримуєш ти цю цифру чи ні, бо інакше це схоже на зволікання з твого боку, і ми марнуємо час.",
+          "withdrawn", [-8, -12, -14], "Марія мовчки дописує щось у блокнот.",
+          "Вимога відповіді посилила закритість.",
+          "Навчання припинило активну участь в обговоренні.", "bad")
+      ] }
+    },
+    deals: {
+      full: ["Критичні вразливості ІТ закриваються до аудиту", "У платформі навчання з'являється обов'язковий модуль кібергігієни для всіх працівників", "Спільний показник: охоплення навчанням і кількість закритих вразливостей", "Щомісячна звірка витрат обох відділів", "Решта запиту ІТ перевіряється за даними та розглядається окремо"],
+      weak: ["Бюджет розподілено за схемою Навчання", "Критичні потреби ІТ залишено для окремого узгодження", "Критеріїв і дат звірки не зафіксовано"],
+      none: ["Угоди не досягнуто", "ІТ пообіцяло надіслати письмовий підсумок пізніше"]
+    },
+    nextSteps: {
+      full: ["ІТ надсилає протокол сьогодні, Навчання підтверджує", "Перша звірка витрат — через місяць", "Окрема зустріч щодо минулорічного проєкту — наступного тижня"],
+      weak: ["Окремо узгодити фінансування критичних виправлень ІТ", "Домовитися про критерії й дати звірки"],
+      none: ["ІТ надсилає письмовий підсумок", "Призначити нову зустріч із даними обох сторін"]
+    },
+    styleNote: "Марія — тип C із схильністю до компромісу за наявності даних. Вона цінує точність, логіку й час на обдумування, не приймає тиск авторитетом і розмиті формулювання. Відкривається, коли отримує дані, чесність щодо слабких місць і зрозумілу структуру."
+  }
+  ];
+
+  // ---------- Ядро гри ----------
+  function clamp(v) { return Math.max(0, Math.min(100, v)); }
+  function el(html) { var t = document.createElement("template"); t.innerHTML = html.trim(); return t.content.firstElementChild; }
+  function escHtml(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  function shuffle(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; }
+    return a;
+  }
+  function scenarioById(id) { return SCENARIOS.filter(function (s) { return s.id === id; })[0]; }
+  function g(sc) { return sc.npc.gender === "f" ? "f" : "m"; }
+  function moodLabel(sc, mood) { return MOODS[mood][g(sc)]; }
+  function moodNote(sc, mood) { return MOOD_NOTE[mood][g(sc)].replace("%n", sc.npc.name); }
+  function stepById(sc, id) { return sc.steps.filter(function (s) { return s.id === id; })[0]; }
+  function stepIdx(sc, id) { for (var i = 0; i < sc.steps.length; i++) if (sc.steps[i].id === id) return i; return 0; }
+  function fmtMoney(n) { return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " грн"; }
+
+  function newRun(sc) {
+    var m = { result: sc.start.result, relation: sc.start.relation, trust: sc.start.trust };
+    return { stepId: sc.steps[0].id, metrics: m, mood: "neutral", history: [], repairUsed: false, repairReturn: null,
+      lastReply: sc.opening, series: [{ result: m.result, relation: m.relation, trust: m.trust }], walkout: false, deal: null, learned: {} };
+  }
+  function nodeFor(sc, run) {
+    if (run.stepId === "repair") return sc.repair[run.mood === "withdrawn" ? "withdrawn" : "defensive"];
+    return stepById(sc, run.stepId);
+  }
+
+  // Застосувати вибір. Повертає id наступного кроку, "repair" або "END"
+  function applyChoice(sc, run, opt) {
+    var node = nodeFor(sc, run);
+    var isRepair = run.stepId === "repair";
+    var before = { result: run.metrics.result, relation: run.metrics.relation, trust: run.metrics.trust };
+    var after = {};
+    METRICS.forEach(function (mt) { after[mt.key] = clamp(before[mt.key] + opt.fx[mt.key]); });
+    var mood = opt.mood;
+    if (mood === "open" && after.trust < 35) mood = "neutral";
+    if (mood === "defensive" && before.trust >= 75 && before.relation >= 70) mood = "neutral";
+    var best = node.options.filter(function (x) { return x.best; })[0];
+    var meta = isRepair ? { title: REPAIR_TITLE, icon: REPAIR_ICON, factors: { goal: "mid", relation: "high", time: "mid" } } : node;
+    var item = {
+      stepId: run.stepId, stepTitle: meta.title, stepIcon: meta.icon, factors: meta.factors,
+      optionId: opt.id, style: opt.style, tactic: opt.tactic, kind: opt.kind, text: opt.text, reply: opt.reply, why: opt.why, proto: opt.proto,
+      mood: mood, moodBefore: run.mood, best: !!opt.best,
+      bestStyle: best.style, bestTactic: best.tactic, bestText: best.text, bestWhy: best.why,
+      delta: { result: after.result - before.result, relation: after.relation - before.relation, trust: after.trust - before.trust }, after: after
+    };
+    run.history.push(item);
+    run.metrics = after;
+    run.series.push({ result: after.result, relation: after.relation, trust: after.trust });
+    run.mood = mood;
+    run.lastReply = opt.reply;
+    (opt.learn || []).forEach(function (id) { run.learned[id] = true; });
+    if (opt.deal) run.deal = opt.deal;
+    var next;
+    if (after.trust <= 15 || after.relation <= 15) {
+      run.walkout = true; run.mood = "withdrawn"; item.mood = "withdrawn"; next = "END";
+    } else if (isRepair) {
+      next = run.repairReturn;
+    } else {
+      var idx = stepIdx(sc, run.stepId);
+      var failed = (mood === "defensive" || mood === "withdrawn");
+      var hasNext = idx + 1 < sc.steps.length;
+      if (node.canRepair && !run.repairUsed && failed && hasNext) {
+        run.repairUsed = true; run.repairReturn = sc.steps[idx + 1].id; next = "repair";
+      } else {
+        next = hasNext ? sc.steps[idx + 1].id : "END";
+      }
+    }
+    if (next !== "END") run.stepId = next;
+    return next;
+  }
+
+  // Частка бюджету вашого відділу в угоді (залежить від показника «Результат»)
+  function roundTo5(x) { return Math.round(x / 5) * 5; }
+  function dealSplit(sc, run, deal) {
+    var r = run.metrics.result, pct;
+    if (deal === "full") pct = roundTo5(Math.max(40, Math.min(60, 40 + r * 0.2)));
+    else if (deal === "weak") pct = roundTo5(Math.max(25, Math.min(45, 20 + r * 0.3)));
+    else return null;
+    return { youPct: pct, npcPct: 100 - pct, you: sc.pool.amount * pct / 100, npc: sc.pool.amount * (100 - pct) / 100 };
+  }
+
+  function summarize(sc, run) {
+    var counts = {}; STYLE_ORDER.forEach(function (k) { counts[k] = 0; });
+    var kinds = { best: 0, neutral: 0, bad: 0 };
+    var mainSteps = 0, fit = 0, cx = 0, cy = 0;
+    run.history.forEach(function (h) {
+      counts[h.style] += 1; kinds[h.kind] += 1;
+      cx += STYLES[h.style].coop; cy += STYLES[h.style].assert;
+      if (h.stepId !== "repair") { mainSteps += 1; if (h.style === h.bestStyle) fit += 1; }
+    });
+    var n = run.history.length || 1;
+    var dominant = STYLE_ORDER.slice().sort(function (a, b) { return counts[b] - counts[a]; })[0];
+    var m = run.metrics;
+    var score = Math.round((m.result + m.relation + m.trust) / 3);
+    var deal = run.walkout ? "walkout" : (run.deal || "none");
+    var level = run.walkout ? "walkout" : (deal === "none" ? "fail" : ((deal === "full" && Math.min(m.result, m.relation, m.trust) >= 55) ? "great" : "partial"));
+    var learned = sc.theirInterests.filter(function (i) { return run.learned[i.id]; });
+    var unknown = sc.theirInterests.filter(function (i) { return !run.learned[i.id]; });
+    return { counts: counts, kinds: kinds, dominant: dominant, centroid: { coop: cx / n, assert: cy / n }, total: run.history.length,
+      mainSteps: mainSteps, fit: fit, fitPct: mainSteps ? Math.round(fit / mainSteps * 100) : 0,
+      score: score, deal: deal, level: level, learned: learned, unknown: unknown, split: dealSplit(sc, run, deal) };
+  }
+
+  var VERDICTS = {
+    great: { label: "Взаємовигідна угода", text: "Ви домовилися про пакет, який закриває ключові інтереси обох відділів, і зберегли стосунки та довіру. Така угода тримається, бо її приймають обидві сторони." },
+    partial: { label: "Угода з перекосом", text: "Угоду досягнуто, але вона крихка: або ви віддали забагато, або постраждали стосунки чи довіра. Розбір покаже, де саме тактика не відповідала ситуації." },
+    fail: { label: "Угоди не досягнуто", text: "Домовленість не зафіксовано, і питання лишилося відкритим. Розбір покаже, на яких кроках тактика не допомогла дійти до угоди." },
+    walkout: { label: "Переговори зірвано", text: "Довіра або стосунки опустилися нижче межі, і опонент перервав розмову. Розбір покаже, які саме тактики до цього привели." }
+  };
+
+  // ---------- Стан ----------
+  var STORAGE_PREFIX = "budget-negotiation:";
+  var app = document.getElementById("app");
+  var state = {
+    screen: "intro", studentName: "", scenarioId: null, run: null, nextNode: null,
+    optionOrder: [], orderMemory: {}, prevOrders: {}, currOrders: {}, lastItem: null,
+    saveStatus: "idle", teacherRows: null, teacherLoading: false
+  };
+  function currentScenario() { return scenarioById(state.scenarioId); }
+
+  function startScenario(id) {
+    state.scenarioId = id; state.run = newRun(currentScenario()); state.saveStatus = "idle"; state.nextNode = null;
+    state.prevOrders = state.orderMemory[id] || {};
+    state.currOrders = {};
+    state.orderMemory[id] = state.currOrders;
+    prepareNode(); state.screen = "talk"; render();
+  }
+  function orderKey() {
+    var run = state.run;
+    return run.stepId === "repair" ? "repair:" + (run.mood === "withdrawn" ? "w" : "d") : run.stepId;
+  }
+  // Випадкова перестановка, у якій жоден варіант не стоїть там, де стояв під час попереднього проходження
+  function arrangeOptions(ids, prev) {
+    var order = shuffle(ids);
+    if (!prev || prev.length !== ids.length) return order;
+    for (var tries = 0; tries < 60; tries++) {
+      var clash = order.some(function (id, i) { return prev[i] === id; });
+      if (!clash) return order;
+      order = shuffle(ids);
+    }
+    return prev.slice(1).concat(prev[0]);
+  }
+  function prepareNode() {
+    var sc = currentScenario(); var node = nodeFor(sc, state.run);
+    var key = orderKey();
+    var ids = node.options.map(function (x) { return x.id; });
+    state.optionOrder = arrangeOptions(ids, state.prevOrders[key]);
+    state.currOrders[key] = state.optionOrder.slice();
+  }
+
+  // ---------- Компоненти ----------
+  function metricsHtml(run, deltas) {
+    return '<div class="metrics">' + METRICS.map(function (mt) {
+      var v = run.metrics[mt.key];
+      var d = deltas ? deltas[mt.key] : 0;
+      var dHtml = d ? '<span class="m-delta ' + (d > 0 ? "up" : "down") + '">' + (d > 0 ? "+" : "−") + Math.abs(d) + '</span>' : "";
+      return '<div class="metric"><div class="m-head"><span class="m-name">' + mt.icon + ' ' + mt.label + '</span><span class="m-val">' + v + dHtml + '</span></div>' +
+        '<div class="m-track"><div class="m-fill" style="width:' + v + '%;background:' + mt.color + '"></div></div></div>';
+    }).join("") + '</div>';
+  }
+  function moodChip(sc, mood) { return '<span class="mood-chip ' + mood + '"><span class="mood-emoji">' + MOODS[mood].emoji + '</span>' + moodLabel(sc, mood) + '</span>'; }
+  function personHeader(sc, mood) {
+    return '<div class="person"><div class="avatar ' + sc.npc.disc + '">' + sc.npc.name.charAt(0) + '</div>' +
+      '<div class="p-info"><div class="p-name">' + sc.npc.name + '</div><div class="p-sub">' + sc.npc.role + ' · відділ «' + sc.npc.dept + '» · тип ' + sc.npc.disc + '</div></div>' + moodChip(sc, mood) + '</div>';
+  }
+  function styleTile(style, extra) {
+    var st = STYLES[style];
+    return '<div class="style-tile ' + st.cls + '"><div class="stt-ico">' + st.icon + '</div><div class="stt-body"><div class="stt-name">' + st.name + '</div><div class="stt-def">' + (extra || st.def) + '</div></div></div>';
+  }
+  function styleChip(style) { var st = STYLES[style]; return '<span class="style-chip ' + st.cls + '">' + st.icon + ' ' + st.name + '</span>'; }
+  function factorsHtml(f) {
+    return '<div class="factor-row">' + ["goal", "relation", "time"].map(function (k) {
+      return '<span class="factor ' + f[k] + '">' + FACTOR_LABEL[k].icon + ' ' + FACTOR_LABEL[k].name + ': ' + LEVEL_LABEL[f[k]] + '</span>';
+    }).join("") + '</div>';
+  }
+  function stepIndexForRun(sc, run) { return stepIdx(sc, run.stepId === "repair" ? run.repairReturn : run.stepId); }
+  function stepperHtml(sc, run) {
+    var cur = stepIndexForRun(sc, run);
+    return '<div class="stepper">' + sc.steps.map(function (st, i) {
+      var cls = i < cur ? "done" : (i === cur ? "cur" : "todo");
+      return '<div class="st-item ' + cls + '"><div class="st-ico">' + st.icon + '</div><div class="st-lab">' + st.title + '</div></div>';
+    }).join('<div class="st-line"></div>') + '</div>';
+  }
+
+  // ---------- Екрани ----------
+  function renderIntro() {
+    var styleCards = STYLE_ORDER.map(function (k) {
+      var st = STYLES[k];
+      return '<div class="tki-card ' + st.cls + '"><div class="tki-ico">' + st.icon + '</div><div class="tki-body"><div class="tki-name">' + st.name + '</div><div class="tki-def">' + st.def + '</div><div class="tki-when"><b>Доречно:</b> ' + st.when + '</div></div></div>';
+    }).join("");
+    var cards = SCENARIOS.map(function (sc) {
+      return '<button class="scenario-card" data-id="' + sc.id + '"><div class="sc-emoji">' + sc.emoji + '</div><div class="sc-body"><div class="sc-title">' + sc.title +
+        '</div><div class="sc-sub">' + sc.preview + '</div><div class="sc-meta"><span class="mini-badge ' + sc.npc.disc + '">' + sc.npc.disc + '</span> ' + sc.npc.name + ' · ' + sc.npc.role + ' · бюджет ' + sc.pool.text + '</div></div></button>';
+    }).join("");
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<p class="kicker">Практичне заняття 6 · Бізнес-лідерство</p>' +
+      '<h1 class="title serif">Бюджет на двох: переговорний симулятор</h1>' +
+      '<p class="lead">Ви ведете переговори про розподіл спільного бюджету від імені свого відділу проти іншого відділу. На кожному кроці оберіть тактику й дивіться, як реагує опонент: відкривається до пошуку, тисне чи відсторонюється. Це змінює три показники: <b>Результат для відділу</b>, <b>Стосунки з іншим відділом</b> і <b>Довіру</b>. Наприкінці ви побачите вердикт, аналіз ваших стилів за Томасом-Кілманном і готовий протокол переговорів для звіту.</p>' +
+      '<label class="field-label">Ваше ім’я (необов’язково)</label>' +
+      '<input class="text-input" id="name-input" type="text" placeholder="Наприклад, Анна К." value="' + escHtml(state.studentName) + '" />' +
+      '<label class="field-label">Пʼять стилів поведінки в переговорах (Томас — Кілманн)</label>' +
+      '<div class="tki-list">' + styleCards + '</div>' +
+      '<div class="note-box"><b>Жоден стиль не є універсально найкращим.</b> Вигравати допомагає вміння обирати стиль під ситуацію: важливість мети, важливість стосунків і тиск часу. На кожному кроці є три тактики: <span class="kind-badge best">Відмінна</span> найкраще підходить до ситуації, <span class="kind-badge neutral">Нейтральна</span> прийнятна, але не оптимальна, <span class="kind-badge bad">Непідходяща</span> шкодить результату чи стосункам.</div>' +
+      '<label class="field-label">Оберіть переговори</label>' +
+      '<div class="scenario-list">' + cards + '</div>' +
+      '<button class="teacher-link" id="teacher-link">Перегляд результатів групи (для викладача)</button>' +
+      '</div></div>'
+    );
+    var input = card.querySelector("#name-input");
+    input.addEventListener("input", function () { state.studentName = input.value.trim(); });
+    card.querySelectorAll(".scenario-card").forEach(function (b) {
+      b.addEventListener("click", function () { state.studentName = input.value.trim(); startScenario(b.getAttribute("data-id")); });
+    });
+    card.querySelector("#teacher-link").addEventListener("click", function () { state.screen = "teacher"; render(); loadTeacherRows(); });
+    return card;
+  }
+
+  function briefHtml(sc) {
+    var b = sc.brief;
+    return '<div class="brief-box"><div class="bb-title">Ваша роль: ' + sc.you.role + ' · відділ «' + sc.you.dept + '»</div>' +
+      '<div class="bb-grid">' +
+        '<div class="bb-item"><span>Ваша позиція</span>' + b.yourPosition + '</div>' +
+        '<div class="bb-item"><span>Позиція опонента</span>' + b.theirPosition + '</div>' +
+        '<div class="bb-item"><span>Ваші інтереси</span>' + b.yourInterests.join("; ") + '</div>' +
+        '<div class="bb-item"><span>Ваша межа</span>' + b.minimum + '</div>' +
+      '</div></div>';
+  }
+
+  function renderTalk() {
+    var sc = currentScenario(), run = state.run, node = nodeFor(sc, run);
+    var first = run.history.length === 0;
+    var isRepair = run.stepId === "repair";
+    var title = isRepair ? REPAIR_TITLE : node.title, icon = isRepair ? REPAIR_ICON : node.icon;
+    var options = state.optionOrder.map(function (id) { return node.options.filter(function (x) { return x.id === id; })[0]; });
+    var opts = options.map(function (op, i) {
+      return '<button class="reply-btn" data-id="' + op.id + '"><span class="reply-num">' + String.fromCharCode(65 + i) + '</span><span class="reply-body"><span class="reply-tactic">' + escHtml(op.tactic) + '</span><span class="reply-text">' + escHtml(op.text) + '</span></span></button>';
+    }).join("");
+    var remind = '<details class="remind"><summary>Нагадування: стилі Томаса-Кілманна</summary><div class="remind-row">' +
+      STYLE_ORDER.map(function (k) { return '<div class="remind-item ' + STYLES[k].cls + '"><span class="r-ico">' + STYLES[k].icon + '</span><span>' + STYLES[k].name + '</span></div>'; }).join("") + '</div></details>';
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      stepperHtml(sc, run) +
+      '<p class="step-count">' + sc.emoji + ' ' + sc.title + ' · Крок ' + (stepIndexForRun(sc, run) + 1) + ' із ' + sc.steps.length + ' · ' + icon + ' ' + title + '</p>' +
+      personHeader(sc, run.mood) +
+      metricsHtml(run, null) +
+      (first ? '<div class="setup-box"><b>Ситуація.</b> ' + sc.setup + '</div>' + briefHtml(sc) : "") +
+      '<div class="bubble emp"><div class="b-who">' + sc.npc.name + '</div>' + (first ? sc.opening : run.lastReply) + '</div>' +
+      (first ? "" : '<div class="mood-note">' + moodNote(sc, run.mood) + '</div>') +
+      '<div class="ctx-box">' + node.ctx + '</div>' +
+      remind +
+      '<label class="field-label">Яку тактику ви оберете?</label>' +
+      '<div class="reply-list">' + opts + '</div>' +
+      '</div></div>'
+    );
+    card.querySelectorAll(".reply-btn").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var opt = node.options.filter(function (x) { return x.id === b.getAttribute("data-id"); })[0];
+        var prevMood = run.mood;
+        var next = applyChoice(sc, run, opt);
+        state.lastItem = run.history[run.history.length - 1];
+        state.lastItem.prevMood = prevMood; state.nextNode = next;
+        state.screen = "reaction"; render();
+      });
+    });
+    return card;
+  }
+
+  function liveFeedbackHtml(it) {
+    return '<div class="fb-live ' + KIND_META[it.kind].cls + '">' +
+      '<div class="fb-live-title">Розбір вашої тактики</div>' +
+      '<div class="kind-row"><span class="kind-badge ' + KIND_META[it.kind].cls + '">' + KIND_META[it.kind].label + '</span></div>' +
+      styleTile(it.style) +
+      '<p class="sc-why">' + escHtml(it.why) + '</p>' +
+      (it.kind === "best" ? "" : '<p class="fb-hint">Який підхід і яка репліка були б відмінними, дізнаєтеся в детальному розборі в кінці.</p>') +
+      '</div>';
+  }
+
+  function renderReaction() {
+    var sc = currentScenario(), run = state.run, it = state.lastItem;
+    var isEnd = state.nextNode === "END";
+    var repairNext = state.nextNode === "repair";
+    var cta = isEnd ? "Переглянути результат →" : "Продовжити переговори →";
+    var moodChange = it.prevMood !== it.mood
+      ? moodChip(sc, it.prevMood) + '<span class="mood-arrow">→</span>' + moodChip(sc, it.mood)
+      : moodChip(sc, it.mood);
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<p class="step-count">' + sc.emoji + ' ' + sc.title + ' · ' + it.stepIcon + ' ' + it.stepTitle + '</p>' +
+      '<div class="bubble mgr"><div class="b-who">Ви · ' + escHtml(it.tactic) + '</div>' + escHtml(it.text) + '</div>' +
+      '<div class="bubble emp ' + it.mood + '"><div class="b-who">' + sc.npc.name + '</div>' + it.reply + '</div>' +
+      '<div class="mood-row">' + moodChange + '</div>' +
+      metricsHtml(run, it.delta) +
+      (run.walkout ? '<div class="walkout-box">⚠️ ' + sc.npc.name + ' перериває переговори: довіра або стосунки опустилися нижче допустимої межі.</div>' : "") +
+      liveFeedbackHtml(it) +
+      (repairNext ? '<div class="note-box">Розмова напружилась. Спробуйте розрядити ситуацію, перш ніж рухатися далі.</div>' : "") +
+      '<button class="btn btn-primary" id="next-btn">' + cta + '</button>' +
+      '</div></div>'
+    );
+    card.querySelector("#next-btn").addEventListener("click", function () {
+      if (isEnd) { state.screen = "verdict"; render(); saveResultToStorage(); }
+      else { prepareNode(); state.screen = "talk"; render(); }
+    });
+    return card;
+  }
+
+  function chartSvg(series) {
+    var W = 320, H = 130, padL = 26, padR = 10, padT = 10, padB = 20;
+    var n = series.length, stepX = n > 1 ? (W - padL - padR) / (n - 1) : 0;
+    function X(i) { return padL + i * stepX; }
+    function Y(v) { return padT + (H - padT - padB) * (1 - v / 100); }
+    var grid = [0, 50, 100].map(function (gv) {
+      return '<line x1="' + padL + '" y1="' + Y(gv) + '" x2="' + (W - padR) + '" y2="' + Y(gv) + '" stroke="#DDE4F5" stroke-width="1"/><text x="' + (padL - 6) + '" y="' + (Y(gv) + 3) + '" font-size="9" fill="#5B6685" text-anchor="end">' + gv + '</text>';
+    }).join("");
+    var lines = METRICS.map(function (mt) {
+      var pts = series.map(function (s, i) { return X(i) + "," + Y(s[mt.key]); }).join(" ");
+      var dots = series.map(function (s, i) { return '<circle cx="' + X(i) + '" cy="' + Y(s[mt.key]) + '" r="2.6" fill="' + mt.color + '"/>'; }).join("");
+      return '<polyline points="' + pts + '" fill="none" stroke="' + mt.color + '" stroke-width="2"/>' + dots;
+    }).join("");
+    var xl = series.map(function (s, i) { return '<text x="' + X(i) + '" y="' + (H - 6) + '" font-size="9" fill="#5B6685" text-anchor="middle">' + (i === 0 ? "старт" : i) + '</text>'; }).join("");
+    return '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" role="img" aria-label="Динаміка показників">' + grid + lines + xl + '</svg>' +
+      '<div class="chart-legend">' + METRICS.map(function (mt) { return '<span><i style="background:' + mt.color + '"></i>' + mt.label + '</span>'; }).join("") + '</div>';
+  }
+
+  // Карта стилів Томаса-Кілманна: ширина — співпраця, висота — наполегливість
+  function tkiGridSvg(sum) {
+    var W = 280, H = 230, L = 34, R = 10, T = 12, B = 30;
+    function X(c) { return L + c * (W - L - R); }
+    function Y(a) { return T + (1 - a) * (H - T - B); }
+    var total = sum.total || 1;
+    var pts = STYLE_ORDER.map(function (k) {
+      var st = STYLES[k], cnt = sum.counts[k], r = 11 + cnt * 4;
+      return '<circle cx="' + X(st.coop) + '" cy="' + Y(st.assert) + '" r="' + r + '" fill="' + (cnt ? "#F3E6C4" : "#F4F6FB") + '" stroke="' + (cnt ? "#C9962C" : "#C9D2EE") + '" stroke-width="1.5"/>' +
+        '<text x="' + X(st.coop) + '" y="' + (Y(st.assert) + 5) + '" font-size="15" text-anchor="middle">' + st.icon + '</text>' +
+        '<text x="' + X(st.coop) + '" y="' + (Y(st.assert) + r + 11) + '" font-size="9" fill="#5B6685" text-anchor="middle">' + st.name + (cnt ? ' · ' + cnt : '') + '</text>';
+    }).join("");
+    var cx = X(sum.centroid.coop), cy = Y(sum.centroid.assert);
+    var you = '<circle cx="' + cx + '" cy="' + cy + '" r="7" fill="#1E2761" stroke="#fff" stroke-width="2"/><text x="' + (cx + 11) + '" y="' + (cy + 4) + '" font-size="10" font-weight="700" fill="#1E2761">Ви</text>';
+    return '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" role="img" aria-label="Карта стилів Томаса-Кілманна">' +
+      '<rect x="' + L + '" y="' + T + '" width="' + (W - L - R) + '" height="' + (H - T - B) + '" fill="#FBFCFF" stroke="#DDE4F5"/>' +
+      '<line x1="' + X(0.5) + '" y1="' + T + '" x2="' + X(0.5) + '" y2="' + (H - B) + '" stroke="#E8ECF8" stroke-dasharray="3 3"/>' +
+      '<line x1="' + L + '" y1="' + Y(0.5) + '" x2="' + (W - R) + '" y2="' + Y(0.5) + '" stroke="#E8ECF8" stroke-dasharray="3 3"/>' +
+      pts + you +
+      '<text x="' + (L + (W - L - R) / 2) + '" y="' + (H - 6) + '" font-size="10" fill="#5B6685" text-anchor="middle">Співпраця (турбота про інтереси іншої сторони) →</text>' +
+      '<text transform="translate(11 ' + (T + (H - T - B) / 2) + ') rotate(-90)" font-size="10" fill="#5B6685" text-anchor="middle">Наполегливість →</text>' +
+      '</svg>';
+  }
+
+  function styleBarsHtml(sum) {
+    var total = sum.total || 1;
+    return '<div class="style-bars">' + STYLE_ORDER.map(function (k) {
+      var st = STYLES[k], c = sum.counts[k], pct = Math.round(c / total * 100);
+      return '<div class="sb-row ' + (k === sum.dominant && c > 0 ? "dom" : "") + '"><div class="sb-lab">' + st.icon + ' ' + st.name + '</div>' +
+        '<div class="sb-track"><div class="sb-fill ' + st.cls + '" style="width:' + pct + '%"></div></div><div class="sb-num">' + c + ' · ' + pct + '%</div></div>';
+    }).join("") + '</div>';
+  }
+
+  function styleAnalysisHtml(sc, sum) {
+    var dom = STYLES[sum.dominant];
+    var domCount = sum.counts[sum.dominant];
+    var variety = STYLE_ORDER.filter(function (k) { return sum.counts[k] > 0; }).length;
+    var varietyNote = variety >= 4 ? "Ви застосовували різні стилі: це ознака гнучкості." : variety <= 2 ? "Ви спиралися лише на " + variety + " стил" + (variety === 1 ? "ь" : "і") + ", тож ситуативна гнучкість обмежена." : "Ви користувалися трьома стилями.";
+    return '<label class="field-label">Ваші стилі в цих переговорах (за Томасом-Кілманном)</label>' +
+      '<div class="tki-analysis"><div class="ta-grid"><div class="chart-box">' + tkiGridSvg(sum) + '</div><div>' + styleBarsHtml(sum) + '</div></div>' +
+      '<div class="dom-box ' + dom.cls + '"><div class="dom-title">' + dom.icon + ' Домінуючий стиль: ' + dom.name + ' (' + domCount + ' із ' + sum.total + ' кроків)</div>' +
+      '<p>' + dom.def + ' <b>Доречно:</b> ' + dom.when + ' <b>Ризик:</b> ' + dom.risk + '</p>' +
+      '<p class="dom-advice">' + dom.advice + ' ' + varietyNote + '</p></div>' +
+      '<div class="fit-row">Збіг стилю з оптимальним для ситуації: <b>' + sum.fit + ' із ' + sum.mainSteps + ' кроків</b> (' + sum.fitPct + '%)</div></div>';
+  }
+
+  // ---------- Протокол переговорів ----------
+  function protocolData(sc, run, sum) {
+    var d = new Date();
+    var date = ("0" + d.getDate()).slice(-2) + "." + ("0" + (d.getMonth() + 1)).slice(-2) + "." + d.getFullYear();
+    var deal = sum.deal, split = sum.split;
+    var result, terms, next, resultKind;
+    if (deal === "walkout") {
+      result = "Переговори перервано стороною «" + sc.npc.dept + "»: довіра або стосунки опустилися нижче допустимого рівня. Угоди не досягнуто.";
+      terms = sc.deals.none; next = sc.nextSteps.none; resultKind = "none";
+    } else if (deal === "none") {
+      result = "Угоди не досягнуто."; terms = sc.deals.none; next = sc.nextSteps.none; resultKind = "none";
+    } else if (deal === "weak") {
+      result = "Угоду досягнуто на умовах, які більше відповідають інтересам відділу «" + sc.npc.dept + "». Умови потребують доопрацювання."; terms = sc.deals.weak; next = sc.nextSteps.weak; resultKind = "weak";
+    } else {
+      result = "Угоду досягнуто. Пакет рішень враховує інтереси обох відділів."; terms = sc.deals.full; next = sc.nextSteps.full; resultKind = "full";
+    }
+    return {
+      title: "Протокол переговорів", date: date,
+      subject: sc.title + " — " + sc.topic,
+      parties: [
+        "«" + sc.you.dept + "» — " + (state.studentName || sc.you.role),
+        "«" + sc.npc.dept + "» — " + sc.npc.name + ", " + sc.npc.role
+      ],
+      pool: sc.pool.text,
+      positions: ["«" + sc.you.dept + "»: " + sc.brief.yourPosition, "«" + sc.npc.dept + "»: " + sc.brief.theirPosition],
+      yourInterests: sc.brief.yourInterests, minimum: sc.brief.minimum,
+      learned: sum.learned.map(function (i) { return i.text; }),
+      unknown: sum.unknown.map(function (i) { return i.text; }),
+      steps: run.history.map(function (h, i) { return { n: i + 1, title: h.stepTitle, style: STYLES[h.style].name, line: h.proto }; }),
+      result: result, resultKind: resultKind, terms: terms,
+      split: split ? ("«" + sc.you.dept + "» — " + fmtMoney(split.you) + " (" + split.youPct + "%); «" + sc.npc.dept + "» — " + fmtMoney(split.npc) + " (" + split.npcPct + "%)") : null,
+      next: next
+    };
+  }
+
+  function protocolText(sc, run, sum) {
+    var p = protocolData(sc, run, sum), L = [];
+    L.push("ПРОТОКОЛ ПЕРЕГОВОРІВ"); L.push("Тема: " + p.subject); L.push("Дата: " + p.date);
+    L.push("Сторони:"); p.parties.forEach(function (x) { L.push("  — " + x); });
+    L.push("Предмет: розподіл бюджету " + p.pool); L.push("");
+    L.push("1. ПОЗИЦІЇ СТОРІН НА СТАРТІ"); p.positions.forEach(function (x) { L.push("  — " + x); }); L.push("");
+    L.push("2. ІНТЕРЕСИ");
+    L.push("  Наші інтереси:"); p.yourInterests.forEach(function (x) { L.push("    · " + x); });
+    L.push("  Наша межа: " + p.minimum);
+    L.push("  З'ясовані інтереси опонента:");
+    if (p.learned.length) p.learned.forEach(function (x) { L.push("    · " + x); }); else L.push("    · не з'ясовано");
+    if (p.unknown.length) { L.push("  Не з'ясовано (варто було дізнатися):"); p.unknown.forEach(function (x) { L.push("    · " + x); }); }
+    L.push("");
+    L.push("3. ХІД ПЕРЕГОВОРІВ");
+    p.steps.forEach(function (s) { L.push("  " + s.n + ") " + s.title + " [" + s.style + "]: " + s.line); });
+    L.push("");
+    L.push("4. РЕЗУЛЬТАТ"); L.push("  " + p.result);
+    if (p.split) L.push("  Розподіл бюджету: " + p.split);
+    L.push("  Умови:"); p.terms.forEach(function (x) { L.push("    · " + x); });
+    L.push("");
+    L.push("5. НАСТУПНІ КРОКИ"); p.next.forEach(function (x) { L.push("  — " + x); });
+    L.push("");
+    L.push("6. ПІДПИСИ СТОРІН"); L.push("  «" + sc.you.dept + "»: ______________    «" + sc.npc.dept + "»: ______________");
+    return L.join("\n");
+  }
+
+  function protocolHtml(sc, run, sum) {
+    var p = protocolData(sc, run, sum);
+    function ul(a) { return '<ul>' + a.map(function (x) { return '<li>' + escHtml(x) + '</li>'; }).join("") + '</ul>'; }
+    return '<div class="proto-doc">' +
+      '<div class="pd-head"><div class="pd-title">ПРОТОКОЛ ПЕРЕГОВОРІВ</div><div class="pd-sub">' + escHtml(p.subject) + ' · ' + p.date + '</div></div>' +
+      '<div class="pd-sec"><b>Сторони</b>' + ul(p.parties) + '<div>Предмет: розподіл бюджету ' + escHtml(p.pool) + '</div></div>' +
+      '<div class="pd-sec"><b>1. Позиції сторін на старті</b>' + ul(p.positions) + '</div>' +
+      '<div class="pd-sec"><b>2. Інтереси</b><div class="pd-label">Наші інтереси</div>' + ul(p.yourInterests) + '<div>Наша межа: ' + escHtml(p.minimum) + '</div>' +
+        '<div class="pd-label">З’ясовані інтереси опонента</div>' + (p.learned.length ? ul(p.learned) : '<ul><li>не з’ясовано</li></ul>') +
+        (p.unknown.length ? '<div class="pd-label warn">Не з’ясовано (варто було дізнатися)</div>' + ul(p.unknown) : '') + '</div>' +
+      '<div class="pd-sec"><b>3. Хід переговорів</b><ol>' + p.steps.map(function (s) { return '<li><b>' + escHtml(s.title) + '</b> <span class="pd-style">' + escHtml(s.style) + '</span>: ' + escHtml(s.line) + '</li>'; }).join("") + '</ol></div>' +
+      '<div class="pd-sec"><b>4. Результат</b><p class="pd-res ' + p.resultKind + '">' + escHtml(p.result) + '</p>' +
+        (p.split ? '<div>Розподіл бюджету: ' + escHtml(p.split) + '</div>' : '') + '<div class="pd-label">Умови</div>' + ul(p.terms) + '</div>' +
+      '<div class="pd-sec"><b>5. Наступні кроки</b>' + ul(p.next) + '</div>' +
+      '<div class="pd-sec pd-sign"><b>6. Підписи сторін</b><div>«' + escHtml(sc.you.dept) + '»: ______________ &nbsp;&nbsp; «' + escHtml(sc.npc.dept) + '»: ______________</div></div>' +
+      '</div>';
+  }
+
+  function historyHtml(run, sc) {
+    return run.history.map(function (h, i) {
+      var same = h.style === h.bestStyle;
+      return '<div class="step-card ' + KIND_META[h.kind].cls + '">' +
+        '<div class="sc-head"><span class="sc-n">' + (i + 1) + '</span><b>' + h.stepIcon + ' ' + h.stepTitle + '</b><span class="sc-mood">' + MOODS[h.mood].emoji + ' ' + moodLabel(sc, h.mood) + '</span></div>' +
+        factorsHtml(h.factors) +
+        '<div class="kind-row"><span class="kind-badge ' + KIND_META[h.kind].cls + '">' + KIND_META[h.kind].label + '</span> ' + styleChip(h.style) + '</div>' +
+        '<div class="sc-line"><b>' + escHtml(h.tactic) + '.</b> «' + escHtml(h.text) + '»</div>' +
+        '<p class="sc-why">' + escHtml(h.why) + '</p>' +
+        '<div class="sc-reply">' + sc.npc.name + ': ' + h.reply + '</div>' +
+        (h.kind === "best" ? "" : '<div class="sc-best"><b>Оптимальний стиль для цієї ситуації: ' + STYLES[h.bestStyle].icon + ' ' + STYLES[h.bestStyle].name + '.</b> ' + escHtml(h.bestTactic) + ': «' + escHtml(h.bestText) + '» ' + escHtml(h.bestWhy) + '</div>') +
+        '</div>';
+    }).join("");
+  }
+
+  function renderVerdict() {
+    var sc = currentScenario(), run = state.run, sum = summarize(sc, run), v = VERDICTS[sum.level];
+    var saveNote = "";
+    if (state.saveStatus === "saving") saveNote = "Зберігаємо результат…";
+    else if (state.saveStatus === "saved") saveNote = "Результат збережено.";
+    else if (state.saveStatus === "failed") saveNote = "Результат сформовано, але не вдалося зберегти для викладача.";
+    var dealLabel = sum.deal === "full" ? "угода повна" : sum.deal === "weak" ? "угода з перекосом" : sum.deal === "walkout" ? "переговори зірвано" : "угоди немає";
+    var splitLine = sum.split ? '<div class="v-split">Розподіл бюджету: «' + sc.you.dept + '» ' + fmtMoney(sum.split.you) + ' (' + sum.split.youPct + '%) · «' + sc.npc.dept + '» ' + fmtMoney(sum.split.npc) + ' (' + sum.split.npcPct + '%)</div>' : "";
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<p class="kicker" style="text-align:center;">' + (state.studentName ? escHtml(state.studentName) + " · " : "") + sc.emoji + ' ' + sc.title + '</p>' +
+      '<div class="verdict-card ' + sum.level + '"><div class="v-label">Результат переговорів</div><div class="v-title">' + v.label + '</div><p>' + v.text + '</p>' +
+        '<div class="v-score"><span>' + sum.score + '</span> / 100 · ' + dealLabel + '</div>' + splitLine +
+        '<div class="v-kinds">Відмінних тактик: ' + sum.kinds.best + ' · нейтральних: ' + sum.kinds.neutral + ' · непідходящих: ' + sum.kinds.bad + '</div></div>' +
+      '<div class="end-mood">' + personHeader(sc, run.mood) + '</div>' +
+      metricsHtml(run, null) +
+      '<label class="field-label">Динаміка показників</label><div class="chart-box">' + chartSvg(run.series) + '</div>' +
+      styleAnalysisHtml(sc, sum) +
+      '<div class="next-box"><div class="nb-title">Що далі?</div>' +
+        '<p>Спробуйте ще раз: варіанти відповідей розташовані по-іншому, а переговори можуть піти інакше. Або оберіть інші переговори. Протокол для звіту нижче.</p>' +
+        '<div class="result-actions">' +
+          '<button class="btn btn-primary" id="retry-btn">Пройти ще раз</button>' +
+          '<button class="btn btn-secondary" id="other-btn">Інші переговори</button>' +
+          '<button class="btn btn-secondary" id="copy-proto-btn">Скопіювати протокол</button>' +
+        '</div></div>' +
+      '<details class="deep" id="proto-details"><summary>Протокол переговорів (готовий для звіту)</summary><div class="deep-body">' +
+        protocolHtml(sc, run, sum) +
+        '<div class="result-actions"><button class="btn btn-secondary" id="copy-proto-btn2">Скопіювати протокол</button><button class="btn btn-secondary" id="download-btn">Завантажити .txt</button></div>' +
+      '</div></details>' +
+      '<details class="deep"><summary>Показати детальний розбір ситуації</summary><div class="deep-body">' +
+        '<p class="deep-lead">Тут ви побачите, які стилі були оптимальними на кожному кроці, і приклади відмінних реплік. Якщо хочете пройти гру без підказок, пропустіть цей розділ і запустіть її ще раз.</p>' +
+        '<label class="field-label">Розбір вашої розмови по кроках</label>' + historyHtml(run, sc) +
+        '<label class="field-label">Інтереси опонента</label>' + interestsHtml(sc, run) +
+        '<div class="note-box"><b>Чому ' + sc.npc.name + ' реагував' + (sc.npc.gender === "f" ? "ла" : "") + ' саме так.</b> ' + sc.styleNote + '</div>' +
+      '</div></details>' +
+      (saveNote ? '<p class="save-note">' + saveNote + '</p>' : "") +
+      '<textarea id="copy-fallback-area" style="display:none;margin-top:12px;width:100%;min-height:140px;padding:10px;border-radius:10px;border:1.5px solid var(--line);font-size:11.5px;color:var(--muted);background:var(--surface);" readonly>' + escHtml(protocolText(sc, run, sum)) + '</textarea>' +
+      '<button class="teacher-link" id="teacher-link">Перегляд результатів групи (для викладача)</button>' +
+      '</div></div>'
+    );
+    card.querySelector("#retry-btn").addEventListener("click", function () { startScenario(state.scenarioId); });
+    card.querySelector("#other-btn").addEventListener("click", function () { state.screen = "intro"; render(); });
+    function copyP(e) { copyToClipboard(protocolText(sc, run, sum), e.currentTarget, "Скопіювати протокол"); }
+    card.querySelector("#copy-proto-btn").addEventListener("click", copyP);
+    card.querySelector("#copy-proto-btn2").addEventListener("click", copyP);
+    card.querySelector("#download-btn").addEventListener("click", function () { downloadText("protocol-" + sc.id + ".txt", protocolText(sc, run, sum)); });
+    card.querySelector("#teacher-link").addEventListener("click", function () { state.screen = "teacher"; render(); loadTeacherRows(); });
+    return card;
+  }
+
+  function interestsHtml(sc, run) {
+    return '<div class="int-list">' + sc.theirInterests.map(function (i) {
+      var ok = !!run.learned[i.id];
+      return '<div class="int-item ' + (ok ? "ok" : "no") + '"><span class="int-mark">' + (ok ? "✓" : "✕") + '</span><div><b>' + (ok ? "З'ясовано" : "Не з'ясовано") + '</b><br>' + escHtml(i.text) + '</div></div>';
+    }).join("") + '</div>';
+  }
+
+  // ---------- Експорт, збереження, викладач ----------
+  function downloadText(name, text) {
+    var blob = new Blob(["\uFEFF" + text], { type: "text/plain;charset=utf-8;" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a"); a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  }
+  function copyToClipboard(text, btn, label) {
+    function ok() { btn.textContent = "Скопійовано ✓"; setTimeout(function () { btn.textContent = label; }, 1800); }
+    function fail() { var ta = document.getElementById("copy-fallback-area"); if (ta) { ta.style.display = "block"; ta.focus(); ta.select(); } }
+    if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(ok).catch(fail); }
+    else {
+      try {
+        var temp = document.createElement("textarea"); temp.value = text; temp.style.position = "fixed"; temp.style.opacity = "0";
+        document.body.appendChild(temp); temp.focus(); temp.select();
+        var success = document.execCommand("copy"); document.body.removeChild(temp);
+        if (success) ok(); else fail();
+      } catch (e) { fail(); }
+    }
+  }
+
+  function saveResultToStorage() {
+    if (!window.storage) return;
+    var sc = currentScenario(), run = state.run, sum = summarize(sc, run), v = VERDICTS[sum.level];
+    state.saveStatus = "saving";
+    var key = STORAGE_PREFIX + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
+    var payload = {
+      name: state.studentName || "Анонім", scenarioId: sc.id, scenarioTitle: sc.title,
+      result: run.metrics.result, relation: run.metrics.relation, trust: run.metrics.trust,
+      score: sum.score, level: sum.level, verdict: v.label, deal: sum.deal,
+      styles: sum.counts, dominant: sum.dominant, kinds: sum.kinds, fitPct: sum.fitPct,
+      learned: sum.learned.length, learnedTotal: sc.theirInterests.length,
+      path: run.history.map(function (h) { return { stepId: h.stepId, optionId: h.optionId, style: h.style, kind: h.kind, bestStyle: h.bestStyle }; }),
+      timestamp: Date.now()
+    };
+    window.storage.set(key, JSON.stringify(payload), true).then(function (r) {
+      state.saveStatus = r ? "saved" : "failed"; render();
+    }).catch(function () { state.saveStatus = "failed"; render(); });
+  }
+
+  function loadTeacherRows() {
+    state.teacherLoading = true; render();
+    if (!window.storage) { state.teacherRows = []; state.teacherLoading = false; render(); return; }
+    window.storage.list(STORAGE_PREFIX, true).then(function (listRes) {
+      var keys = (listRes && listRes.keys) || [];
+      if (keys.length === 0) { state.teacherRows = []; state.teacherLoading = false; render(); return; }
+      var promises = keys.map(function (k) {
+        return window.storage.get(k, true).then(function (r) { try { return JSON.parse(r.value); } catch (e) { return null; } }).catch(function () { return null; });
+      });
+      Promise.all(promises).then(function (rows) {
+        rows = rows.filter(Boolean).sort(function (a, b) { return b.timestamp - a.timestamp; });
+        state.teacherRows = rows; state.teacherLoading = false; render();
+      });
+    }).catch(function () { state.teacherRows = []; state.teacherLoading = false; render(); });
+  }
+
+  function csvEscape(t) { return '"' + String(t).replace(/"/g, '""') + '"'; }
+  function downloadCsv() {
+    var rows = state.teacherRows || [];
+    var header = ["Ім'я", "Переговори", "Результат", "Стосунки", "Довіра", "Бал", "Вердикт", "Угода"]
+      .concat(STYLE_ORDER.map(function (k) { return STYLES[k].name; }))
+      .concat(["Домінуючий стиль", "Відмінних", "Нейтральних", "Непідходящих", "Збіг зі стилем, %", "З'ясовано інтересів", "Дата"]);
+    var lines = [header.map(csvEscape).join(";")];
+    rows.forEach(function (r) {
+      var st = r.styles || {}, k = r.kinds || {};
+      lines.push([csvEscape(r.name), csvEscape(r.scenarioTitle), r.result, r.relation, r.trust, r.score, csvEscape(r.verdict), csvEscape(r.deal)]
+        .concat(STYLE_ORDER.map(function (s) { return st[s] || 0; }))
+        .concat([csvEscape(r.dominant && STYLES[r.dominant] ? STYLES[r.dominant].name : ""), k.best || 0, k.neutral || 0, k.bad || 0, r.fitPct || 0, (r.learned || 0) + "/" + (r.learnedTotal || 0), csvEscape(new Date(r.timestamp).toLocaleString("uk-UA"))]).join(";"));
+    });
+    downloadText("budget-negotiation-results.csv", lines.join("\n"));
+  }
+
+  function teacherStatsHtml(rows) {
+    var out = "";
+    SCENARIOS.forEach(function (sc) {
+      var rs = rows.filter(function (r) { return r.scenarioId === sc.id; });
+      if (rs.length === 0) return;
+      var n = rs.length;
+      function avg(f) { return Math.round(rs.reduce(function (s, r) { return s + (r[f] || 0); }, 0) / n); }
+      var levels = { great: 0, partial: 0, fail: 0, walkout: 0 };
+      rs.forEach(function (r) { if (levels.hasOwnProperty(r.level)) levels[r.level] += 1; });
+      var styleAvg = STYLE_ORDER.map(function (k) {
+        var tot = 0, cnt = 0;
+        rs.forEach(function (r) { var s = r.styles || {}; var all = STYLE_ORDER.reduce(function (a, x) { return a + (s[x] || 0); }, 0); if (all) { tot += (s[k] || 0) / all; cnt += 1; } });
+        return '<td>' + (cnt ? Math.round(tot / cnt * 100) : 0) + '%</td>';
+      }).join("");
+      var stepStats = {};
+      rs.forEach(function (r) { (r.path || []).forEach(function (p) {
+        if (p.stepId === "repair") return;
+        var s = stepStats[p.stepId] = stepStats[p.stepId] || { n: 0, best: 0, neutral: 0, bad: 0, styles: {} };
+        s.n += 1; s[p.kind] += 1; s.styles[p.style] = (s.styles[p.style] || 0) + 1;
+      }); });
+      var stepRows = sc.steps.filter(function (st) { return stepStats[st.id]; }).map(function (st) {
+        var s = stepStats[st.id], top = null;
+        Object.keys(s.styles).forEach(function (k) { if (!top || s.styles[k] > s.styles[top]) top = k; });
+        return '<tr><td>' + st.icon + ' ' + st.title + '</td><td>' + Math.round(s.best / s.n * 100) + '%</td><td>' + Math.round(s.neutral / s.n * 100) + '%</td><td>' + Math.round(s.bad / s.n * 100) + '%</td><td>' + (top ? STYLES[top].icon + ' ' + STYLES[top].name : "—") + '</td></tr>';
+      }).join("");
+      out += '<label class="field-label" style="margin-top:22px;">' + sc.emoji + ' ' + sc.title + ' · ' + n + ' проходжень</label>' +
+        '<div class="table-scroll"><table class="results-table"><thead><tr><th>Результат</th><th>Стосунки</th><th>Довіра</th><th>Бал</th></tr></thead><tbody><tr><td>' + avg("result") + '</td><td>' + avg("relation") + '</td><td>' + avg("trust") + '</td><td>' + avg("score") + '</td></tr></tbody></table></div>' +
+        '<div class="note-box" style="margin-top:10px;">Результати: взаємовигідна угода — ' + levels.great + ', угода з перекосом — ' + levels.partial + ', угоди немає — ' + levels.fail + ', переговори зірвано — ' + levels.walkout + '.</div>' +
+        '<div class="table-scroll"><table class="results-table"><thead><tr>' + STYLE_ORDER.map(function (k) { return '<th>' + STYLES[k].icon + '</th>'; }).join("") + '</tr></thead><tbody><tr>' + styleAvg + '</tr></tbody></table></div>' +
+        '<div class="table-scroll"><table class="results-table"><thead><tr><th>Крок</th><th>Відмінна</th><th>Нейтральна</th><th>Непідходяща</th><th>Найчастіший стиль</th></tr></thead><tbody>' + stepRows + '</tbody></table></div>';
+    });
+    return out;
+  }
+
+  function renderTeacher() {
+    var rows = state.teacherRows;
+    var bodyHtml;
+    if (state.teacherLoading) bodyHtml = '<p class="empty-note">Завантаження результатів…</p>';
+    else if (!rows || rows.length === 0) bodyHtml = '<p class="empty-note">Поки що ніхто не пройшов симулятор за цим посиланням.</p>';
+    else {
+      var trs = rows.map(function (r) {
+        return '<tr><td>' + escHtml(r.name) + '</td><td>' + escHtml(r.scenarioTitle || "") + '</td><td>' + r.score + '</td><td>' + escHtml(r.verdict || "") + '</td><td>' + (r.dominant && STYLES[r.dominant] ? STYLES[r.dominant].icon + ' ' + STYLES[r.dominant].name : "—") + '</td><td>' + new Date(r.timestamp).toLocaleString("uk-UA") + '</td></tr>';
+      }).join("");
+      bodyHtml = '<div class="table-scroll"><table class="results-table"><thead><tr><th>Студент</th><th>Переговори</th><th>Бал</th><th>Результат</th><th>Домінуючий стиль</th><th>Дата</th></tr></thead><tbody>' + trs + '</tbody></table></div>' + teacherStatsHtml(rows);
+    }
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<div class="teacher-header"><h1 class="title serif" style="margin:0;font-size:22px;">Результати групи</h1><button class="icon-btn" id="refresh-btn">Оновити</button></div>' +
+      bodyHtml +
+      '<div class="result-actions"><button class="btn btn-secondary" id="csv-btn"' + ((!rows || rows.length === 0) ? " disabled" : "") + '>Завантажити CSV</button><button class="btn btn-secondary" id="back-btn">← Назад</button></div>' +
+      '</div></div>'
+    );
+    card.querySelector("#refresh-btn").addEventListener("click", loadTeacherRows);
+    card.querySelector("#back-btn").addEventListener("click", function () { state.screen = state.run && state.run.history.length && state.nextNode === "END" ? "verdict" : "intro"; render(); });
+    var csvBtn = card.querySelector("#csv-btn");
+    if (csvBtn && rows && rows.length > 0) csvBtn.addEventListener("click", downloadCsv);
+    return card;
+  }
+
+  function render() {
+    app.innerHTML = "";
+    var view;
+    if (state.screen === "intro") view = renderIntro();
+    else if (state.screen === "talk") view = renderTalk();
+    else if (state.screen === "reaction") view = renderReaction();
+    else if (state.screen === "verdict") view = renderVerdict();
+    else view = renderTeacher();
+    app.appendChild(view);
+    window.scrollTo(0, 0);
+  }
+
+  render();
+
+})();
+</script>
+</body>
+</html>

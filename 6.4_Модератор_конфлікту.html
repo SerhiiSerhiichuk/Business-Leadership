@@ -1,0 +1,1646 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Модератор конфлікту</title>
+<style>
+  :root {
+    --ink: #1E2761; --ink-soft: #384080; --surface: #F3F6FC; --card: #FFFFFF;
+    --gold: #C9962C; --gold-soft: #F3E4C6; --muted: #5B6685; --line: #DDE4F5;
+    --red: #B3492F; --green: #2E7D6B;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; min-height: 100%; background: var(--surface);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+  }
+  .serif { font-family: Cambria, Georgia, "Times New Roman", serif; }
+  #app { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 32px 18px; }
+  .stage-wrap { width: 100%; max-width: 660px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 36px 34px; box-shadow: 0 18px 40px -24px rgba(30,39,97,0.35); }
+  @media (max-width: 480px) { .card { padding: 24px 18px; } }
+
+  .kicker { font-size: 13px; color: var(--muted); margin: 0 0 10px; }
+  h1.title { font-size: 26px; line-height: 1.25; margin: 0 0 14px; font-weight: 700; }
+  p.lead { font-size: 15px; line-height: 1.6; color: var(--muted); margin: 0 0 22px; }
+  label.field-label { display: block; font-size: 13px; color: var(--ink-soft); margin-bottom: 6px; font-weight: 600; }
+  input.text-input {
+    width: 100%; padding: 12px 14px; border-radius: 10px; border: 1.5px solid var(--line);
+    font-size: 15px; color: var(--ink); background: var(--surface); margin-bottom: 20px;
+  }
+  input.text-input:focus { outline: none; border-color: var(--gold); }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 13px 24px; border-radius: 10px; border: none; font-size: 14.5px; font-weight: 600;
+    cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .btn-primary { background: var(--ink); color: #fff; width: 100%; }
+  .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 10px 20px -12px rgba(30,39,97,0.6); }
+  .btn-secondary { background: var(--surface); color: var(--ink); border: 1.5px solid var(--line); }
+  .note-box { margin: 0 0 20px; padding: 12px 14px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+
+  /* DISC primer */
+  .primer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+  @media (max-width: 480px) { .primer-grid { grid-template-columns: 1fr; } }
+  .primer-item { display: flex; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); align-items: flex-start; }
+  .primer-letter { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; color: #fff; flex-shrink: 0; }
+  .primer-letter.D { background: var(--red); } .primer-letter.I { background: var(--gold); } .primer-letter.S { background: var(--green); } .primer-letter.C { background: var(--ink); }
+  .primer-text { font-size: 11.5px; line-height: 1.4; color: var(--muted); }
+  .primer-text b { color: var(--ink); }
+
+  /* Quiz */
+  .progress-track { height: 5px; background: var(--line); border-radius: 4px; overflow: hidden; margin-bottom: 22px; }
+  .progress-fill { height: 100%; background: var(--gold); border-radius: 4px; transition: width 0.4s ease; }
+  .step-count { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .cand-name-big { font-size: 20px; font-weight: 700; margin-bottom: 14px; }
+  .desc-box { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; margin-bottom: 22px; }
+  .desc-box p { font-size: 14px; line-height: 1.65; margin: 0; color: var(--ink-soft); }
+  .disc-choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 480px) { .disc-choice-grid { grid-template-columns: 1fr; } }
+  .disc-choice-btn {
+    display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 12px;
+    border: 1.5px solid var(--line); background: #fff; cursor: pointer; transition: all 0.15s ease; text-align: left;
+  }
+  .disc-choice-btn:hover { border-color: var(--gold); background: var(--gold-soft); }
+  .disc-choice-btn .dc-badge { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; color: #fff; flex-shrink: 0; }
+  .disc-choice-btn .dc-badge.D { background: var(--red); } .disc-choice-btn .dc-badge.I { background: var(--gold); } .disc-choice-btn .dc-badge.S { background: var(--green); } .disc-choice-btn .dc-badge.C { background: var(--ink); }
+  .disc-choice-btn .dc-title { font-weight: 700; font-size: 13.5px; }
+  .disc-choice-btn .dc-sub { font-size: 11px; color: var(--muted); }
+
+  /* Consequence */
+  .consequence-box { border-radius: 14px; padding: 18px 20px; margin-bottom: 20px; color: #fff; }
+  .consequence-box.correct { background: var(--green); }
+  .consequence-box.incorrect { background: var(--red); }
+  .consequence-box .cq-label { font-size: 11px; font-weight: 700; margin-bottom: 8px; letter-spacing: 0.3px; opacity: 0.85; }
+  .consequence-box p { font-size: 13.5px; line-height: 1.55; margin: 0; }
+  .consequence-box .cq-your { font-size: 12px; margin-bottom: 8px; opacity: 0.9; }
+
+  /* Results */
+  table.results-recap { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-bottom: 20px; }
+  table.results-recap th { text-align: left; font-size: 11px; color: var(--muted); font-weight: 600; padding: 7px 6px; border-bottom: 2px solid var(--line); }
+  table.results-recap td { padding: 8px 6px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  .mini-badge { width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 11px; color: #fff; }
+  .mini-badge.D { background: var(--red); } .mini-badge.I { background: var(--gold); } .mini-badge.S { background: var(--green); } .mini-badge.C { background: var(--ink); }
+  .result-icon { font-weight: 800; }
+  .result-icon.ok { color: var(--green); } .result-icon.no { color: var(--red); }
+
+  .tier-card { margin-top: 4px; padding: 20px 22px; border-radius: 14px; background: var(--ink); color: #fff; margin-bottom: 20px; }
+  .tier-card .t-label { font-size: 11px; color: var(--gold-soft); font-weight: 700; margin-bottom: 8px; letter-spacing: 0.3px; }
+  .tier-card .t-title { font-size: 19px; font-weight: 700; margin-bottom: 8px; }
+  .tier-card p { font-size: 13.5px; line-height: 1.55; color: #DCE1F5; margin: 0; }
+  .score-big { text-align: center; margin-bottom: 4px; }
+  .score-big .num { font-size: 40px; font-weight: 800; color: var(--ink); }
+  .score-big .den { font-size: 16px; color: var(--muted); }
+
+  .save-note { font-size: 12.5px; color: var(--muted); margin-top: 14px; text-align: center; }
+  .result-actions { display: flex; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
+  .result-actions .btn { flex: 1; min-width: 140px; }
+  .teacher-link { display: block; text-align: center; margin-top: 20px; font-size: 12.5px; color: var(--muted); text-decoration: underline; cursor: pointer; background: none; border: none; }
+
+  .teacher-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+  table.results-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.results-table th { text-align: left; font-size: 10.5px; color: var(--muted); font-weight: 600; padding: 7px 6px; border-bottom: 2px solid var(--line); }
+  table.results-table td { padding: 8px 6px; border-bottom: 1px solid var(--line); }
+  .tag { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; background: var(--gold-soft); color: #7A5A16; }
+  .empty-note { text-align: center; color: var(--muted); font-size: 13.5px; padding: 30px 0; }
+  .icon-btn { background: none; border: 1.5px solid var(--line); border-radius: 8px; padding: 7px 13px; font-size: 12.5px; color: var(--ink); cursor: pointer; }
+  .icon-btn:hover { border-color: var(--gold); }
+  .table-scroll { overflow-x: auto; }
+
+
+
+  .fb-hint { font-size: 12px; color: var(--muted); font-style: italic; margin: 4px 0 0; }
+  .next-box { margin: 20px 0 14px; padding: 16px 18px; border-radius: 14px; background: var(--gold-soft); border: 1px solid #E5CE9B; }
+  .next-box .nb-title { font-size: 15px; font-weight: 800; margin-bottom: 4px; }
+  .next-box p { font-size: 13px; line-height: 1.55; color: var(--ink-soft); margin: 0 0 12px; }
+  .next-box .result-actions { margin-top: 0; }
+  .deep { margin: 6px 0 18px; border: 1.5px solid var(--line); border-radius: 14px; background: #fff; }
+  .deep > summary { cursor: pointer; font-weight: 700; font-size: 14px; padding: 14px 18px; color: var(--ink); list-style: none; }
+  .deep > summary::-webkit-details-marker { display: none; }
+  .deep > summary::before { content: "▸ "; color: var(--gold); }
+  .deep[open] > summary::before { content: "▾ "; }
+  .deep-body { padding: 0 16px 16px; }
+  .deep-lead { font-size: 12.5px; color: var(--muted); line-height: 1.55; margin: 0 0 14px; }
+
+  /* ---------- Stepper & roadmap ---------- */
+  .stepper { display: flex; align-items: center; margin-bottom: 14px; }
+  .st-item { display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 40px; }
+  .st-ico { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; border: 2px solid var(--line); background: var(--surface); filter: grayscale(1); opacity: 0.55; }
+  .st-lab { font-size: 10px; font-weight: 700; color: var(--muted); }
+  .st-item.done .st-ico { filter: none; opacity: 1; background: #DCEFE9; border-color: #6FB8A2; }
+  .st-item.cur .st-ico { filter: none; opacity: 1; background: var(--gold-soft); border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,150,44,0.25); }
+  .st-item.cur .st-lab { color: var(--ink); }
+  .st-line { flex: 1; height: 2px; background: var(--line); margin: 0 2px 14px; min-width: 6px; }
+  .roadmap { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 18px; }
+  @media (max-width: 560px) { .roadmap { grid-template-columns: 1fr; } }
+  .rm-item { display: flex; gap: 10px; align-items: center; padding: 9px 11px; border-radius: 10px; border: 1.5px solid var(--line); background: #fff; }
+  .rm-ico { width: 36px; height: 36px; border-radius: 50%; background: var(--surface); border: 2px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+  .rm-name { font-weight: 700; font-size: 12.5px; } .rm-desc { font-size: 11.5px; color: var(--muted); line-height: 1.4; }
+
+  /* ---------- SBI-I icons ---------- */
+  .el-S { --ic-bg: #E6EAF8; --ic-bd: #7C8BC9; } .el-B { --ic-bg: #FBF1D6; --ic-bd: #D7B25A; } .el-I { --ic-bg: #DCEFE9; --ic-bd: #6FB8A2; }
+  .el-N { --ic-bg: #EADFF5; --ic-bd: #A98BD1; } .el-frame { --ic-bg: #E3F0FA; --ic-bd: #78AEDB; } .el-E { --ic-bg: #FBE3EA; --ic-bd: #E08BA4; }
+  .el-Q { --ic-bg: #E0F2F1; --ic-bd: #5FB5AE; } .el-A { --ic-bg: #E7F3D9; --ic-bd: #8DBB5A; } .el-F { --ic-bg: #EEE9DD; --ic-bd: #B6A472; }
+  .lv-bad { --ic-bg: #F6DCD4; --ic-bd: #D9826A; } .lv-soft { --ic-bg: #FBEBD6; --ic-bd: #E2A867; }
+  .el-list { display: grid; gap: 8px; margin-bottom: 18px; }
+  .el-card { display: flex; gap: 14px; padding: 12px 14px; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; }
+  .el-ico, .t-ico, .mp-ico, .r-ico, .fi-ico { background: var(--ic-bg); border: 2px solid var(--ic-bd); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .el-ico { width: 46px; height: 46px; font-size: 22px; }
+  .el-name { font-weight: 800; font-size: 13.5px; margin-bottom: 3px; }
+  .el-def { font-size: 12.5px; line-height: 1.5; color: var(--ink-soft); }
+  .el-ex { font-size: 12px; line-height: 1.5; color: var(--muted); font-style: italic; margin-top: 4px; }
+  .flaw-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-bottom: 16px; }
+  @media (max-width: 560px) { .flaw-grid { grid-template-columns: 1fr 1fr; } }
+  .flaw-item { display: flex; align-items: center; gap: 8px; font-size: 11.5px; font-weight: 600; padding: 6px 9px; border-radius: 10px; border: 1.5px solid; }
+  .flaw-item.bad { background: #FCF1EE; border-color: #E8B5A4; color: #7A2E1A; } .flaw-item.soft { background: #FEF6EA; border-color: #EBC995; color: #6B4A12; }
+  .fi-ico { width: 26px; height: 26px; font-size: 14px; border-width: 1.5px; }
+  .flaw-item.bad .fi-ico { --ic-bg: #F6DCD4; --ic-bd: #D9826A; } .flaw-item.soft .fi-ico { --ic-bg: #FBEBD6; --ic-bd: #E2A867; }
+
+  .tiles-title { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 0.2px; margin: 12px 0 6px; }
+  .tile { display: flex; gap: 10px; align-items: center; padding: 9px 11px; border-radius: 10px; border: 1.5px solid var(--line); background: #fff; margin-bottom: 6px; }
+  .t-ico { width: 36px; height: 36px; font-size: 17px; }
+  .t-body { flex: 1; min-width: 0; }
+  .t-name { font-size: 12.5px; font-weight: 700; }
+  .t-what { font-size: 11.5px; color: var(--muted); line-height: 1.4; }
+  .t-mark { font-weight: 800; font-size: 16px; padding-left: 6px; }
+  .tile.present { border-color: #8FC4B3; background: #F2FAF7; } .tile.present .t-mark { color: var(--green); }
+  .tile.missing { border-style: dashed; background: #FAFAFB; } .tile.missing .t-ico { filter: grayscale(1); opacity: 0.5; } .tile.missing .t-name { color: var(--muted); } .tile.missing .t-mark { color: var(--red); }
+  .tile.soft { border-color: #E2A867; background: #FEF6EA; } .tile.soft .t-mark { color: #A8741A; }
+  .tile.flaw { border-color: #D9826A; background: #FCF1EE; } .tile.flaw .t-mark { color: var(--red); }
+
+  .remind { margin-bottom: 14px; font-size: 12.5px; }
+  .remind summary { cursor: pointer; font-weight: 700; color: var(--muted); }
+  .remind-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .remind-item { display: inline-flex; align-items: center; gap: 7px; padding: 4px 11px 4px 5px; border-radius: 20px; border: 1.5px solid var(--ic-bd); background: var(--ic-bg); font-weight: 700; font-size: 12px; }
+  .r-ico { width: 24px; height: 24px; font-size: 13px; background: #fff; border-width: 1.5px; }
+
+  .mp-row { display: flex; gap: 12px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.12); }
+  .mp-row:last-child { border-bottom: none; }
+  .mp-ico { width: 34px; height: 34px; font-size: 16px; }
+  .mp-text { font-size: 13.5px; line-height: 1.6; color: #DCE1F5; }
+  .mp-tag { display: block; font-size: 10.5px; font-weight: 700; color: var(--gold-soft); letter-spacing: 0.3px; margin-bottom: 2px; }
+
+  /* ---------- SBI game ---------- */
+  .primer-letter.sbi-S { background: var(--ink); } .primer-letter.sbi-B { background: var(--gold); } .primer-letter.sbi-I { background: var(--green); }
+  .sbi-grid { grid-template-columns: 1fr 1fr 1fr; }
+  @media (max-width: 560px) { .sbi-grid { grid-template-columns: 1fr; } }
+
+  .scenario-list { display: grid; gap: 10px; margin-bottom: 8px; }
+  .scenario-card { display: flex; gap: 14px; align-items: center; text-align: left; padding: 14px 16px; border-radius: 14px; border: 1.5px solid var(--line); background: #fff; cursor: pointer; transition: all 0.15s ease; }
+  .scenario-card:hover { border-color: var(--gold); background: var(--gold-soft); transform: translateY(-1px); }
+  .sc-emoji { width: 46px; height: 46px; border-radius: 50%; background: var(--surface); border: 1.5px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+  .sc-title { font-weight: 700; font-size: 14.5px; color: var(--ink); }
+  .sc-sub { font-size: 12px; color: var(--muted); margin: 2px 0 6px; line-height: 1.4; }
+  .sc-meta { font-size: 11.5px; color: var(--ink-soft); display: flex; align-items: center; gap: 6px; }
+
+  .person { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+  .avatar { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; color: #fff; flex-shrink: 0; }
+  .avatar.D { background: var(--red); } .avatar.I { background: var(--gold); } .avatar.S { background: var(--green); } .avatar.C { background: var(--ink); }
+  .p-info { flex: 1; min-width: 120px; }
+  .p-name { font-weight: 700; font-size: 15px; }
+  .p-sub { font-size: 11.5px; color: var(--muted); }
+  .mood-chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px 5px 8px; border-radius: 20px; font-size: 12px; font-weight: 700; border: 1.5px solid; }
+  .mood-emoji { font-size: 15px; }
+  .mood-chip.neutral { background: #EEF1FA; border-color: #C9D2EE; color: #3B4577; }
+  .mood-chip.open { background: #DCEFE9; border-color: #8FC4B3; color: #1F5245; }
+  .mood-chip.defensive { background: #F9E3C9; border-color: #E2A867; color: #7A4A0F; }
+  .mood-chip.withdrawn { background: #F6DCD4; border-color: #D9826A; color: #7A2E1A; }
+  .mood-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+  .mood-arrow { color: var(--muted); font-weight: 700; }
+
+  .metrics { display: grid; gap: 9px; margin-bottom: 16px; }
+  .m-head { display: flex; justify-content: space-between; align-items: center; font-size: 12px; margin-bottom: 4px; }
+  .m-name { color: var(--ink-soft); font-weight: 600; }
+  .m-val { font-weight: 800; color: var(--ink); display: inline-flex; align-items: center; gap: 6px; }
+  .m-delta { font-size: 11px; font-weight: 800; padding: 1px 7px; border-radius: 10px; }
+  .m-delta.up { background: #DCEFE9; color: #1F5245; } .m-delta.down { background: #F6DCD4; color: #7A2E1A; }
+  .m-track { height: 8px; background: var(--line); border-radius: 6px; overflow: hidden; }
+  .m-fill { height: 100%; border-radius: 6px; transition: width 0.5s ease; }
+
+  .setup-box { margin-bottom: 14px; padding: 12px 14px; border-radius: 10px; background: var(--gold-soft); border: 1px solid #E5CE9B; font-size: 12.5px; line-height: 1.55; color: #5C4510; }
+  .bubble { padding: 12px 15px; border-radius: 14px; font-size: 13.5px; line-height: 1.55; margin-bottom: 10px; max-width: 94%; }
+  .bubble .b-who { font-size: 11px; font-weight: 700; margin-bottom: 3px; opacity: 0.75; }
+  .bubble.emp { background: var(--surface); border: 1px solid var(--line); border-top-left-radius: 4px; color: var(--ink); }
+  .bubble.emp.open { background: #E7F4EF; border-color: #8FC4B3; }
+  .bubble.emp.defensive { background: #FBEBD6; border-color: #E2A867; }
+  .bubble.emp.withdrawn { background: #F8E4DE; border-color: #D9826A; }
+  .bubble.mgr { background: var(--ink); color: #fff; margin-left: auto; border-top-right-radius: 4px; }
+  .mood-note { font-size: 12px; color: var(--muted); margin: -2px 0 12px; font-style: italic; }
+  .retry-note { font-size: 12px; color: #7A4A0F; background: #F9E3C9; border-radius: 8px; padding: 7px 11px; margin-bottom: 10px; }
+  .ctx-box { margin-bottom: 18px; padding: 10px 14px; border-left: 4px solid var(--gold); background: var(--surface); border-radius: 0 10px 10px 0; font-size: 13px; line-height: 1.5; color: var(--ink-soft); }
+
+  .reply-list { display: grid; gap: 10px; }
+  .reply-btn { display: flex; gap: 12px; align-items: flex-start; text-align: left; padding: 13px 15px; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; cursor: pointer; transition: all 0.15s ease; font-size: 13.5px; line-height: 1.5; color: var(--ink); }
+  .reply-btn:hover { border-color: var(--gold); background: var(--gold-soft); }
+  .reply-num { width: 24px; height: 24px; border-radius: 50%; background: var(--surface); border: 1.5px solid var(--line); font-weight: 800; font-size: 11.5px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .reply-text { flex: 1; }
+
+  .verdict-card { border-radius: 16px; padding: 20px 22px; color: #fff; margin-bottom: 18px; }
+  .verdict-card.great { background: var(--green); } .verdict-card.partial { background: #A8741A; } .verdict-card.fail { background: var(--red); }
+  .verdict-card .v-label { font-size: 11px; font-weight: 700; letter-spacing: 0.3px; opacity: 0.85; margin-bottom: 6px; }
+  .verdict-card .v-title { font-size: 21px; font-weight: 800; margin-bottom: 8px; }
+  .verdict-card p { font-size: 13.5px; line-height: 1.55; margin: 0 0 10px; }
+  .verdict-card .v-score { font-size: 12.5px; opacity: 0.95; } .verdict-card .v-score span { font-size: 22px; font-weight: 800; }
+  .end-mood { margin-top: 4px; }
+  .chart-box { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px; margin-bottom: 18px; }
+  .chart-legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 11px; color: var(--muted); margin-top: 6px; }
+  .chart-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+
+  .sbi-row { display: flex; gap: 12px; padding: 11px 13px; border-radius: 10px; border: 1px solid var(--line); margin-bottom: 8px; background: #fff; }
+  .sbi-row.ok { border-left: 4px solid var(--green); } .sbi-row.no { border-left: 4px solid var(--red); background: #FBF1EE; }
+  .sbi-title { font-weight: 700; font-size: 13px; margin-bottom: 3px; }
+  .sbi-quote { font-size: 12px; color: var(--ink-soft); line-height: 1.5; }
+  .sbi-hint { font-size: 12px; color: #7A2E1A; line-height: 1.5; }
+
+  .tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .tag-chip { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+  .tag-chip.good { background: #DCEFE9; color: #1F5245; } .tag-chip.bad { background: #F6DCD4; color: #7A2E1A; }
+  .step-card { border: 1px solid var(--line); border-left: 4px solid var(--red); border-radius: 12px; padding: 13px 15px; margin-bottom: 12px; background: #fff; }
+  .step-card.best { border-left-color: var(--green); }
+  .step-card.neutral { border-left-color: var(--gold); }
+  .fb-live { border: 1px solid var(--line); border-left: 4px solid var(--gold); border-radius: 12px; padding: 13px 15px; margin-bottom: 16px; background: #fff; }
+  .fb-live.best { border-left-color: var(--green); } .fb-live.bad { border-left-color: var(--red); }
+  .fb-live-title { font-size: 11px; font-weight: 700; letter-spacing: 0.3px; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; }
+  .kind-row { margin-bottom: 8px; }
+  .kind-badge { display: inline-block; font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 20px; }
+  .kind-badge.best { background: #DCEFE9; color: #1F5245; } .kind-badge.neutral { background: #FBF1D6; color: #6B5314; } .kind-badge.bad { background: #F6DCD4; color: #7A2E1A; }
+  .verdict-card .v-reason { background: rgba(255,255,255,0.18); border-radius: 8px; padding: 8px 11px; font-size: 12.5px !important; }
+  .verdict-card .v-kinds { margin-top: 8px; font-size: 12px; opacity: 0.92; }
+
+  .sc-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; margin-bottom: 8px; }
+  .sc-n { width: 22px; height: 22px; border-radius: 50%; background: var(--ink); color: #fff; font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
+  .sc-mood { margin-left: auto; font-size: 11.5px; color: var(--muted); }
+  .sc-line { font-size: 13px; line-height: 1.55; color: var(--ink); background: var(--surface); border-radius: 8px; padding: 9px 12px; }
+  .sc-why { font-size: 12.5px; line-height: 1.55; color: var(--ink-soft); margin: 4px 0 8px; }
+  .sc-reply { font-size: 12px; line-height: 1.5; color: var(--muted); font-style: italic; }
+  .sc-best { margin-top: 8px; font-size: 12.5px; line-height: 1.55; color: #1F5245; background: #EEF8F4; border-radius: 8px; padding: 8px 12px; }
+  .model-box { margin: 18px 0; padding: 16px 18px; border-radius: 12px; background: var(--ink); color: #fff; }
+  .model-box .mb-title { font-size: 11px; font-weight: 700; color: var(--gold-soft); letter-spacing: 0.3px; margin-bottom: 8px; }
+  .model-box p { font-size: 13.5px; line-height: 1.6; color: #DCE1F5; margin: 0; }
+  .review-ok { margin-bottom: 18px; padding: 12px 14px; border-radius: 10px; background: #DCEFE9; color: #1F5245; font-size: 13px; }
+  .insight-box { margin-bottom: 18px; padding: 14px 16px; border-radius: 12px; background: var(--gold-soft); border: 1px solid #E5CE9B; }
+  .insight-box .ib-title { font-size: 11px; font-weight: 700; letter-spacing: 0.3px; color: #7A5A16; margin-bottom: 6px; }
+
+
+  /* ---------- Negotiation game ---------- */
+  .st-comp { --ic-bg: #F6DCD4; --ic-bd: #D9826A; } .st-coll { --ic-bg: #DCEFE9; --ic-bd: #6FB8A2; } .st-comp2 { --ic-bg: #FBF1D6; --ic-bd: #D7B25A; }
+  .st-avoid { --ic-bg: #E6EAF8; --ic-bd: #7C8BC9; } .st-accom { --ic-bg: #EADFF5; --ic-bd: #A98BD1; }
+  .tki-list { display: grid; gap: 8px; margin-bottom: 16px; }
+  .tki-card { display: flex; gap: 14px; padding: 11px 14px; border-radius: 12px; border: 1.5px solid var(--ic-bd); background: var(--ic-bg); }
+  .tki-ico { width: 44px; height: 44px; border-radius: 50%; background: #fff; border: 2px solid var(--ic-bd); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+  .tki-name { font-weight: 800; font-size: 13.5px; margin-bottom: 2px; }
+  .tki-def { font-size: 12.5px; line-height: 1.45; color: var(--ink-soft); }
+  .tki-when { font-size: 11.5px; line-height: 1.45; color: var(--muted); margin-top: 3px; }
+  .style-tile { display: flex; gap: 10px; align-items: center; padding: 9px 12px; border-radius: 10px; border: 1.5px solid var(--ic-bd); background: var(--ic-bg); margin-bottom: 8px; }
+  .stt-ico { width: 38px; height: 38px; border-radius: 50%; background: #fff; border: 2px solid var(--ic-bd); display: flex; align-items: center; justify-content: center; font-size: 19px; flex-shrink: 0; }
+  .stt-name { font-weight: 800; font-size: 13px; } .stt-def { font-size: 11.5px; color: var(--ink-soft); line-height: 1.4; }
+  .style-chip { display: inline-block; font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 20px; background: var(--ic-bg); border: 1.5px solid var(--ic-bd); margin-left: 6px; }
+  .remind-item.st-comp, .remind-item.st-coll, .remind-item.st-comp2, .remind-item.st-avoid, .remind-item.st-accom { border-color: var(--ic-bd); background: var(--ic-bg); }
+  .reply-body { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+  .reply-tactic { font-size: 10.5px; font-weight: 800; letter-spacing: 0.3px; text-transform: uppercase; color: #A8741A; }
+  .stepper .st-lab { font-size: 9px; text-align: center; max-width: 54px; line-height: 1.15; }
+  .st-item { min-width: 34px; }
+  .brief-box { margin-bottom: 14px; padding: 12px 14px; border-radius: 10px; background: #fff; border: 1.5px solid var(--line); }
+  .bb-title { font-size: 12px; font-weight: 800; margin-bottom: 8px; }
+  .bb-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  @media (max-width: 560px) { .bb-grid { grid-template-columns: 1fr; } }
+  .bb-item { font-size: 12px; line-height: 1.5; color: var(--ink-soft); background: var(--surface); border-radius: 8px; padding: 8px 10px; }
+  .bb-item span { display: block; font-size: 10.5px; font-weight: 700; color: var(--muted); letter-spacing: 0.2px; text-transform: uppercase; margin-bottom: 2px; }
+  .walkout-box { margin-bottom: 14px; padding: 10px 14px; border-radius: 10px; background: #F6DCD4; color: #7A2E1A; font-size: 13px; font-weight: 600; }
+  .factor-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .factor { font-size: 10.5px; font-weight: 700; padding: 2px 9px; border-radius: 20px; background: var(--surface); border: 1px solid var(--line); color: var(--ink-soft); }
+  .factor.high { background: #FBEFD0; border-color: #E5CE9B; } .factor.low { background: #EEF1FA; }
+  .tki-analysis { margin-bottom: 18px; }
+  .ta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; margin-bottom: 12px; }
+  @media (max-width: 640px) { .ta-grid { grid-template-columns: 1fr; } }
+  .style-bars { display: grid; gap: 8px; }
+  .sb-row { display: grid; grid-template-columns: 112px 1fr 56px; gap: 8px; align-items: center; font-size: 12px; }
+  .sb-row.dom .sb-lab { font-weight: 800; }
+  .sb-track { height: 10px; background: var(--line); border-radius: 6px; overflow: hidden; }
+  .sb-fill { height: 100%; border-radius: 6px; background: var(--ic-bd); }
+  .sb-num { font-size: 11px; color: var(--muted); text-align: right; }
+  .dom-box { padding: 12px 15px; border-radius: 12px; border: 1.5px solid var(--ic-bd); background: var(--ic-bg); margin-bottom: 10px; }
+  .dom-title { font-weight: 800; font-size: 14px; margin-bottom: 4px; }
+  .dom-box p { font-size: 12.5px; line-height: 1.55; color: var(--ink-soft); margin: 0 0 6px; }
+  .dom-advice { font-style: italic; }
+  .fit-row { font-size: 12.5px; padding: 9px 13px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); }
+  .verdict-card.fail { background: #7A5A16; } .verdict-card.walkout { background: var(--red); }
+  .v-split { margin-top: 8px; font-size: 12.5px; opacity: 0.95; }
+  .int-list { display: grid; gap: 8px; margin-bottom: 14px; }
+  .int-item { display: flex; gap: 10px; padding: 9px 12px; border-radius: 10px; border: 1.5px solid var(--line); background: #fff; font-size: 12.5px; line-height: 1.45; }
+  .int-item.ok { border-color: #8FC4B3; background: #F2FAF7; } .int-item.no { border-style: dashed; background: #FAFAFB; }
+  .int-mark { font-weight: 800; font-size: 15px; } .int-item.ok .int-mark { color: var(--green); } .int-item.no .int-mark { color: var(--red); }
+  .proto-doc { background: #fff; border: 1.5px solid var(--line); border-radius: 12px; padding: 18px 20px; margin-bottom: 12px; font-size: 12.5px; line-height: 1.55; color: var(--ink-soft); }
+  .pd-head { text-align: center; border-bottom: 2px solid var(--ink); padding-bottom: 10px; margin-bottom: 12px; }
+  .pd-title { font-weight: 800; font-size: 16px; letter-spacing: 1px; color: var(--ink); } .pd-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .pd-sec { margin-bottom: 12px; } .pd-sec b { color: var(--ink); }
+  .pd-sec ul, .pd-sec ol { margin: 4px 0 6px; padding-left: 20px; } .pd-sec li { margin-bottom: 3px; }
+  .pd-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.2px; margin-top: 6px; } .pd-label.warn { color: #A8741A; }
+  .pd-style { font-size: 11px; font-weight: 700; color: #A8741A; }
+  .pd-res { font-weight: 700; margin: 4px 0; } .pd-res.full { color: #1F5245; } .pd-res.weak { color: #8A5A10; } .pd-res.none { color: #7A2E1A; }
+  .pd-sign { margin-top: 16px; padding-top: 10px; border-top: 1px dashed var(--line); }
+
+
+  /* ---------- Mediator game ---------- */
+  .persons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  @media (max-width: 560px) { .persons { grid-template-columns: 1fr; } }
+  .party-card { display: flex; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; }
+  .pc-info { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+  .party-card .avatar { width: 42px; height: 42px; font-size: 17px; }
+  .party-card .mood-chip { align-self: flex-start; font-size: 11px; padding: 3px 9px 3px 6px; }
+  .metrics4 { grid-template-columns: 1fr 1fr; gap: 10px 14px; }
+  @media (max-width: 560px) { .metrics4 { grid-template-columns: 1fr; } }
+  .dual { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px; }
+  @media (max-width: 560px) { .dual { grid-template-columns: 1fr; } }
+  .dual .bubble { max-width: 100%; margin-bottom: 0; }
+  .dual-moods { align-items: flex-start; }
+  .mc-col { display: flex; flex-direction: column; gap: 4px; margin-right: 10px; }
+  .mc-name { font-size: 10.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.2px; }
+  .check-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  @media (max-width: 560px) { .check-cards { grid-template-columns: 1fr; } }
+  .check-card { display: flex; gap: 12px; padding: 12px 14px; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; }
+  .check-card.ok { border-color: #8FC4B3; background: #F2FAF7; } .check-card.mid { border-color: #E2A867; background: #FEF6EA; } .check-card.no { border-color: #D9826A; background: #FCF1EE; }
+  .cc-ico { font-size: 24px; } .cc-title { font-weight: 800; font-size: 13.5px; margin-bottom: 3px; } .cc-text { font-size: 12px; line-height: 1.5; color: var(--ink-soft); }
+  .balance-box { padding: 12px 14px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); margin-bottom: 16px; }
+  .bal-row { display: grid; grid-template-columns: 70px 1fr 34px; gap: 8px; align-items: center; margin-bottom: 8px; font-size: 12.5px; }
+  .bal-track { height: 10px; background: var(--line); border-radius: 6px; overflow: hidden; }
+  .bal-fill { height: 100%; border-radius: 6px; } .bal-fill.a { background: #2E7D6B; } .bal-fill.b { background: #7B5EA7; }
+  .bal-num { text-align: right; font-weight: 700; font-size: 12px; }
+  .bal-note { font-size: 12px; color: var(--ink-soft); }
+  .timeline { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .tl-item { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 10px; border-radius: 10px; border: 1.5px solid var(--line); background: #fff; min-width: 46px; }
+  .tl-item.up { background: #DCEFE9; border-color: #8FC4B3; } .tl-item.down { background: #F6DCD4; border-color: #D9826A; }
+  .tl-ico { font-size: 17px; } .tl-d { font-weight: 800; font-size: 12.5px; } .tl-lab { font-size: 10px; color: var(--muted); }
+  .verdict-card.partial { background: #A8741A; }
+  .pd-res.none { color: #7A2E1A; }
+
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+(function () {
+  "use strict";
+  // ---------- Дані ----------
+  var STYLE_ORDER = ["facilitator", "judge", "partisan", "commander", "avoider"];
+  var STYLES = {
+    facilitator: { name: "Фасилітатор", icon: "🧭", cls: "st-coll",
+      def: "Керую процесом, а рішення залишаю сторонам: структура, рівна увага, інтереси, варіанти від самих учасників.",
+      when: "Майже завжди: це основа нейтральної медіації.", risk: "Потребує часу й терпіння.",
+      advice: "Тримайте структуру та давайте сторонам авторство рішень." },
+    judge: { name: "Суддя", icon: "⚖️", cls: "st-comp2",
+      def: "Оцінюю, хто правий, і виношу вирок щодо поведінки або варіантів.",
+      when: "У медіації майже ніколи: вирок руйнує нейтральність.", risk: "Одна зі сторін неодмінно відчує несправедливість.",
+      advice: "Замість «хто правий» запитуйте «що вам потрібно»." },
+    partisan: { name: "Захисник сторони", icon: "🚩", cls: "st-comp",
+      def: "Відверто чи м'яко підтримую одну сторону: погоджуюся з нею, приймаю її формулювання проблеми.",
+      when: "Ніколи, якщо ви посередник.", risk: "Втрата довіри другої сторони й ролі посередника.",
+      advice: "Визнавайте емоції, але не погоджуйтеся зі змістом претензії жодної сторони." },
+    commander: { name: "Розпорядник", icon: "🔨", cls: "st-accom",
+      def: "Вирішую за сторони або тисну на швидку згоду: нав'язую своє рішення чи погрожую наслідками.",
+      when: "Лише коли йдеться про безпеку або порушення правил, а не про зміст конфлікту.", risk: "Рішення не належить сторонам, тож його не виконують.",
+      advice: "Контролюйте процес, а не зміст: рішення мають напрацювати сторони." },
+    avoider: { name: "Спостерігач", icon: "🙈", cls: "st-avoid",
+      def: "Не втручаюся, відкладаю чи перевожу тему: даю сторонам «розібратися самим».",
+      when: "Лише як короткочасна пауза, якщо потрібно остудити емоції.", risk: "Конфлікт ескалює, а сильніша сторона домінує.",
+      advice: "Втручайтеся рано й м'яко, а паузу робіть свідомо й на короткий час." }
+  };
+  var METRIC_DEFS = [
+    { key: "neutral", label: "Нейтральність", icon: "⚖️", color: "#C9962C" },
+    { key: "progress", label: "Прогрес до вирішення", icon: "📈", color: "#1E2761" },
+    { key: "trustA", label: "Довіра: %A", icon: "🛡️", color: "#2E7D6B" },
+    { key: "trustB", label: "Довіра: %B", icon: "🛡️", color: "#7B5EA7" }
+  ];
+  var MOODS = {
+    neutral: { emoji: "😐", m: "Насторожений", f: "Насторожена" },
+    open: { emoji: "🙂", m: "Відкритий до діалогу", f: "Відкрита до діалогу" },
+    defensive: { emoji: "😤", m: "Напружений, захищається", f: "Напружена, захищається" },
+    withdrawn: { emoji: "🔒", m: "Замкнувся", f: "Замкнулась" }
+  };
+  var MOOD_NOTE = {
+    neutral: { m: "%n уважно слухає, але лишається насторожений.", f: "%n уважно слухає, але лишається насторожена." },
+    open: { m: "%n відкритий до діалогу.", f: "%n відкрита до діалогу." },
+    defensive: { m: "%n напружений і захищає свою позицію.", f: "%n напружена і захищає свою позицію." },
+    withdrawn: { m: "%n замкнувся й відповідає коротко.", f: "%n замкнулась і відповідає коротко." }
+  };
+  var KIND_META = {
+    best: { label: "Відмінна відповідь", cls: "best" },
+    neutral: { label: "Нейтральна відповідь", cls: "neutral" },
+    bad: { label: "Непідходяща відповідь", cls: "bad" }
+  };
+  // level: good — елемент якісної медіації; soft — нейтральна помилка; bad — серйозна помилка
+  var TAGS = {
+    frame: { label: "Безпечна рамка", short: "Безпечна рамка", icon: "🛡️", level: "good", cls: "el-frame", what: "Пояснено роль, правила й конфіденційність." },
+    listen: { label: "Активне слухання", short: "Активне слухання", icon: "👂", level: "good", cls: "el-Q", what: "Рівний час для обох і перефразування сказаного." },
+    neutral: { label: "Нейтральність", short: "Нейтральність", icon: "⚖️", level: "good", cls: "el-B", what: "Визнано емоції, але не погоджено зі змістом претензії жодної сторони." },
+    interests: { label: "Інтереси за позиціями", short: "Інтереси за позиціями", icon: "🔍", level: "good", cls: "el-S", what: "Сторони назвали потреби, а не лише вимоги." },
+    options: { label: "Варіанти від сторін", short: "Варіанти від сторін", icon: "💡", level: "good", cls: "el-N", what: "Рішення пропонують самі сторони за узгодженими критеріями." },
+    agree: { label: "Конкретна згода", short: "Конкретна згода", icon: "📝", level: "good", cls: "el-A", what: "Домовленість містить що, хто, коли та дату перегляду, і її підтвердили обидві сторони." },
+    partisan: { label: "Підтримка однієї сторони", short: "Підтримка однієї сторони", icon: "🚩", level: "bad", cls: "lv-bad", what: "Згода зі змістом претензії однієї сторони руйнує нейтральність." },
+    judge: { label: "Оцінка «хто правий»", short: "Оцінка «хто правий»", icon: "🏛️", level: "bad", cls: "lv-bad", what: "Вирок щодо поведінки чи інтересів замість допомоги сторонам." },
+    impose: { label: "Рішення замість сторін", short: "Рішення замість сторін", icon: "🔨", level: "bad", cls: "lv-bad", what: "Нав'язане рішення не належить сторонам, тому його не виконують." },
+    pressure: { label: "Тиск на згоду", short: "Тиск на згоду", icon: "😬", level: "bad", cls: "lv-bad", what: "Погрози й вимога швидкої згоди дають формальну, а не справжню угоду." },
+    avoid: { label: "Ухилення", short: "Ухилення", icon: "🙈", level: "soft", cls: "lv-soft", what: "Ухилення від теми, регламенту чи відповіді." },
+    vague: { label: "Розмитість", short: "Розмитість", icon: "🌫️", level: "soft", cls: "lv-soft", what: "Занадто загально: незрозуміло, що саме домовлено." }
+  };
+  Object.keys(TAGS).forEach(function (k) { TAGS[k].good = TAGS[k].level === "good"; });
+  var REPAIR_TITLE = "Розрядження напруги";
+  var REPAIR_ICON = "🩹";
+
+  // o(id, стиль, тактика, репліка, [настрій A, настрій B], [нейтральність, прогрес, довіра A, довіра B], відповідь A, відповідь B, пояснення, рядок протоколу, тип, теги, додатково)
+  function o(id, style, tactic, text, moods, fx, ra, rb, why, proto, kind, tags, extra) {
+    var r = { id: id, style: style, tactic: tactic, text: text, moods: { A: moods[0], B: moods[1] },
+      fx: { neutral: fx[0], progress: fx[1], trustA: fx[2], trustB: fx[3] }, replyA: ra, replyB: rb, why: why, proto: proto,
+      kind: kind, best: kind === "best", tags: tags, learnA: [], learnB: [], deal: null };
+    if (extra) { r.learnA = extra.learnA || []; r.learnB = extra.learnB || []; r.deal = extra.deal || null; }
+    return r;
+  }
+
+  var SCENARIOS = [
+  // ======================= 1. ТЕМП ПРОТИ РЕТЕЛЬНОСТІ =======================
+  {
+    id: "pace_care", emoji: "⏱️", title: "Темп проти ретельності", topic: "Конфлікт на нарадах",
+    parties: {
+      A: { name: "Олена", gender: "f", disc: "D", role: "Генератор ідей" },
+      B: { name: "Марія", gender: "f", disc: "C", role: "Аналітик-оцінювач" }
+    },
+    preview: "Олена перебиває, Марія замовкла. Вам потрібно допомогти їм домовитися, не ставши на чийсь бік.",
+    setup: "Ви керівник/ця команди. Минулого тижня на нарадах із планування Олена тричі перебила Марію, коли та говорила про ризики, і відкинула її пропозиції. Марія замовкла й відмовилась презентувати свою частину. Олена вважає, що Марія гальмує проєкт довгими застереженнями. Обидві окремо скаржилися вам і погодилися зустрітися втрьох. Ваше завдання: допомогти їм домовитися й не стати на чийсь бік.",
+    positions: {
+      A: "Марія гальмує проєкт довгими застереженнями. Я змушена її зупиняти, бо дедлайн горить.",
+      B: "Олена мене не слухає й відкидає ризики. Через це ми вже втратили два дні на переробку."
+    },
+    interests: {
+      A: [
+        { id: "speed", text: "Вкластися в дедлайн проєкту" },
+        { id: "brevity", text: "Щоб обговорення були короткими й завершувалися рішеннями" },
+        { id: "respect", text: "Щоб її швидкість та ініціативу теж цінували" }
+      ],
+      B: [
+        { id: "heard", text: "Бути почутою до ухвалення рішень" },
+        { id: "quality", text: "Щоб ризики аналізувалися до запуску, а не після помилок" },
+        { id: "time", text: "Мати гарантований час на аргументи" }
+      ]
+    },
+    openingA: "Олена схрещує руки: «У мене п'ятнадцять хвилин. Марія знову все затягує».",
+    openingB: "Марія дивиться в блокнот: «Я готова говорити, якщо мене не перебиватимуть».",
+    start: { neutral: 70, progress: 10, trustA: 50, trustB: 50 },
+    steps: [
+      { id: "open", title: "Рамка", icon: "🛡️", canRepair: true,
+        ctx: "Ви відкриваєте зустріч. Обидві сторони насторожені й чекають, на чий бік ви станете.",
+        options: [
+          o("open_a", "facilitator", "Пояснити роль і правила", "Дякую, що прийшли. Я не вирішуватиму, хто з вас правий: моя роль допомогти вам домовитися. Правила: говоримо по черзі, не перебиваємо, розмова лишається між нами.",
+            ["neutral", "neutral"], [4, 8, 6, 6], "Олена видихає: «Окей. Без перебивань, це справедливо. Тільки без води».", "Марія підводить очі: «Дякую. Мені важливо, щоб ніхто не перебивав».",
+            "Ви назвали свою роль, правила й конфіденційність. Для обох це безпечна рамка, і ніхто не відчув, що ви на чиємусь боці.",
+            "Посередник пояснив свою нейтральну роль і погодив правила: говорити по черзі, не перебивати, зберігати конфіденційність.", "best", ["frame"]),
+          o("open_b", "avoider", "Просто запросити поговорити", "Ось ми й зібралися. Давайте просто відкрито поговоримо про все, що накопичилося, не поспішаючи, а я послухаю й підключуся, якщо буде потреба. Почніть, хто хоче.",
+            ["neutral", "neutral"], [0, 1, -2, -2], "Олена одразу починає: «Тоді я скажу. Марія гальмує...» і говорить без паузи.", "Марія знизує плечима й мовчить.",
+            "Без ролі й правил розмова стартувала хаотично: ініціативніша сторона перехопила слово. Безпечної рамки ви не створили.",
+            "Посередник запросив сторони поговорити вільно, без правил; першою заговорила Олена.", "neutral", ["avoid", "vague"]),
+          o("open_c", "partisan", "Почати з версії Олени", "Олена вже розповіла мені про ситуацію, тож одразу до суті: Маріє, нам треба обговорити, як тобі говорити коротше й не затягувати наради зі своїми ризиками, щоб рухатися далі.",
+            ["open", "withdrawn"], [-14, -2, 6, -14], "Олена киває: «Нарешті хтось це каже».", "Марія опускає погляд: «Зрозуміло. Мене вже вирішили».",
+            "Ви почали з версії однієї сторони й сформулювали проблему як «поведінку Марії». Марія відчула, що посередник не нейтральний.",
+            "Посередник розпочав із версії Олени й окреслив проблему як манеру виступів Марії; Марія засумнівалась у неупередженості.", "bad", ["partisan"])
+        ] },
+      { id: "listen", title: "Слухання", icon: "👂", canRepair: true,
+        ctx: "Тепер кожна має висловитися. Від того, як ви організуєте цю частину, залежить, чи почують вони одна одну.",
+        options: [
+          o("listen_a", "facilitator", "По черзі з перефразуванням", "Олено, у тебе три хвилини, потім Марія, стільки ж. Я перефразую, що почув, щоб ми зрозуміли одне одного. Маріє, поки Олена говорить, занотовуй, а твоя черга буде така сама.",
+            ["neutral", "neutral"], [4, 12, 8, 8], "Олена: «Мені треба довести проєкт до кінця, а обговорення затягуються. Мене це виснажує».", "Марія: «Я кажу про ризики, бо ми вже платили за помилки. Мене не чують, і це ранить».",
+            "Рівний час і перефразування дали обом відчути, що їх почули. Ви не оцінювали сказане, а лише відображали.",
+            "Кожна сторона висловилась протягом трьох хвилин; посередник перефразував основні тези обох.", "best", ["listen"]),
+          o("listen_b", "avoider", "Дати говорити вільно", "Говоріть по черзі, як вам зручно, часу я обмежувати не буду. Хто починає, не так важливо, головне, щоб ви висловили все, що накопичилося, і не тримали в собі. Не поспішайте.",
+            ["neutral", "neutral"], [0, 2, -2, -2], "Олена говорить довго й емоційно та двічі перебиває Марію.", "Марія намагається вставити слово, але швидко замовкає.",
+            "Без регламенту й перефразування емоційніша сторона домінує. Ви формально лишилися нейтральним, але допустили нерівність.",
+            "Сторони висловлювалися без регламенту; Олена говорила довше, Марію двічі перебили.", "neutral", ["avoid", "vague"]),
+          o("listen_c", "judge", "Зупинити й оцінити", "Стоп, я вже бачу, що відбувається: Олено, ти перебиваєш, і це неприпустимо, а Маріє, твої застереження справді затягують обговорення. Обидві частково винні, давайте розберемо, хто більше.",
+            ["defensive", "defensive"], [-12, -2, -8, -8], "Олена відкидається: «Я? Це вона тягне час!»", "Марія: «Тобто мої застереження — це проблема?»",
+            "Оцінка «хто винний» під час слухання зруйнувала довіру обох. Нейтральність знизилась, бо ви взяли роль судді.",
+            "Посередник оцінив поведінку обох сторін під час слухання; обидві висловили незгоду.", "bad", ["judge"])
+        ] },
+      { id: "appeal", title: "Нейтральність", icon: "⚖️", canRepair: true,
+        ctx: "Олена звертається до вас: «Ти ж бачиш, що вона всіх гальмує? Скажи їй, що так не можна!» Марія чекає вашої відповіді.",
+        options: [
+          o("appeal_a", "facilitator", "Визнати почуття, не ставати на бік", "Олено, я чую, що тебе виснажують затримки й тиск дедлайну. Але я не вирішую, хто правий: моя робота допомогти вам обом знайти рішення, яке працюватиме і для проєкту, і для вас обох.",
+            ["neutral", "open"], [6, 10, 8, 8], "Олена ніяковіє: «Окей... Просто я втомилась. Добре, продовжуймо».", "Марія помітно розслабляється: «Дякую, що не стали на її бік».",
+            "Ви визнали емоцію Олени, але відмовились бути арбітром. Обидві побачили, що ви справді нейтральні.",
+            "Олена закликала посередника підтримати її; посередник визнав її емоції, але не став на жоден бік.", "best", ["neutral"]),
+          o("appeal_b", "avoider", "Перевести тему", "Давай не будемо зараз про те, хто що кому має сказати. Повернімося до фактів: що саме відбулося на нарадах цього тижня й які були терміни, а оцінки залишимо на потім.",
+            ["defensive", "neutral"], [0, 2, -4, 0], "Олена невдоволено: «То ви не відповісте?»", "Марія мовчки чекає.",
+            "Ви не стали на бік, але проігнорували прохання й емоцію Олени. Вона не відчула, що її почули.",
+            "Посередник відхилив запит Олени про підтримку й повернув розмову до фактів.", "neutral", ["avoid"]),
+          o("appeal_c", "partisan", "Частково погодитися", "У цьому Олена має рацію: затягування справді шкодить проєкту. Маріє, тобі варто це врахувати й говорити коротше. Олено, не перебивай так різко, але мету ти розумієш правильно.",
+            ["open", "withdrawn"], [-16, 2, 10, -16], "Олена задоволено: «Ось, чула?»", "Марія тихо: «Зрозуміло, ви теж на її боці».",
+            "Часткова згода з Оленою в присутності Марії — це підтримка однієї сторони. Нейтральність і довіра Марії різко впали.",
+            "Посередник погодився з тезою Олени про затягування обговорень; Марія висловила відчуття однобічності.", "bad", ["partisan"])
+        ] },
+      { id: "interests", title: "Інтереси", icon: "🔍", canRepair: true,
+        ctx: "Позиції ясні, але за ними стоять потреби. Допоможіть кожній їх назвати.",
+        options: [
+          o("interests_a", "facilitator", "Від позицій до інтересів", "Олено, що для тебе найважливіше в цих нарадах і в роботі з Марією? Маріє, а для тебе? Спробуйте сказати не що ви хочете від іншої людини, а що вам потрібно для роботи.",
+            ["open", "open"], [4, 14, 6, 6], "Олена: «Мені потрібне чітке рішення й дедлайн, який не горить. Я не проти ризиків, але в розумному обсязі».", "Марія: «Мені потрібне гарантоване слово до ухвалення рішення, бо ризики не можна додавати після помилок».",
+            "Запитання про потреби замість претензій виявило спільне: обидві хочуть успішного проєкту. Тепер є ґрунт для рішення.",
+            "З'ясовано інтереси: Олена — дедлайн і короткі наради; Марія — бути почутою до рішення та якісний аналіз ризиків.", "best", ["interests"], { learnA: ["speed", "brevity"], learnB: ["heard", "quality"] }),
+          o("interests_b", "avoider", "Зафіксувати лише факти", "Зафіксуймо тільки факти: скільки разів і на яких нарадах це відбувалося, коли були терміни. Почуття й потреби поки відкладемо, щоб не ускладнювати розмову й не загострювати.",
+            ["neutral", "neutral"], [0, 4, 0, 0], "Олена: «Факти? Три наради, і ми втратили два дні».", "Марія: «Факти — це ще не вся картина».",
+            "Факти потрібні, але без потреб сторони лишились на позиціях. Прогрес мінімальний.",
+            "Сторони зафіксували факти (три наради, втрата двох днів); потреби не обговорювалися.", "neutral", ["avoid", "vague"]),
+          o("interests_c", "judge", "Вибрати важливіший інтерес", "Якщо чесно, дедлайн проєкту важливіший за детальний аналіз ризиків, тому пріоритет має швидкість Олени. Маріє, твої інтереси теж враховуємо, але вони другорядні.",
+            ["open", "defensive"], [-14, -4, 10, -14], "Олена: «Нарешті ясність».", "Марія: «Другорядні? Тоді навіщо ми тут?»",
+            "Ранжування інтересів — це вирок. Ви стали на бік Олени й принизили потреби Марії.",
+            "Посередник визнав інтерес Олени пріоритетним, а інтереси Марії другорядними; Марія заперечила.", "bad", ["judge"])
+        ] },
+      { id: "options", title: "Варіанти", icon: "💡", canRepair: true,
+        ctx: "Тепер час шукати рішення. Ваше завдання не вигадати його за них, а допомогти їм знайти його самим.",
+        options: [
+          o("options_a", "facilitator", "Попросити сторони запропонувати варіанти", "Нехай кожна запропонує по два способи, як обговорювати ризики й не затягувати наради. Потім оцінимо їх за критеріями: швидкість, якість аналізу, відчуття, що тебе чують.",
+            ["open", "open"], [4, 14, 6, 6], "Олена: «Може, ліміт часу на ризики, наприклад, три хвилини?»", "Марія: «І щоб я могла надіслати ризики письмово наперед. Тоді мені вистачить трьох хвилин».",
+            "Ідеї народились у самих сторін, тож вони готові їх виконувати. Ви лише дали процес і критерії.",
+            "Сторони самостійно запропонували: ліміт трьох хвилин на ризики та письмове надсилання ризиків заздалегідь.", "best", ["options"]),
+          o("options_b", "commander", "Запропонувати свій компроміс", "Пропоную компроміс: Марія має п'ять хвилин на ризики, а Олена не перебиває. Якщо щось не так, скажіть, і я підкоригую. Це найпростіший спосіб швидко закрити питання.",
+            ["neutral", "neutral"], [0, 6, 0, 0], "Олена: «П'ять хвилин забагато... але нехай».", "Марія: «Нормально, але я б хотіла ще надсилати ризики письмово».",
+            "Ваш компроміс розумний, але прийшов від вас, а не від сторін. Вони погодились без відчуття авторства.",
+            "Посередник запропонував п'ять хвилин на ризики; сторони погодились із застереженнями.", "neutral", ["impose"]),
+          o("options_c", "judge", "Оголосити правильний варіант", "Я проаналізував ситуацію й бачу правильне рішення: наради ведуть за таймером, Олена керує обговоренням, а Марія коротко подає ризики. Так буде ефективніше, тож приймаємо це.",
+            ["open", "withdrawn"], [-12, -2, 6, -12], "Олена: «Ось це здорово, Олена керує».", "Марія: «Нас ніхто не питав».",
+            "Рішення, яке ви ухвалили замість сторін, віддало перевагу Олені й залишило Марію без впливу. Нейтральність і довіра впали.",
+            "Посередник оголосив власне рішення (ведення нарад Оленою, короткі ризики Марії); Марія заперечила.", "bad", ["judge", "impose"])
+        ] },
+      { id: "close", title: "Згода", icon: "📝", canRepair: false,
+        ctx: "Сторони близькі до згоди. Залишилося закріпити її так, щоб обидві розуміли однаково.",
+        options: [
+          o("close_a", "facilitator", "Зафіксувати конкретні домовленості", "Підсумую: Марія має три хвилини на ризики перед рішенням, Олена не перебиває й підсумовує рішення наприкінці, ризики надсилаються заздалегідь. Зустрінемось через два тижні. Чи все так?",
+            ["open", "open"], [6, 16, 8, 8], "Олена: «Так, мене влаштовує. Таймер веду я».", "Марія: «Згодна. Дякую, що все чітко».",
+            "Домовленість конкретна, відповідає інтересам обох, і кожна її підтвердила. Є дата перегляду.",
+            "Сторони погодили: три хвилини на ризики, Олена не перебиває, письмові ризики заздалегідь; перегляд через два тижні.", "best", ["agree"], { deal: "full" }),
+          o("close_b", "avoider", "Загальна домовленість", "Давайте просто домовимося бути уважнішими одна до одної й ввічливішими на нарадах. Я вірю, що ви обидві розумні й впораєтеся, а якщо щось піде не так, повернемося до розмови.",
+            ["neutral", "neutral"], [0, 2, -2, -2], "Олена: «Гаразд, буду ввічливішою».", "Марія: «Побачимо».",
+            "Загальна домовленість нічого не фіксує: ні дій, ні термінів. Через кілька тижнів конфлікт повернеться.",
+            "Сторони домовились бути ввічливішими; конкретних правил не зафіксовано.", "neutral", ["vague"], { deal: "weak" }),
+          o("close_c", "commander", "Тиснути на швидку згоду", "Нам треба закрити це сьогодні: обидві підпишіть, що більше такого не повториться. Інакше я змушений передати питання вище, і це вплине на оцінку вашої роботи.",
+            ["defensive", "withdrawn"], [-10, -6, -12, -12], "Олена: «Це загроза?»", "Марія мовчки відсуває стілець.",
+            "Тиск і погрози дають формальну, а не справжню згоду. Обидві сторони відчули загрозу й закрились.",
+            "Посередник вимагав підпису під загальною обіцянкою і погрожував передати питання вище; сторони не погодились.", "bad", ["pressure"], { deal: "none" })
+        ] }
+    ],
+    repair: {
+      defensive: { ctx: "Одна зі сторін підвищила голос, друга відповідає тим самим. Потрібно зупинити ескалацію, не ставши на чийсь бік.", options: [
+        o("repair_d_a", "facilitator", "Зупинити й повернути правила", "Зупинімося на хвилину. Бачу, що обом важко, і так ми одна одну не почуємо. Нагадаю правила: по черзі, без перебивань. Олено, ти першою, потім Марія.",
+          ["neutral", "neutral"], [4, 8, 6, 6], "Олена видихає: «Добре, по черзі».", "Марія: «Дякую».",
+          "Ви зупинили ескалацію, повернули спільні правила й дали обом рівний час. Нейтральність збережено.",
+          "Посередник зупинив суперечку й повернув правила: по черзі, без перебивань.", "best", ["frame"]),
+        o("repair_d_b", "avoider", "Не загострювати й чекати", "Давайте не загострювати: це емоції, вони минуть. Продовжимо розмову, і я думаю, що все налагодиться само, коли ви обидві заспокоїтесь, видихнете й трохи охолонете.",
+          ["defensive", "neutral"], [0, 1, -2, -2], "Олена: «Ми так нічого не вирішимо».", "Марія: «Мене знову ніхто не слухає».",
+          "Очікування, що все минеться само, залишило ескалацію без контролю. Обидві відчули, що їх не бачать.",
+          "Посередник закликав не загострювати й продовжити розмову без змін у процесі.", "neutral", ["avoid"]),
+        o("repair_d_c", "partisan", "Зупинити лише гучнішу сторону", "Олено, ти надто голосна й тиснеш, це неприпустимо. Маріє, дякую, що ти лишаєшся спокійною. Олено, заспокойся, і продовжимо без твоїх випадів, будь ласка.",
+          ["defensive", "open"], [-14, -2, -12, 8], "Олена: «Тобто я винна, а вона ні?»", "Марія: «Дякую, що хтось це помітив».",
+          "Ви зупинили не конфлікт, а одну сторону й похвалили іншу. Нейтральність і довіра Олени впали.",
+          "Посередник зробив зауваження лише Олені й похвалив Марію за спокій.", "bad", ["partisan"])
+      ] },
+      withdrawn: { ctx: "Одна зі сторін замкнулась і замовкла, а друга вже роздратована. Потрібно м'яко повернути її в розмову.", options: [
+        o("repair_w_a", "facilitator", "Запросити без тиску", "Бачу, що розмова пішла важко, і не хочу ні на кого тиснути. Можемо зробити коротку паузу. Коли будете готові, мені важливо почути кожну, нікого не поспішаю.",
+          ["neutral", "neutral"], [4, 8, 6, 6], "Олена: «Гаразд, пауза».", "Марія повільно піднімає очі: «Дякую, що не поспішаєте».",
+          "Пауза без тиску й запрошення обох повернутися зняли напругу й залишили вибір за кожною.",
+          "Посередник зробив коротку паузу й запросив сторони повернутися до розмови, коли будуть готові.", "best", ["listen"]),
+        o("repair_w_b", "avoider", "Просто продовжити", "Продовжимо, а Марія долучиться, коли захоче. Олено, ти можеш розповісти далі, а я перефразую, і розмова піде своїм шляхом без додаткових зупинок.",
+          ["neutral", "withdrawn"], [-2, 1, 2, -6], "Олена охоче продовжує говорити.", "Марія мовчить далі.",
+          "Продовження без запрошення дало слово лише активнішій стороні. Мовчазна лишилась поза розмовою.",
+          "Посередник продовжив розмову, надавши слово Олені; Марія залишалась мовчазною.", "neutral", ["avoid"]),
+        o("repair_w_c", "commander", "Вимагати відповіді", "Маріє, ми не можемо мовчати: скажи прямо, що не так, бо інакше ми марнуємо час усіх, і мені доведеться вирішити за вас обох без твоєї думки.",
+          ["neutral", "withdrawn"], [-8, -6, 0, -14], "Олена: «Давай, Маріє, скажи».", "Марія мовчки дивиться в стіл.",
+          "Вимога відповіді й погроза вирішити за них посилили закритість Марії.",
+          "Посередник вимагав відповіді від Марії й попередив, що вирішить за сторони.", "bad", ["pressure"])
+      ] }
+    },
+    deals: {
+      full: ["Марія має три хвилини на ризики перед ухваленням рішення", "Олена не перебиває в цей час і підсумовує рішення наприкінці наради", "Ризики надсилаються письмово за день до наради", "Перегляд домовленостей через два тижні"],
+      weak: ["Сторони домовились «бути ввічливішими»", "Конкретних правил, термінів і перевірки не зафіксовано"],
+      none: ["Домовленості не досягнуто", "Питання залишилося відкритим"]
+    },
+    nextSteps: {
+      full: ["Посередник надсилає підсумок обом сторонам цього ж дня", "Перша нарада за новими правилами — наступного тижня", "Зустріч для перегляду домовленостей — через два тижні"],
+      weak: ["Призначити окрему зустріч для конкретних правил проведення нарад", "Зафіксувати час на ризики та формат їх подання"],
+      none: ["Провести індивідуальні розмови з кожною стороною", "Призначити нову зустріч після охолодження емоцій"]
+    },
+    partyNote: "Олена — тип D: цінує швидкість, прямоту й результат. Не любить затягнутих обговорень, тож відкривається, коли розмова коротка, структурована й орієнтована на рішення. Марія — тип C: цінує точність і час на аргументи. Замикається, коли її знецінюють чи перебивають, а відкривається, коли має гарантований час і чіткі правила. Обидві спільно прагнуть успішного проєкту."
+  },
+
+  // ======================= 2. ЗВІТИ Й ТОН =======================
+  {
+    id: "reports_tone", emoji: "📝", title: "Звіти й тон", topic: "Конфлікт про звіти",
+    parties: {
+      A: { name: "Максим", gender: "m", disc: "I", role: "Дослідник ресурсів" },
+      B: { name: "Дмитро", gender: "m", disc: "C", role: "Завершувач" }
+    },
+    preview: "Максим здає звіти із запізненням, Дмитро критикує його при всіх. Обидва ображені.",
+    setup: "Ви керівник/ця команди. Максим здає звіти із запізненням і з помилками, бо відволікається на нових клієнтів. Дмитро, який збирає зведений звіт, виправляє чужі помилки й на двох останніх нарадах публічно сказав: «Знову ця халтура». Максим образився й каже, що його принижують. Обидва звернулися до вас і погодилися на розмову втрьох. Ваше завдання: допомогти їм домовитися й не стати на чийсь бік.",
+    positions: {
+      A: "Дмитро принижує мене на нарадах і не цінує, що я залучаю клієнтів.",
+      B: "Максим зриває терміни й здає звіти з помилками, і я виправляю чужу роботу."
+    },
+    interests: {
+      A: [
+        { id: "respect", text: "Щоб його не критикували публічно на нарадах" },
+        { id: "value", text: "Щоб його внесок у залучення клієнтів теж визнавали" },
+        { id: "flex", text: "Мати простіший формат звітів, який не відриває від клієнтів" }
+      ],
+      B: [
+        { id: "deadlines", text: "Отримувати звіти вчасно й без помилок" },
+        { id: "fairness", text: "Не виконувати чужу роботу замість власної" },
+        { id: "process", text: "Мати чіткий формат і контрольні точки" }
+      ]
+    },
+    openingA: "Максим усміхається, але напружено: «Я готовий говорити, тільки без цього тону, будь ласка».",
+    openingB: "Дмитро кладе на стіл роздруківку з помилками: «Я підготував факти. Це питання не тону, а точності».",
+    start: { neutral: 70, progress: 10, trustA: 50, trustB: 50 },
+    steps: [
+      { id: "open", title: "Рамка", icon: "🛡️", canRepair: true,
+        ctx: "Ви відкриваєте зустріч. Обидві сторони насторожені й чекають, на чий бік ви станете.",
+        options: [
+          o("open_a", "facilitator", "Пояснити роль і правила", "Дякую, що прийшли обидва. Я не вирішуватиму, хто з вас правий: моя роль допомогти вам домовитися. Говоримо по черзі, без образ і публічних оцінок, а розмова лишається між нами.",
+            ["neutral", "neutral"], [4, 8, 6, 6], "Максим: «Це те, що мені потрібно: без образ і без «халтури»».", "Дмитро: «Добре. Тільки з фактами, а не з емоціями».",
+            "Ви назвали свою роль, правила й конфіденційність. Для обох це безпечна рамка, і ніхто не відчув, що ви на чиємусь боці.",
+            "Посередник пояснив свою нейтральну роль і погодив правила: по черзі, без образ і публічних оцінок, конфіденційність.", "best", ["frame"]),
+          o("open_b", "avoider", "Просто запросити поговорити", "Ось ми й зібралися. Розкажіть, що у вас накопичилося, а я послухаю. Не обов'язково по порядку, головне, щоб ви обидва висловилися, і ми щось придумаємо разом.",
+            ["defensive", "defensive"], [0, 0, -3, -3], "Максим одразу: «Мене принижують, ось у чому справа...»", "Дмитро різко: «Це не принижування, а факти!»",
+            "Без ролі й правил розмова стартувала з взаємних звинувачень. Безпечної рамки ви не створили.",
+            "Посередник запросив сторони поговорити вільно, без правил; розмова почалась зі взаємних звинувачень.", "neutral", ["avoid", "vague"]),
+          o("open_c", "partisan", "Почати з фактів Дмитра", "Дмитро вже показав мені помилки, тож почнемо з фактів. Максиме, зрозуміло, що ти не вкладаєшся в терміни, тож давай одразу поговоримо, як ти це виправиш, а тон потім.",
+            ["withdrawn", "open"], [-14, -2, -14, 6], "Максим: «Тобто я ще й винний?»", "Дмитро: «Нарешті по суті».",
+            "Ви почали з версії однієї сторони й сформулювали проблему як «помилки Максима». Максим відчув, що посередник не нейтральний.",
+            "Посередник розпочав із фактів Дмитра й окреслив проблему як терміни Максима; Максим засумнівався в неупередженості.", "bad", ["partisan"])
+        ] },
+      { id: "listen", title: "Слухання", icon: "👂", canRepair: true,
+        ctx: "Тепер кожен має висловитися. Від того, як ви організуєте цю частину, залежить, чи почують вони одне одного.",
+        options: [
+          o("listen_a", "facilitator", "По черзі з перефразуванням", "Максиме, у тебе три хвилини, потім Дмитро, стільки ж. Я перефразую, що почув, щоб ми зрозуміли одне одного. Дмитре, поки Максим говорить, занотовуй, а твоя черга буде така сама.",
+            ["neutral", "neutral"], [4, 12, 8, 8], "Максим: «Я приводжу клієнтів, і мені важко між дзвінками дописувати звіти. А коли мене критикують на нарадах, я почуваюся приниженим».", "Дмитро: «Я збираю зведений звіт, і кожна помилка лягає на мене. Мені потрібні терміни й точність, а не вибачення».",
+            "Рівний час і перефразування дали обом відчути, що їх почули. Ви не оцінювали сказане, а лише відображали.",
+            "Кожна сторона висловилась протягом трьох хвилин; посередник перефразував основні тези обох.", "best", ["listen"]),
+          o("listen_b", "avoider", "Дати говорити вільно", "Говоріть по черзі, як вам зручно, часу я обмежувати не буду. Хто починає, не так важливо, головне, щоб ви висловили все, що накопичилося, і не тримали в собі. Не поспішайте.",
+            ["neutral", "neutral"], [0, 2, -2, -2], "Максим говорить довго, жартує й перебиває Дмитра.", "Дмитро відповідає сухо, дивлячись у свої папери.",
+            "Без регламенту й перефразування емоційніша сторона домінує. Ви формально лишилися нейтральним, але допустили нерівність.",
+            "Сторони висловлювалися без регламенту; Максим говорив довше й перебивав Дмитра.", "neutral", ["avoid", "vague"]),
+          o("listen_c", "judge", "Зупинити й оцінити", "Стоп, я вже бачу картину: Максиме, ти зриваєш терміни, і це неправильно, а Дмитре, твій тон на нарадах теж неприйнятний. Обидва винні, тож давайте чесно й швидко розберемо, хто більше.",
+            ["defensive", "defensive"], [-12, -2, -8, -8], "Максим: «Я? А він мене принижує при всіх!»", "Дмитро: «Тобто мій тон — проблема, а не помилки?»",
+            "Оцінка «хто винний» під час слухання зруйнувала довіру обох. Нейтральність знизилась, бо ви взяли роль судді.",
+            "Посередник оцінив поведінку обох сторін під час слухання; обидві висловили незгоду.", "bad", ["judge"])
+        ] },
+      { id: "appeal", title: "Нейтральність", icon: "⚖️", canRepair: true,
+        ctx: "Дмитро звертається до вас: «Ви ж бачите, що він не справляється? Скажіть йому, що терміни обов'язкові!» Максим чекає вашої відповіді.",
+        options: [
+          o("appeal_a", "facilitator", "Визнати почуття, не ставати на бік", "Дмитре, я чую, що виправляти чужі помилки виснажливо. Але я не вирішую, хто правий: моя робота допомогти вам обом знайти рішення, яке працюватиме для звітів і для вашої взаємодії.",
+            ["open", "neutral"], [6, 10, 8, 8], "Максим помітно розслабляється: «Дякую, що не пішли за ним».", "Дмитро стримано: «Гаразд. Але рішення потрібне».",
+            "Ви визнали емоцію Дмитра, але відмовились бути арбітром. Обидва побачили, що ви справді нейтральні.",
+            "Дмитро закликав посередника підтримати його; посередник визнав його емоції, але не став на жоден бік.", "best", ["neutral"]),
+          o("appeal_b", "avoider", "Перевести тему", "Давай не будемо зараз про те, хто що кому має сказати. Повернімося до фактів: які звіти, які терміни й які помилки були, а оцінки залишимо на потім, коли охолонемо.",
+            ["neutral", "defensive"], [0, 2, 0, -4], "Максим мовчки чекає.", "Дмитро невдоволено: «То ви не відповісте?»",
+            "Ви не стали на бік, але проігнорували прохання й емоцію Дмитра. Він не відчув, що його почули.",
+            "Посередник відхилив запит Дмитра про підтримку й повернув розмову до фактів.", "neutral", ["avoid"]),
+          o("appeal_c", "partisan", "Частково погодитися", "У цьому Дмитро має рацію: терміни справді обов'язкові, і помилки шкодять усій команді. Максиме, тобі варто це врахувати. Дмитре, ти різкуватий, але суть розумієш правильно, і це важливо.",
+            ["withdrawn", "open"], [-16, 2, -16, 10], "Максим тихо: «Зрозуміло, ви теж на його боці».", "Дмитро задоволено: «Ось, чули?»",
+            "Часткова згода з Дмитром у присутності Максима — це підтримка однієї сторони. Нейтральність і довіра Максима різко впали.",
+            "Посередник погодився з тезою Дмитра про терміни; Максим висловив відчуття однобічності.", "bad", ["partisan"])
+        ] },
+      { id: "interests", title: "Інтереси", icon: "🔍", canRepair: true,
+        ctx: "Позиції ясні, але за ними стоять потреби. Допоможіть кожному їх назвати.",
+        options: [
+          o("interests_a", "facilitator", "Від позицій до інтересів", "Максиме, що для тебе найважливіше в цій ситуації й у роботі з командою? Дмитре, а для тебе? Спробуйте сказати не що ви хочете від іншого, а що вам потрібно для роботи.",
+            ["open", "open"], [4, 14, 6, 6], "Максим: «Мені потрібне визнання моєї роботи з клієнтами й простіший формат, щоб я не тонув у звітах».", "Дмитро: «Мені потрібні звіти вчасно й без помилок і чіткий шаблон, щоб я не переробляв».",
+            "Запитання про потреби замість претензій виявило спільне: обидва хочуть якісної роботи команди. Тепер є ґрунт для рішення.",
+            "З'ясовано інтереси: Максим — повага до його роботи з клієнтами, простіший формат; Дмитро — вчасні й точні звіти, чіткий шаблон.", "best", ["interests"], { learnA: ["respect", "value", "flex"], learnB: ["deadlines", "process"] }),
+          o("interests_b", "avoider", "Зафіксувати лише факти", "Зафіксуймо тільки факти: які звіти й коли здавалися, скільки було помилок. Почуття й потреби поки відкладемо, щоб не ускладнювати розмову й не загострювати її.",
+            ["neutral", "neutral"], [0, 4, 0, 0], "Максим: «Факти: я запізнився на два звіти».", "Дмитро: «І було три помилки».",
+            "Факти потрібні, але без потреб сторони лишились на позиціях. Прогрес мінімальний.",
+            "Сторони зафіксували факти (два запізнені звіти, три помилки); потреби не обговорювалися.", "neutral", ["avoid", "vague"]),
+          o("interests_c", "judge", "Вибрати важливіший інтерес", "Якщо чесно, терміни й точність важливіші за те, що Максимові образливо, тому пріоритет у потребах Дмитра. Максиме, твої інтереси теж враховуємо, але вони другорядні.",
+            ["defensive", "open"], [-14, -4, -14, 10], "Максим: «Другорядні? Тоді навіщо я тут?»", "Дмитро: «Нарешті ясність».",
+            "Ранжування інтересів — це вирок. Ви стали на бік Дмитра й принизили потреби Максима.",
+            "Посередник визнав інтерес Дмитра пріоритетним, а інтереси Максима другорядними; Максим заперечив.", "bad", ["judge"])
+        ] },
+      { id: "options", title: "Варіанти", icon: "💡", canRepair: true,
+        ctx: "Тепер час шукати рішення. Ваше завдання не вигадати його за них, а допомогти їм знайти його самим.",
+        options: [
+          o("options_a", "facilitator", "Попросити сторони запропонувати варіанти", "Нехай кожен запропонує по два способи зробити звіти вчасними й точними й зберегти повагу на нарадах. Потім разом оцінимо їх за критеріями: терміни, точність, повага.",
+            ["open", "open"], [4, 14, 6, 6], "Максим: «Може, спрощений шаблон і нагадування за два дні до терміну?»", "Дмитро: «І щоб зауваження він отримував наодинці, а не на нараді. Я можу так».",
+            "Ідеї народились у самих сторін, тож вони готові їх виконувати. Ви лише дали процес і критерії.",
+            "Сторони самостійно запропонували: спрощений шаблон, нагадування за два дні та зауваження наодинці.", "best", ["options"]),
+          o("options_b", "commander", "Запропонувати свій компроміс", "Пропоную компроміс: Максим здає звіт за день до терміну, а Дмитро робить зауваження наодинці. Якщо щось не так, скажіть, і я підкоригую. Це найпростіший спосіб швидко закрити питання.",
+            ["neutral", "neutral"], [0, 6, 0, 0], "Максим: «За день... Гаразд, але шаблон простіший хотів би».", "Дмитро: «Нормально, але за два дні було б краще».",
+            "Ваш компроміс розумний, але прийшов від вас, а не від сторін. Вони погодились без відчуття авторства.",
+            "Посередник запропонував здачу звіту за день до терміну й зауваження наодинці; сторони погодились із застереженнями.", "neutral", ["impose"]),
+          o("options_c", "judge", "Оголосити правильний варіант", "Я проаналізував ситуацію й бачу правильне рішення: Максим здає звіти за два дні до терміну за суворим шаблоном, а Дмитро їх перевіряє. Так буде ефективніше, тож приймаємо це.",
+            ["withdrawn", "open"], [-12, -2, -12, 6], "Максим: «Мене ніхто не питав».", "Дмитро: «Це справедливо».",
+            "Рішення, яке ви ухвалили замість сторін, віддало перевагу Дмитру й залишило Максима без впливу. Нейтральність і довіра впали.",
+            "Посередник оголосив власне рішення (здача за два дні за суворим шаблоном, перевірка Дмитром); Максим заперечив.", "bad", ["judge", "impose"])
+        ] },
+      { id: "close", title: "Згода", icon: "📝", canRepair: false,
+        ctx: "Сторони близькі до згоди. Залишилося закріпити її так, щоб обидва розуміли однаково.",
+        options: [
+          o("close_a", "facilitator", "Зафіксувати конкретні домовленості", "Підсумую: чернетка за два дні до терміну за спрощеним шаблоном, зауваження наодинці, щотижня десять хвилин синхронізації. Перегляд через два тижні. Чи все так?",
+            ["open", "open"], [6, 16, 8, 8], "Максим: «Так, мене влаштовує. Шаблон простіший — це чудово».", "Дмитро: «Згоден. Дякую, що все чітко».",
+            "Домовленість конкретна, відповідає інтересам обох, і кожен її підтвердив. Є дата перегляду.",
+            "Сторони погодили: чернетка за два дні, спрощений шаблон, зауваження наодинці, щотижнева синхронізація; перегляд через два тижні.", "best", ["agree"], { deal: "full" }),
+          o("close_b", "avoider", "Загальна домовленість", "Давайте домовимося, що Максим постарається здавати вчасно, а Дмитро говоритиме м'якше. Я вірю, що ви обидва впораєтеся, а якщо щось піде не так, повернемося до розмови.",
+            ["neutral", "neutral"], [0, 2, -2, -2], "Максим: «Гаразд, постараюсь».", "Дмитро: «Побачимо».",
+            "Загальна домовленість нічого не фіксує: ні шаблону, ні термінів. Через кілька тижнів конфлікт повернеться.",
+            "Сторони домовились «постаратись»; конкретних правил не зафіксовано.", "neutral", ["vague"], { deal: "weak" }),
+          o("close_c", "commander", "Тиснути на швидку згоду", "Нам треба закрити це сьогодні: обидва підпишіть, що більше такого не повториться. Інакше я негайно передам питання вище, і це вплине на оцінку вашої роботи.",
+            ["withdrawn", "defensive"], [-10, -6, -12, -12], "Максим мовчки відводить погляд.", "Дмитро: «Це загроза?»",
+            "Тиск і погрози дають формальну, а не справжню згоду. Обидві сторони відчули загрозу й закрились.",
+            "Посередник вимагав підпису під загальною обіцянкою і погрожував передати питання вище; сторони не погодились.", "bad", ["pressure"], { deal: "none" })
+        ] }
+    ],
+    repair: {
+      defensive: { ctx: "Одна зі сторін підвищила голос, друга відповідає тим самим. Потрібно зупинити ескалацію, не ставши на чийсь бік.", options: [
+        o("repair_d_a", "facilitator", "Зупинити й повернути правила", "Зупинімося на хвилину. Бачу, що обом зараз важко, і так ми одне одного не почуємо. Нагадаю правила: по черзі, без образ. Максиме, ти першим, потім Дмитро, по дві хвилини.",
+          ["neutral", "neutral"], [4, 8, 6, 6], "Максим: «Добре, по черзі».", "Дмитро: «Дякую».",
+          "Ви зупинили ескалацію, повернули спільні правила й дали обом рівний час. Нейтральність збережено.",
+          "Посередник зупинив суперечку й повернув правила: по черзі, без образ.", "best", ["frame"]),
+        o("repair_d_b", "avoider", "Не загострювати й чекати", "Давайте не загострювати: це емоції, вони минуть. Продовжимо розмову, і я думаю, що все налагодиться само, коли ви обидва заспокоїтесь і трохи охолонете.",
+          ["defensive", "neutral"], [0, 1, -2, -2], "Максим: «Ми так нічого не вирішимо».", "Дмитро: «Це не емоції, а факти».",
+          "Очікування, що все минеться само, залишило ескалацію без контролю. Обидва відчули, що їх не бачать.",
+          "Посередник закликав не загострювати й продовжити розмову без змін у процесі.", "neutral", ["avoid"]),
+        o("repair_d_c", "partisan", "Зупинити лише одну сторону", "Максиме, ти знову жартуєш у невідповідний момент, і це неприпустимо. Дмитре, дякую, що ти лишаєшся діловим. Максиме, зберися, і продовжимо без твоїх випадів.",
+          ["defensive", "open"], [-14, -2, -12, 8], "Максим: «Тобто я винний, а він ні?»", "Дмитро: «Нарешті хтось це помітив».",
+          "Ви зупинили не конфлікт, а одну сторону й похвалили іншу. Нейтральність і довіра Максима впали.",
+          "Посередник зробив зауваження лише Максиму й похвалив Дмитра за діловитість.", "bad", ["partisan"])
+      ] },
+      withdrawn: { ctx: "Одна зі сторін замкнулась і замовкла, а друга вже роздратована. Потрібно м'яко повернути її в розмову.", options: [
+        o("repair_w_a", "facilitator", "Запросити без тиску", "Бачу, що розмова пішла важко, і не хочу ні на кого тиснути. Можемо зробити коротку паузу, а коли будете готові, мені важливо почути кожного.",
+          ["neutral", "neutral"], [4, 8, 6, 6], "Максим повільно піднімає очі: «Дякую, що не поспішаєте».", "Дмитро: «Гаразд, пауза».",
+          "Пауза без тиску й запрошення обох повернутися зняли напругу й залишили вибір за кожним.",
+          "Посередник зробив коротку паузу й запросив сторони повернутися до розмови, коли будуть готові.", "best", ["listen"]),
+        o("repair_w_b", "avoider", "Просто продовжити", "Продовжимо, а Максим долучиться, коли захоче. Дмитре, ти можеш розповісти далі, а я перефразую, і розмова піде своїм шляхом без додаткових зупинок.",
+          ["withdrawn", "neutral"], [-2, 1, -6, 2], "Максим мовчить далі.", "Дмитро охоче продовжує говорити.",
+          "Продовження без запрошення дало слово лише активнішій стороні. Мовчазна лишилась поза розмовою.",
+          "Посередник продовжив розмову, надавши слово Дмитру; Максим залишався мовчазним.", "neutral", ["avoid"]),
+        o("repair_w_c", "commander", "Вимагати відповіді", "Максиме, ми не можемо мовчати: скажи прямо, що не так, бо інакше ми марнуємо час усіх, і мені доведеться вирішити за вас обох без твоєї думки, заради часу.",
+          ["withdrawn", "neutral"], [-8, -6, -14, 0], "Максим мовчки дивиться в стіл.", "Дмитро: «Давай, Максиме, скажи».",
+          "Вимога відповіді й погроза вирішити за них посилили закритість Максима.",
+          "Посередник вимагав відповіді від Максима й попередив, що вирішить за сторони.", "bad", ["pressure"])
+      ] }
+    },
+    deals: {
+      full: ["Максим здає чернетку звіту за два дні до терміну за спрощеним шаблоном", "Дмитро дає зауваження наодинці, а не на нараді", "Щотижня — 10-хвилинна синхронізація щодо звітів", "Перегляд домовленостей через два тижні"],
+      weak: ["Максим «постарається» здавати вчасно, Дмитро «говоритиме м'якше»", "Шаблон, терміни й формат зауважень не зафіксовано"],
+      none: ["Домовленості не досягнуто", "Питання залишилося відкритим"]
+    },
+    nextSteps: {
+      full: ["Посередник надсилає підсумок обом сторонам цього ж дня", "Дмитро надсилає спрощений шаблон звіту до завтра", "Перша синхронізація — наступного тижня", "Перегляд домовленостей — через два тижні"],
+      weak: ["Призначити окрему зустріч для спрощення шаблону та термінів", "Домовитись про формат зауважень"],
+      none: ["Провести індивідуальні розмови з кожною стороною", "Призначити нову зустріч після охолодження емоцій"]
+    },
+    partyNote: "Максим — тип I: чутливий до публічних оцінок, цінує визнання й гнучкість. Коли його критикують при всіх, жартує або замикається. Дмитро — тип C: цінує точність, терміни й чіткий формат і не любить виправляти чужі помилки. Обидва відкриваються, коли розмова структурована, а зауваження звучать наодинці та конкретно."
+  },
+
+  // ======================= 3. ЗМІНИ ПЛАНУ =======================
+  {
+    id: "plan_changes", emoji: "🔄", title: "Зміни плану", topic: "Конфлікт про зміни пріоритетів",
+    parties: {
+      A: { name: "Андрій", gender: "m", disc: "D", role: "Координатор" },
+      B: { name: "Ірина", gender: "f", disc: "S", role: "Командний гравець" }
+    },
+    preview: "Андрій змінює пріоритети без попередження, Ірина мовчить і скаржиться за спиною.",
+    setup: "Ви керівник/ця команди. Андрій часто змінює пріоритети посеред тижня, бо ринок швидко змінюється, і не завжди пояснює причини. Ірина не встигає перебудовуватися, мовчить, а потім скаржиться колегам. Андрій вважає її опірною й повільною. Обидва звернулися до вас і погодилися на розмову втрьох. Ваше завдання: допомогти їм домовитися й не стати на чийсь бік.",
+    positions: {
+      A: "Ірина реагує на зміни повільно й опирається. Ринок змінюється, і я не можу щоразу все пояснювати.",
+      B: "Андрій змінює плани без попередження, і я не встигаю перебудуватися. Мене не питають."
+    },
+    interests: {
+      A: [
+        { id: "agility", text: "Швидко реагувати на зміни ринку" },
+        { id: "autonomy", text: "Не пояснювати кожне рішення докладно" },
+        { id: "support", text: "Щоб команда виконувала зміни без опору" }
+      ],
+      B: [
+        { id: "predict", text: "Мати передбачуваність і час на перебудову" },
+        { id: "voice", text: "Щоб її думку питали до змін" },
+        { id: "stability", text: "Стабільний ритм роботи команди" }
+      ]
+    },
+    openingA: "Андрій дивиться на годинник: «Давайте швидко. Я не розумію, чому щоразу така реакція на прості зміни».",
+    openingB: "Ірина тихо: «Я не хочу конфліктів. Мені просто важко, коли все змінюється без попередження».",
+    start: { neutral: 70, progress: 10, trustA: 50, trustB: 50 },
+    steps: [
+      { id: "open", title: "Рамка", icon: "🛡️", canRepair: true,
+        ctx: "Ви відкриваєте зустріч. Обидві сторони насторожені й чекають, на чий бік ви станете.",
+        options: [
+          o("open_a", "facilitator", "Пояснити роль і правила", "Дякую, що прийшли. Я не вирішуватиму, хто правий: моя роль допомогти вам домовитися. Говоримо по черзі, не оцінюємо одне одного, розмова лишається між нами.",
+            ["neutral", "open"], [4, 8, 6, 6], "Андрій: «Гаразд. Тільки конкретно».", "Ірина: «Дякую. Мені так спокійніше».",
+            "Ви назвали свою роль, правила й конфіденційність. Для обох це безпечна рамка, і ніхто не відчув, що ви на чиємусь боці.",
+            "Посередник пояснив свою нейтральну роль і погодив правила: по черзі, без перебивань і оцінок, конфіденційність.", "best", ["frame"]),
+          o("open_b", "avoider", "Просто запросити поговорити", "Ось ми й зібралися. Розкажіть спокійно, що у вас накопичилося, а я послухаю. Не обов'язково по порядку, головне, щоб ви обоє висловилися, і ми щось придумаємо.",
+            ["defensive", "withdrawn"], [0, 0, 0, -4], "Андрій одразу: «Тоді я скажу прямо: Ірина опирається змінам».", "Ірина мовчить і дивиться вниз.",
+            "Без ролі й правил розмову перехопила активніша сторона. Безпечної рамки ви не створили, і Ірина закрилась.",
+            "Посередник запросив сторони поговорити вільно, без правил; першим заговорив Андрій, Ірина мовчала.", "neutral", ["avoid", "vague"]),
+          o("open_c", "partisan", "Почати з версії Андрія", "Андрій розповів мені, що ринок змінюється швидко, тож одразу до суті: Ірино, нам треба обговорити, як тобі швидше перебудовуватися й не опиратися змінам плану.",
+            ["open", "withdrawn"], [-14, -2, 6, -14], "Андрій киває: «Нарешті хтось це каже».", "Ірина тихо: «Зрозуміло. Мене вже вирішили».",
+            "Ви почали з версії однієї сторони й сформулювали проблему як «опір Ірини». Ірина відчула, що посередник не нейтральний.",
+            "Посередник розпочав із версії Андрія й окреслив проблему як опір Ірини змінам; Ірина засумнівалась у неупередженості.", "bad", ["partisan"])
+        ] },
+      { id: "listen", title: "Слухання", icon: "👂", canRepair: true,
+        ctx: "Тепер кожен має висловитися. Від того, як ви організуєте цю частину, залежить, чи почують вони одне одного.",
+        options: [
+          o("listen_a", "facilitator", "По черзі з перефразуванням", "Андрію, у тебе три хвилини, потім Ірина, стільки ж. Я перефразую, що почув, щоб ми зрозуміли одне одного. Ірино, поки Андрій говорить, занотовуй, а твоя черга буде така сама.",
+            ["neutral", "neutral"], [4, 12, 8, 8], "Андрій: «Ринок змінюється, і я не можу чекати. Мені потрібно, щоб команда виконувала, а не сперечалася».", "Ірина: «Я не опираюся. Просто мені потрібен час перебудуватися, а мене ставлять перед фактом».",
+            "Рівний час і перефразування дали обом відчути, що їх почули. Ви не оцінювали сказане, а лише відображали.",
+            "Кожна сторона висловилась протягом трьох хвилин; посередник перефразував основні тези обох.", "best", ["listen"]),
+          o("listen_b", "avoider", "Дати говорити вільно", "Говоріть по черзі, як вам зручно, часу я обмежувати не буду. Хто починає, не так важливо, головне, щоб ви висловили все, що накопичилося, і не тримали в собі.",
+            ["neutral", "withdrawn"], [0, 2, -2, -2], "Андрій говорить швидко й різко, не даючи вставити слово.", "Ірина мовчить і дивиться вниз.",
+            "Без регламенту й перефразування активніша сторона домінує. Ви формально лишилися нейтральним, але допустили нерівність.",
+            "Сторони висловлювалися без регламенту; Андрій говорив довше, Ірина мовчала.", "neutral", ["avoid", "vague"]),
+          o("listen_c", "judge", "Зупинити й оцінити", "Стоп, я вже бачу картину: Андрію, ти змінюєш плани надто різко, а Ірино, твоя мовчазна опозиція теж шкодить. Обоє винні, тож давайте розберемо, хто більше.",
+            ["defensive", "withdrawn"], [-12, -2, -8, -8], "Андрій: «Я? Це вона мовчить і потім скаржиться!»", "Ірина: «Тобто мовчання — теж моя провина?»",
+            "Оцінка «хто винний» під час слухання зруйнувала довіру обох. Нейтральність знизилась, бо ви взяли роль судді.",
+            "Посередник оцінив поведінку обох сторін під час слухання; обоє висловили незгоду.", "bad", ["judge"])
+        ] },
+      { id: "appeal", title: "Нейтральність", icon: "⚖️", canRepair: true,
+        ctx: "Андрій звертається до вас: «Ви ж на моєму боці? Команда має виконувати, а не опиратися!» Ірина чекає вашої відповіді.",
+        options: [
+          o("appeal_a", "facilitator", "Визнати почуття, не ставати на бік", "Андрію, я чую, що швидкість ринку лягає на тебе. Але я не вирішую, хто правий: моя робота допомогти вам обом знайти рішення, яке працюватиме для швидкості й для команди.",
+            ["neutral", "open"], [6, 10, 8, 8], "Андрій видихає: «Окей. Мене це теж виснажує. Продовжуймо».", "Ірина помітно розслабляється: «Дякую, що не стали на його бік».",
+            "Ви визнали емоцію Андрія, але відмовились бути арбітром. Обоє побачили, що ви справді нейтральні.",
+            "Андрій закликав посередника підтримати його; посередник визнав його емоції, але не став на жоден бік.", "best", ["neutral"]),
+          o("appeal_b", "avoider", "Перевести тему", "Давай не будемо зараз про те, хто що кому має виконувати. Повернімося до фактів: які зміни були цього місяця й коли про них повідомляли, а оцінки залишимо на потім.",
+            ["defensive", "neutral"], [0, 2, -4, 0], "Андрій невдоволено: «То ви не відповісте?»", "Ірина мовчки чекає.",
+            "Ви не стали на бік, але проігнорували прохання й емоцію Андрія. Він не відчув, що його почули.",
+            "Посередник відхилив запит Андрія про підтримку й повернув розмову до фактів.", "neutral", ["avoid"]),
+          o("appeal_c", "partisan", "Частково погодитися", "У цьому Андрій має рацію: команда має вміти швидко адаптуватися, ринок не чекає. Ірино, тобі варто це врахувати. Андрію, пояснюй трохи більше, але суть ти розумієш правильно, і це добре.",
+            ["open", "withdrawn"], [-16, 2, 10, -16], "Андрій задоволено: «Ось, чула?»", "Ірина тихо: «Зрозуміло, ви теж на його боці».",
+            "Часткова згода з Андрієм у присутності Ірини — це підтримка однієї сторони. Нейтральність і довіра Ірини різко впали.",
+            "Посередник погодився з тезою Андрія про швидку адаптацію; Ірина висловила відчуття однобічності.", "bad", ["partisan"])
+        ] },
+      { id: "interests", title: "Інтереси", icon: "🔍", canRepair: true,
+        ctx: "Позиції ясні, але за ними стоять потреби. Допоможіть кожному їх назвати.",
+        options: [
+          o("interests_a", "facilitator", "Від позицій до інтересів", "Андрію, що для тебе найважливіше в робочих змінах і в роботі команди? Ірино, а для тебе? Спробуйте сказати не що ви хочете від іншого, а що вам потрібно для роботи.",
+            ["open", "open"], [4, 14, 6, 6], "Андрій: «Мені потрібна швидка реакція на ринок і щоб я не витрачав час на довгі пояснення».", "Ірина: «Мені потрібен час перебудуватися й щоб мене питали, перш ніж міняти. Тоді я працюю краще».",
+            "Запитання про потреби замість претензій виявило спільне: обоє хочуть, щоб команда працювала ефективно. Тепер є ґрунт для рішення.",
+            "З'ясовано інтереси: Андрій — швидка реакція на ринок, мінімум довгих пояснень; Ірина — передбачуваність, час на перебудову, бути почутою.", "best", ["interests"], { learnA: ["agility", "autonomy"], learnB: ["predict", "voice"] }),
+          o("interests_b", "avoider", "Зафіксувати лише факти", "Зафіксуймо тільки факти: скільки разів змінювали плани цього місяця, коли про це повідомили й хто що встиг. Почуття й потреби поки відкладемо, щоб не ускладнювати розмову.",
+            ["neutral", "neutral"], [0, 4, 0, 0], "Андрій: «Чотири зміни, і всі були виправдані».", "Ірина: «І про три я дізналася в день виконання».",
+            "Факти потрібні, але без потреб сторони лишились на позиціях. Прогрес мінімальний.",
+            "Сторони зафіксували факти (чотири зміни за місяць, про три повідомили в день виконання); потреби не обговорювалися.", "neutral", ["avoid", "vague"]),
+          o("interests_c", "judge", "Вибрати важливіший інтерес", "Якщо чесно, швидка реакція на ринок важливіша за стабільний ритм, тому пріоритет має гнучкість Андрія. Ірино, твої потреби теж враховуємо, але вони другорядні для проєкту.",
+            ["open", "withdrawn"], [-14, -4, 10, -14], "Андрій: «Нарешті ясність».", "Ірина: «Другорядні?.. Зрозуміло».",
+            "Ранжування інтересів — це вирок. Ви стали на бік Андрія й принизили потреби Ірини.",
+            "Посередник визнав інтерес Андрія пріоритетним, а потреби Ірини другорядними; Ірина закрилась.", "bad", ["judge"])
+        ] },
+      { id: "options", title: "Варіанти", icon: "💡", canRepair: true,
+        ctx: "Тепер час шукати рішення. Ваше завдання не вигадати його за них, а допомогти їм знайти його самим.",
+        options: [
+          o("options_a", "facilitator", "Попросити сторони запропонувати варіанти", "Нехай кожен запропонує по два способи повідомляти про зміни й залишатися гнучкими. Потім разом оцінимо їх за швидкістю, передбачуваністю та відчуттям, що тебе чують.",
+            ["open", "open"], [4, 14, 6, 6], "Андрій: «Може, коротке повідомлення про зміну з причиною?»", "Ірина: «І за добу, якщо не терміново. Тоді я встигну перебудуватися».",
+            "Ідеї народились у самих сторін, тож вони готові їх виконувати. Ви лише дали процес і критерії.",
+            "Сторони самостійно запропонували: коротке повідомлення про зміну з причиною за добу, для термінових змін пояснення пізніше.", "best", ["options"]),
+          o("options_b", "commander", "Запропонувати свій компроміс", "Пропоную компроміс: про зміни пріоритетів Андрій повідомляє за добу, а Ірина озвучує труднощі одразу. Якщо щось не так, скажіть, і я підкоригую. Це найпростіший спосіб.",
+            ["neutral", "neutral"], [0, 6, 0, 0], "Андрій: «За добу... не завжди вийде, але нехай».", "Ірина: «Нормально, але хотілося б ще чути причину».",
+            "Ваш компроміс розумний, але прийшов від вас, а не від сторін. Вони погодились без відчуття авторства.",
+            "Посередник запропонував повідомлення про зміни за добу й одразу озвучені труднощі; сторони погодились із застереженнями.", "neutral", ["impose"]),
+          o("options_c", "judge", "Оголосити правильний варіант", "Я проаналізував ситуацію й бачу правильне рішення: Андрій повідомляє про зміни, коли вважає потрібним, а Ірина виконує їх без обговорення. Так буде ефективніше, тож приймаємо це.",
+            ["open", "withdrawn"], [-12, -2, 6, -12], "Андрій: «Ось це здорово, ефективно».", "Ірина: «Мене знову не питали».",
+            "Рішення, яке ви ухвалили замість сторін, віддало перевагу Андрію й залишило Ірину без впливу. Нейтральність і довіра впали.",
+            "Посередник оголосив власне рішення (Андрій повідомляє за потребою, Ірина виконує без обговорення); Ірина заперечила.", "bad", ["judge", "impose"])
+        ] },
+      { id: "close", title: "Згода", icon: "📝", canRepair: false,
+        ctx: "Сторони близькі до згоди. Залишилося закріпити її так, щоб обоє розуміли однаково.",
+        options: [
+          o("close_a", "facilitator", "Зафіксувати конкретні домовленості", "Підсумую: Андрій повідомляє про зміни за добу з короткою причиною, Ірина озвучує труднощі одразу, щотижня п'ятнадцять хвилин синхронізації. Перегляд через два тижні. Чи все так?",
+            ["open", "open"], [6, 16, 8, 8], "Андрій: «Так, мене влаштовує. Це реально».", "Ірина: «Згодна. Дякую, що все чітко».",
+            "Домовленість конкретна, відповідає інтересам обох, і кожен її підтвердив. Є дата перегляду.",
+            "Сторони погодили: повідомлення за добу з причиною, пояснення для термінових змін протягом доби, одразу озвучені труднощі, щотижнева синхронізація; перегляд через два тижні.", "best", ["agree"], { deal: "full" }),
+          o("close_b", "avoider", "Загальна домовленість", "Давайте просто домовимося краще спілкуватися про зміни й бути уважнішими одне до одного. Я вірю, що ви обоє впораєтеся з часом, а якщо щось піде не так, повернемося до розмови.",
+            ["neutral", "neutral"], [0, 2, -2, -2], "Андрій: «Гаразд, буду пояснювати».", "Ірина: «Побачимо».",
+            "Загальна домовленість нічого не фіксує: ні термінів повідомлення, ні формату. Через кілька тижнів конфлікт повернеться.",
+            "Сторони домовились краще спілкуватися; конкретних правил не зафіксовано.", "neutral", ["vague"], { deal: "weak" }),
+          o("close_c", "commander", "Тиснути на швидку згоду", "Нам треба закрити це сьогодні: обоє підпишіть, що більше такого не повториться. Інакше я негайно передам питання вище, і це вплине на оцінку вашої роботи в команді.",
+            ["defensive", "withdrawn"], [-10, -6, -12, -12], "Андрій: «Це загроза?»", "Ірина мовчки опускає очі.",
+            "Тиск і погрози дають формальну, а не справжню згоду. Обидві сторони відчули загрозу й закрились.",
+            "Посередник вимагав підпису під загальною обіцянкою і погрожував передати питання вище; сторони не погодились.", "bad", ["pressure"], { deal: "none" })
+        ] }
+    ],
+    repair: {
+      defensive: { ctx: "Одна зі сторін підвищила голос, друга відповідає тим самим. Потрібно зупинити ескалацію, не ставши на чийсь бік.", options: [
+        o("repair_d_a", "facilitator", "Зупинити й повернути правила", "Зупинімося на хвилину. Бачу, що обом зараз важко, і так ми одне одного не почуємо. Нагадаю правила: по черзі, без оцінок. Андрію, ти першим, потім Ірина, по дві хвилини.",
+          ["neutral", "neutral"], [4, 8, 6, 6], "Андрій: «Добре, по черзі».", "Ірина: «Дякую».",
+          "Ви зупинили ескалацію, повернули спільні правила й дали обом рівний час. Нейтральність збережено.",
+          "Посередник зупинив суперечку й повернув правила: по черзі, без оцінок.", "best", ["frame"]),
+        o("repair_d_b", "avoider", "Не загострювати й чекати", "Давайте не загострювати: це емоції, вони минуть. Продовжимо розмову, і я думаю, що все налагодиться само, коли ви обоє заспокоїтесь, видихнете й трохи охолонете трохи пізніше.",
+          ["defensive", "neutral"], [0, 1, -2, -2], "Андрій: «Ми так нічого не вирішимо».", "Ірина: «Мене знову ніхто не чує».",
+          "Очікування, що все минеться само, залишило ескалацію без контролю. Обоє відчули, що їх не бачать.",
+          "Посередник закликав не загострювати й продовжити розмову без змін у процесі.", "neutral", ["avoid"]),
+        o("repair_d_c", "partisan", "Зупинити лише одну сторону", "Андрію, ти надто різкий і тиснеш, це неприпустимо. Ірино, дякую, що ти лишаєшся спокійною. Андрію, заспокойся, і продовжимо без твоїх випадів, будь ласка, пам'ятай про правила.",
+          ["defensive", "open"], [-14, -2, -12, 8], "Андрій: «Тобто я винний, а вона ні?»", "Ірина: «Дякую, що хтось це помітив».",
+          "Ви зупинили не конфлікт, а одну сторону й похвалили іншу. Нейтральність і довіра Андрія впали.",
+          "Посередник зробив зауваження лише Андрію й похвалив Ірину за спокій.", "bad", ["partisan"])
+      ] },
+      withdrawn: { ctx: "Одна зі сторін замкнулась і замовкла, а друга вже роздратована. Потрібно м'яко повернути її в розмову.", options: [
+        o("repair_w_a", "facilitator", "Запросити без тиску", "Бачу, що розмова пішла важко, і не хочу ні на кого тиснути. Можемо зробити коротку паузу. Коли будете готові, мені важливо почути кожного, нікого не поспішаю.",
+          ["neutral", "neutral"], [4, 8, 6, 6], "Андрій: «Гаразд, пауза».", "Ірина повільно піднімає очі: «Дякую, що не поспішаєте».",
+          "Пауза без тиску й запрошення обох повернутися зняли напругу й залишили вибір за кожним.",
+          "Посередник зробив коротку паузу й запросив сторони повернутися до розмови, коли будуть готові.", "best", ["listen"]),
+        o("repair_w_b", "avoider", "Просто продовжити", "Продовжимо, а Ірина долучиться, коли захоче. Андрію, ти можеш розповісти далі, а я перефразую, і розмова піде своїм шляхом без додаткових зупинок і без поспіху.",
+          ["neutral", "withdrawn"], [-2, 1, 2, -6], "Андрій охоче продовжує говорити.", "Ірина мовчить далі.",
+          "Продовження без запрошення дало слово лише активнішій стороні. Мовчазна лишилась поза розмовою.",
+          "Посередник продовжив розмову, надавши слово Андрію; Ірина залишалась мовчазною.", "neutral", ["avoid"]),
+        o("repair_w_c", "commander", "Вимагати відповіді", "Ірино, ми не можемо мовчати: скажи прямо, що не так, бо інакше ми марнуємо час усіх, і мені доведеться вирішити за вас обох без твоєї думки, тож відповідай.",
+          ["neutral", "withdrawn"], [-8, -6, 0, -14], "Андрій: «Давай, Ірино, скажи».", "Ірина мовчки дивиться в стіл.",
+          "Вимога відповіді й погроза вирішити за них посилили закритість Ірини.",
+          "Посередник вимагав відповіді від Ірини й попередив, що вирішить за сторони.", "bad", ["pressure"])
+      ] }
+    },
+    deals: {
+      full: ["Андрій повідомляє про зміни пріоритетів за добу з короткою причиною", "Для термінових змін пояснення надається протягом доби", "Ірина озвучує труднощі одразу, а не пізніше", "Щотижня — 15-хвилинна синхронізація команди", "Перегляд домовленостей через два тижні"],
+      weak: ["Сторони домовились краще спілкуватися про зміни", "Термінів повідомлення, формату й перевірки не зафіксовано"],
+      none: ["Домовленості не досягнуто", "Питання залишилося відкритим"]
+    },
+    nextSteps: {
+      full: ["Посередник надсилає підсумок обом сторонам цього ж дня", "Перша 15-хвилинна синхронізація — наступного тижня", "Зустріч для перегляду домовленостей — через два тижні"],
+      weak: ["Призначити окрему зустріч щодо термінів і формату повідомлень про зміни", "Домовитись, як Ірина озвучує труднощі"],
+      none: ["Провести індивідуальні розмови з кожною стороною", "Призначити нову зустріч після охолодження емоцій"]
+    },
+    partyNote: "Андрій — тип D: цінує швидкість, ініціативу й результат, не любить довгих пояснень. Відкривається, коли розмова коротка й спрямована на рішення. Ірина — тип S: цінує стабільність, передбачуваність і те, щоб її питали. Мовчить, коли її ставлять перед фактом, а відкривається, коли безпечно й вистачає часу на перебудову."
+  }
+  ];
+
+  // ---------- Ядро гри ----------
+  function clamp(v) { return Math.max(0, Math.min(100, v)); }
+  function el(html) { var t = document.createElement("template"); t.innerHTML = html.trim(); return t.content.firstElementChild; }
+  function escHtml(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  function shuffle(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; }
+    return a;
+  }
+  function scenarioById(id) { return SCENARIOS.filter(function (s) { return s.id === id; })[0]; }
+  function gen(sc, p) { return sc.parties[p].gender === "f" ? "f" : "m"; }
+  function moodLabel(sc, p, mood) { return MOODS[mood][gen(sc, p)]; }
+  function moodNote(sc, p, mood) { return MOOD_NOTE[mood][gen(sc, p)].replace("%n", sc.parties[p].name); }
+  function stepById(sc, id) { return sc.steps.filter(function (s) { return s.id === id; })[0]; }
+  function stepIdx(sc, id) { for (var i = 0; i < sc.steps.length; i++) if (sc.steps[i].id === id) return i; return 0; }
+  function metricDefs(sc) {
+    return METRIC_DEFS.map(function (m) {
+      return { key: m.key, icon: m.icon, color: m.color, label: m.label.replace("%A", sc.parties.A.name).replace("%B", sc.parties.B.name) };
+    });
+  }
+
+  function newRun(sc) {
+    var s = sc.start;
+    return { stepId: sc.steps[0].id, metrics: { neutral: s.neutral, progress: s.progress, trustA: s.trustA, trustB: s.trustB },
+      moods: { A: "neutral", B: "neutral" }, history: [], repairUsed: false, repairReturn: null,
+      lastReply: { A: sc.openingA, B: sc.openingB }, series: [{ neutral: s.neutral, progress: s.progress, trustA: s.trustA, trustB: s.trustB }],
+      exit: null, deal: null, learned: { A: {}, B: {} } };
+  }
+  function nodeFor(sc, run) {
+    if (run.stepId === "repair") {
+      var tense = (run.moods.A === "withdrawn" || run.moods.B === "withdrawn") ? "withdrawn" : "defensive";
+      return sc.repair[tense];
+    }
+    return stepById(sc, run.stepId);
+  }
+  function isTense(m) { return m === "defensive" || m === "withdrawn"; }
+
+  // Застосувати вибір. Повертає id наступного кроку, "repair" або "END"
+  function applyChoice(sc, run, opt) {
+    var node = nodeFor(sc, run);
+    var isRepair = run.stepId === "repair";
+    var before = { neutral: run.metrics.neutral, progress: run.metrics.progress, trustA: run.metrics.trustA, trustB: run.metrics.trustB };
+    var after = {};
+    Object.keys(before).forEach(function (k) { after[k] = clamp(before[k] + opt.fx[k]); });
+    var moods = { A: opt.moods.A, B: opt.moods.B };
+    if (moods.A === "open" && after.trustA < 35) moods.A = "neutral";
+    if (moods.B === "open" && after.trustB < 35) moods.B = "neutral";
+    var best = node.options.filter(function (x) { return x.best; })[0];
+    var meta = isRepair ? { title: REPAIR_TITLE, icon: REPAIR_ICON } : node;
+    var item = {
+      stepId: run.stepId, stepTitle: meta.title, stepIcon: meta.icon,
+      optionId: opt.id, style: opt.style, tactic: opt.tactic, kind: opt.kind, text: opt.text, replyA: opt.replyA, replyB: opt.replyB,
+      why: opt.why, proto: opt.proto, tags: opt.tags.slice(), expected: best.tags.slice(), moods: moods, moodsBefore: { A: run.moods.A, B: run.moods.B },
+      best: !!opt.best, bestStyle: best.style, bestTactic: best.tactic, bestText: best.text, bestWhy: best.why,
+      delta: { neutral: after.neutral - before.neutral, progress: after.progress - before.progress, trustA: after.trustA - before.trustA, trustB: after.trustB - before.trustB }, after: after
+    };
+    run.history.push(item);
+    run.metrics = after;
+    run.series.push({ neutral: after.neutral, progress: after.progress, trustA: after.trustA, trustB: after.trustB });
+    run.moods = moods;
+    run.lastReply = { A: opt.replyA, B: opt.replyB };
+    (opt.learnA || []).forEach(function (id) { run.learned.A[id] = true; });
+    (opt.learnB || []).forEach(function (id) { run.learned.B[id] = true; });
+    if (opt.deal) run.deal = opt.deal;
+    var next;
+    if (after.trustA <= 15) { run.exit = "A"; next = "END"; }
+    else if (after.trustB <= 15) { run.exit = "B"; next = "END"; }
+    else if (after.neutral <= 15) { run.exit = "neutral"; next = "END"; }
+    else if (isRepair) {
+      next = run.repairReturn;
+    } else {
+      var idx = stepIdx(sc, run.stepId);
+      var failed = isTense(moods.A) || isTense(moods.B);
+      var hasNext = idx + 1 < sc.steps.length;
+      if (node.canRepair && !run.repairUsed && failed && hasNext) {
+        run.repairUsed = true; run.repairReturn = sc.steps[idx + 1].id; next = "repair";
+      } else {
+        next = hasNext ? sc.steps[idx + 1].id : "END";
+      }
+    }
+    if (next !== "END") run.stepId = next;
+    return next;
+  }
+
+  function summarize(sc, run) {
+    var counts = {}; STYLE_ORDER.forEach(function (k) { counts[k] = 0; });
+    var kinds = { best: 0, neutral: 0, bad: 0 };
+    var cx = 0, sides = [];
+    run.history.forEach(function (h) {
+      counts[h.style] += 1; kinds[h.kind] += 1;
+      if (h.tags.indexOf("partisan") !== -1 || h.tags.indexOf("judge") !== -1) sides.push(h);
+    });
+    var n = run.history.length || 1;
+    var dominant = STYLE_ORDER.slice().sort(function (a, b) { return counts[b] - counts[a]; })[0];
+    var m = run.metrics;
+    var gap = Math.abs(m.trustA - m.trustB);
+    var neutralKept = m.neutral >= 60 && gap <= 25 && !run.exit;
+    var dealFinal = run.exit ? "walkout" : (run.deal === "full" && m.progress < 55 ? "weak" : (run.deal || "none"));
+    var score = Math.round((m.neutral + m.progress + m.trustA + m.trustB) / 4);
+    var minTrust = Math.min(m.trustA, m.trustB);
+    var level = dealFinal === "walkout" ? "walkout" : (dealFinal === "none" ? "fail" : ((dealFinal === "full" && neutralKept && minTrust >= 55) ? "great" : "partial"));
+    var learnedA = sc.interests.A.filter(function (i) { return run.learned.A[i.id]; });
+    var learnedB = sc.interests.B.filter(function (i) { return run.learned.B[i.id]; });
+    var unknownA = sc.interests.A.filter(function (i) { return !run.learned.A[i.id]; });
+    var unknownB = sc.interests.B.filter(function (i) { return !run.learned.B[i.id]; });
+    return { counts: counts, kinds: kinds, dominant: dominant, total: run.history.length, score: score, deal: dealFinal, level: level,
+      neutralKept: neutralKept, gap: gap, sides: sides, bestPct: Math.round(kinds.best / n * 100),
+      learnedA: learnedA, learnedB: learnedB, unknownA: unknownA, unknownB: unknownB };
+  }
+
+  var VERDICTS = {
+    great: { label: "Згода досягнута, нейтральність збережена", text: "Сторони домовилися про конкретне рішення, яке напрацювали самі, а ви лишилися нейтральним посередником. Обидві сторони довіряють вам і вважають угоду справедливою." },
+    partial: { label: "Згода з застереженнями", text: "Домовленість є, але або нейтральність постраждала, або угода загальна чи нав'язана, або довіра однієї зі сторін невисока. Розбір покаже, де саме процес пішов не так." },
+    fail: { label: "Згоди не досягнуто", text: "Сторони не зафіксували домовленості, тож конфлікт лишився відкритим. Розбір покаже, на яких кроках процес не дав результату." },
+    walkout: { label: "Медіацію перервано", text: "" }
+  };
+  function walkoutText(sc, run) {
+    if (run.exit === "neutral") return "Сторони більше не сприймають вас нейтральним посередником: нейтральність опустилась нижче допустимого рівня, і вони відмовились продовжувати.";
+    var p = sc.parties[run.exit], f = p.gender === "f";
+    return p.name + (f ? " залишила" : " залишив") + " зустріч: довіра до вас опустилась нижче допустимого рівня, і конфлікт лишився невирішеним.";
+  }
+
+  // ---------- Стан ----------
+  var STORAGE_PREFIX = "conflict-mediator:";
+  var app = document.getElementById("app");
+  var state = {
+    screen: "intro", studentName: "", scenarioId: null, run: null, nextNode: null,
+    optionOrder: [], orderMemory: {}, prevOrders: {}, currOrders: {}, lastItem: null,
+    saveStatus: "idle", teacherRows: null, teacherLoading: false
+  };
+  function currentScenario() { return scenarioById(state.scenarioId); }
+
+  function startScenario(id) {
+    state.scenarioId = id; state.run = newRun(currentScenario()); state.saveStatus = "idle"; state.nextNode = null;
+    state.prevOrders = state.orderMemory[id] || {};
+    state.currOrders = {};
+    state.orderMemory[id] = state.currOrders;
+    prepareNode(); state.screen = "talk"; render();
+  }
+  function orderKey() {
+    var run = state.run;
+    if (run.stepId !== "repair") return run.stepId;
+    return "repair:" + ((run.moods.A === "withdrawn" || run.moods.B === "withdrawn") ? "w" : "d");
+  }
+  // Випадкова перестановка, у якій жоден варіант не стоїть там, де стояв під час попереднього проходження
+  function arrangeOptions(ids, prev) {
+    var order = shuffle(ids);
+    if (!prev || prev.length !== ids.length) return order;
+    for (var tries = 0; tries < 60; tries++) {
+      var clash = order.some(function (id, i) { return prev[i] === id; });
+      if (!clash) return order;
+      order = shuffle(ids);
+    }
+    return prev.slice(1).concat(prev[0]);
+  }
+  function prepareNode() {
+    var sc = currentScenario(); var node = nodeFor(sc, state.run);
+    var key = orderKey();
+    var ids = node.options.map(function (x) { return x.id; });
+    state.optionOrder = arrangeOptions(ids, state.prevOrders[key]);
+    state.currOrders[key] = state.optionOrder.slice();
+  }
+
+  // ---------- Компоненти ----------
+  function metricsHtml(sc, run, deltas) {
+    return '<div class="metrics metrics4">' + metricDefs(sc).map(function (mt) {
+      var v = run.metrics[mt.key];
+      var d = deltas ? deltas[mt.key] : 0;
+      var dHtml = d ? '<span class="m-delta ' + (d > 0 ? "up" : "down") + '">' + (d > 0 ? "+" : "−") + Math.abs(d) + '</span>' : "";
+      return '<div class="metric"><div class="m-head"><span class="m-name">' + mt.icon + ' ' + mt.label + '</span><span class="m-val">' + v + dHtml + '</span></div>' +
+        '<div class="m-track"><div class="m-fill" style="width:' + v + '%;background:' + mt.color + '"></div></div></div>';
+    }).join("") + '</div>';
+  }
+  function moodChip(sc, p, mood) { return '<span class="mood-chip ' + mood + '"><span class="mood-emoji">' + MOODS[mood].emoji + '</span>' + moodLabel(sc, p, mood) + '</span>'; }
+  function personCard(sc, p, mood) {
+    var pp = sc.parties[p];
+    return '<div class="party-card"><div class="avatar ' + pp.disc + '">' + pp.name.charAt(0) + '</div><div class="pc-info"><div class="p-name">' + pp.name + '</div><div class="p-sub">' + pp.role + ' · тип ' + pp.disc + '</div>' + moodChip(sc, p, mood) + '</div></div>';
+  }
+  function personsRow(sc, moods) { return '<div class="persons">' + personCard(sc, "A", moods.A) + personCard(sc, "B", moods.B) + '</div>'; }
+  function dualBubbles(sc, replies, moods) {
+    return '<div class="dual">' + ["A", "B"].map(function (p) {
+      var cls = moods ? " " + moods[p] : "";
+      return '<div class="bubble emp' + cls + '"><div class="b-who">' + sc.parties[p].name + '</div>' + (replies[p] || "мовчить") + '</div>';
+    }).join("") + '</div>';
+  }
+  function styleChip(style) { var st = STYLES[style]; return '<span class="style-chip ' + st.cls + '">' + st.icon + ' ' + st.name + '</span>'; }
+  function stepIndexForRun(sc, run) { return stepIdx(sc, run.stepId === "repair" ? run.repairReturn : run.stepId); }
+  function stepperHtml(sc, run) {
+    var cur = stepIndexForRun(sc, run);
+    return '<div class="stepper">' + sc.steps.map(function (st, i) {
+      var cls = i < cur ? "done" : (i === cur ? "cur" : "todo");
+      return '<div class="st-item ' + cls + '"><div class="st-ico">' + st.icon + '</div><div class="st-lab">' + st.title + '</div></div>';
+    }).join('<div class="st-line"></div>') + '</div>';
+  }
+  function tileHtml(tag, state2) {
+    var t = TAGS[tag];
+    var mark = state2 === "present" ? "✓" : "✕";
+    return '<div class="tile ' + state2 + ' ' + t.cls + '"><div class="t-ico">' + t.icon + '</div><div class="t-body"><div class="t-name">' + t.short + '</div><div class="t-what">' + t.what + '</div></div><div class="t-mark">' + mark + '</div></div>';
+  }
+  function feedbackTilesHtml(it) {
+    var html = '<div class="tiles-title">Що мало прозвучати в цій відповіді</div>' +
+      it.expected.map(function (tg) { return tileHtml(tg, it.tags.indexOf(tg) !== -1 ? "present" : "missing"); }).join("");
+    var flaws = it.tags.filter(function (tg) { return !TAGS[tg].good; });
+    if (flaws.length) html += '<div class="tiles-title">Що було зайвим або помилковим</div>' +
+      flaws.map(function (tg) { return tileHtml(tg, TAGS[tg].level === "soft" ? "soft" : "flaw"); }).join("");
+    return html;
+  }
+
+  // ---------- Екрани ----------
+  function renderIntro() {
+    var road = [["open", "🛡️", "Рамка", "поясніть роль і правила, створіть безпечний простір"], ["listen", "👂", "Слухання", "дайте обом рівний час і перефразуйте"],
+      ["appeal", "⚖️", "Нейтральність", "не ставайте на бік, коли вас просять про підтримку"], ["interests", "🔍", "Інтереси", "від позицій до потреб"],
+      ["options", "💡", "Варіанти", "допоможіть сторонам знайти рішення самим"], ["close", "📝", "Згода", "зафіксуйте конкретні домовленості"]];
+    var roadHtml = road.map(function (r, i) {
+      return '<div class="rm-item"><div class="rm-ico">' + r[1] + '</div><div class="rm-body"><div class="rm-name">' + (i + 1) + '. ' + r[2] + '</div><div class="rm-desc">' + r[3] + '</div></div></div>';
+    }).join("");
+    var styleCards = STYLE_ORDER.map(function (k) {
+      var st = STYLES[k];
+      return '<div class="tki-card ' + st.cls + '"><div class="tki-ico">' + st.icon + '</div><div class="tki-body"><div class="tki-name">' + st.name + '</div><div class="tki-def">' + st.def + '</div><div class="tki-when"><b>Ризик:</b> ' + st.risk + '</div></div></div>';
+    }).join("");
+    var cards = SCENARIOS.map(function (sc) {
+      return '<button class="scenario-card" data-id="' + sc.id + '"><div class="sc-emoji">' + sc.emoji + '</div><div class="sc-body"><div class="sc-title">' + sc.title +
+        '</div><div class="sc-sub">' + sc.preview + '</div><div class="sc-meta"><span class="mini-badge ' + sc.parties.A.disc + '">' + sc.parties.A.disc + '</span> ' + sc.parties.A.name + ' і <span class="mini-badge ' + sc.parties.B.disc + '">' + sc.parties.B.disc + '</span> ' + sc.parties.B.name + '</div></div></button>';
+    }).join("");
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<p class="kicker">Практичне заняття 6 · Бізнес-лідерство</p>' +
+      '<h1 class="title serif">Модератор конфлікту: гра за лідера-посередника</h1>' +
+      '<p class="lead">Ви керівник команди, і двоє ваших колег у конфлікті. Ви не учасник суперечки, а посередник: ваше завдання допомогти їм домовитися, не ставши на чийсь бік. На кожному кроці оберіть дію й дивіться, як реагують обидві сторони. Це змінює чотири показники: <b>Нейтральність</b>, <b>Прогрес до вирішення</b> та <b>Довіру</b> кожної зі сторін. Наприкінці ви дізнаєтеся, чи вдалося лишитися нейтральним і чи дійшли сторони згоди, та отримаєте підсумок медіації для звіту.</p>' +
+      '<label class="field-label">Ваше ім’я (необов’язково)</label>' +
+      '<input class="text-input" id="name-input" type="text" placeholder="Наприклад, Анна К." value="' + escHtml(state.studentName) + '" />' +
+      '<label class="field-label">Шлях медіації: шість кроків</label>' +
+      '<div class="roadmap">' + roadHtml + '</div>' +
+      '<label class="field-label">Пʼять способів поведінки посередника</label>' +
+      '<div class="tki-list">' + styleCards + '</div>' +
+      '<div class="note-box"><b>Як читати показники.</b> Нейтральність стартує з 70: ви ще нікого не підтримали, але її легко втратити. Прогрес стартує з 10: конфлікт ще не вирішено. Довіра кожної сторони стартує з 50. Нейтральність збережено, якщо вона не нижча за 60 і довіра сторін відрізняється не більш ніж на 25. На кожному кроці три дії: <span class="kind-badge best">Відмінна</span>, <span class="kind-badge neutral">Нейтральна</span> і <span class="kind-badge bad">Непідходяща</span>.</div>' +
+      '<label class="field-label">Оберіть конфлікт</label>' +
+      '<div class="scenario-list">' + cards + '</div>' +
+      '<button class="teacher-link" id="teacher-link">Перегляд результатів групи (для викладача)</button>' +
+      '</div></div>'
+    );
+    var input = card.querySelector("#name-input");
+    input.addEventListener("input", function () { state.studentName = input.value.trim(); });
+    card.querySelectorAll(".scenario-card").forEach(function (b) {
+      b.addEventListener("click", function () { state.studentName = input.value.trim(); startScenario(b.getAttribute("data-id")); });
+    });
+    card.querySelector("#teacher-link").addEventListener("click", function () { state.screen = "teacher"; render(); loadTeacherRows(); });
+    return card;
+  }
+
+  function briefHtml(sc) {
+    return '<div class="brief-box"><div class="bb-title">Ваша роль: керівник/ця команди й посередник</div><div class="bb-grid">' +
+      ["A", "B"].map(function (p) { return '<div class="bb-item"><span>Позиція: ' + sc.parties[p].name + '</span>' + sc.positions[p] + '</div>'; }).join("") + '</div></div>';
+  }
+
+  function renderTalk() {
+    var sc = currentScenario(), run = state.run, node = nodeFor(sc, run);
+    var first = run.history.length === 0;
+    var isRepair = run.stepId === "repair";
+    var title = isRepair ? REPAIR_TITLE : node.title, icon = isRepair ? REPAIR_ICON : node.icon;
+    var options = state.optionOrder.map(function (id) { return node.options.filter(function (x) { return x.id === id; })[0]; });
+    var opts = options.map(function (op, i) {
+      return '<button class="reply-btn" data-id="' + op.id + '"><span class="reply-num">' + String.fromCharCode(65 + i) + '</span><span class="reply-body"><span class="reply-tactic">' + escHtml(op.tactic) + '</span><span class="reply-text">' + escHtml(op.text) + '</span></span></button>';
+    }).join("");
+    var remind = '<details class="remind"><summary>Нагадування: шість кроків медіації</summary><div class="remind-row">' +
+      sc.steps.map(function (st) { return '<div class="remind-item el-frame"><span class="r-ico">' + st.icon + '</span><span>' + st.title + '</span></div>'; }).join("") + '</div></details>';
+    var notes = first ? "" : '<div class="mood-note">' + moodNote(sc, "A", run.moods.A) + ' ' + moodNote(sc, "B", run.moods.B) + '</div>';
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      stepperHtml(sc, run) +
+      '<p class="step-count">' + sc.emoji + ' ' + sc.title + ' · Крок ' + (stepIndexForRun(sc, run) + 1) + ' із ' + sc.steps.length + ' · ' + icon + ' ' + title + '</p>' +
+      personsRow(sc, run.moods) +
+      metricsHtml(sc, run, null) +
+      (first ? '<div class="setup-box"><b>Ситуація.</b> ' + sc.setup + '</div>' + briefHtml(sc) : "") +
+      dualBubbles(sc, first ? { A: sc.openingA, B: sc.openingB } : run.lastReply, null) +
+      notes +
+      '<div class="ctx-box">' + node.ctx + '</div>' +
+      remind +
+      '<label class="field-label">Що ви зробите як посередник?</label>' +
+      '<div class="reply-list">' + opts + '</div>' +
+      '</div></div>'
+    );
+    card.querySelectorAll(".reply-btn").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var opt = node.options.filter(function (x) { return x.id === b.getAttribute("data-id"); })[0];
+        var prevMoods = { A: run.moods.A, B: run.moods.B };
+        var next = applyChoice(sc, run, opt);
+        state.lastItem = run.history[run.history.length - 1];
+        state.lastItem.prevMoods = prevMoods; state.nextNode = next;
+        state.screen = "reaction"; render();
+      });
+    });
+    return card;
+  }
+
+  function liveFeedbackHtml(it) {
+    return '<div class="fb-live ' + KIND_META[it.kind].cls + '">' +
+      '<div class="fb-live-title">Розбір вашої дії</div>' +
+      '<div class="kind-row"><span class="kind-badge ' + KIND_META[it.kind].cls + '">' + KIND_META[it.kind].label + '</span></div>' +
+      feedbackTilesHtml(it) +
+      '<p class="sc-why">' + escHtml(it.why) + '</p>' +
+      (it.kind === "best" ? "" : '<p class="fb-hint">Яка дія й репліка були б відмінними, дізнаєтеся в детальному розборі в кінці.</p>') +
+      '</div>';
+  }
+
+  function renderReaction() {
+    var sc = currentScenario(), run = state.run, it = state.lastItem;
+    var isEnd = state.nextNode === "END";
+    var repairNext = state.nextNode === "repair";
+    var cta = isEnd ? "Переглянути результат →" : "Продовжити медіацію →";
+    var chips = '<div class="mood-row dual-moods">' + ["A", "B"].map(function (p) {
+      var ch = it.prevMoods[p] !== it.moods[p] ? moodChip(sc, p, it.prevMoods[p]) + '<span class="mood-arrow">→</span>' + moodChip(sc, p, it.moods[p]) : moodChip(sc, p, it.moods[p]);
+      return '<div class="mc-col"><span class="mc-name">' + sc.parties[p].name + '</span>' + ch + '</div>';
+    }).join("") + '</div>';
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<p class="step-count">' + sc.emoji + ' ' + sc.title + ' · ' + it.stepIcon + ' ' + it.stepTitle + '</p>' +
+      '<div class="bubble mgr"><div class="b-who">Ви · ' + escHtml(it.tactic) + '</div>' + escHtml(it.text) + '</div>' +
+      dualBubbles(sc, { A: it.replyA, B: it.replyB }, it.moods) +
+      chips +
+      metricsHtml(sc, run, it.delta) +
+      (run.exit ? '<div class="walkout-box">⚠️ ' + escHtml(walkoutText(sc, run)) + '</div>' : "") +
+      liveFeedbackHtml(it) +
+      (repairNext ? '<div class="note-box">Напруга зросла. Спробуйте розрядити ситуацію, перш ніж рухатися далі.</div>' : "") +
+      '<button class="btn btn-primary" id="next-btn">' + cta + '</button>' +
+      '</div></div>'
+    );
+    card.querySelector("#next-btn").addEventListener("click", function () {
+      if (isEnd) { state.screen = "verdict"; render(); saveResultToStorage(); }
+      else { prepareNode(); state.screen = "talk"; render(); }
+    });
+    return card;
+  }
+
+  function chartSvg(sc, series) {
+    var defs = metricDefs(sc);
+    var W = 320, H = 130, padL = 26, padR = 10, padT = 10, padB = 20;
+    var n = series.length, stepX = n > 1 ? (W - padL - padR) / (n - 1) : 0;
+    function X(i) { return padL + i * stepX; }
+    function Y(v) { return padT + (H - padT - padB) * (1 - v / 100); }
+    var grid = [0, 50, 100].map(function (gv) {
+      return '<line x1="' + padL + '" y1="' + Y(gv) + '" x2="' + (W - padR) + '" y2="' + Y(gv) + '" stroke="#DDE4F5" stroke-width="1"/><text x="' + (padL - 6) + '" y="' + (Y(gv) + 3) + '" font-size="9" fill="#5B6685" text-anchor="end">' + gv + '</text>';
+    }).join("");
+    var lines = defs.map(function (mt) {
+      var pts = series.map(function (s, i) { return X(i) + "," + Y(s[mt.key]); }).join(" ");
+      var dots = series.map(function (s, i) { return '<circle cx="' + X(i) + '" cy="' + Y(s[mt.key]) + '" r="2.4" fill="' + mt.color + '"/>'; }).join("");
+      return '<polyline points="' + pts + '" fill="none" stroke="' + mt.color + '" stroke-width="2"/>' + dots;
+    }).join("");
+    var xl = series.map(function (s, i) { return '<text x="' + X(i) + '" y="' + (H - 6) + '" font-size="9" fill="#5B6685" text-anchor="middle">' + (i === 0 ? "старт" : i) + '</text>'; }).join("");
+    return '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" role="img" aria-label="Динаміка показників">' + grid + lines + xl + '</svg>' +
+      '<div class="chart-legend">' + defs.map(function (mt) { return '<span><i style="background:' + mt.color + '"></i>' + mt.label + '</span>'; }).join("") + '</div>';
+  }
+
+  function checkCardsHtml(sc, run, sum) {
+    var m = run.metrics;
+    var nOk = sum.neutralKept;
+    var dealTxt = sum.deal === "full" ? "Сторони дійшли згоди" : sum.deal === "weak" ? "Згода часткова або загальна" : sum.deal === "walkout" ? "Медіацію перервано, згоди немає" : "Згоди немає";
+    var dealCls = sum.deal === "full" ? "ok" : sum.deal === "weak" ? "mid" : "no";
+    var dealIco = sum.deal === "full" ? "✓" : sum.deal === "weak" ? "≈" : "✕";
+    var why = nOk ? "Нейтральність " + m.neutral + " (потрібно від 60), різниця довіри " + sum.gap + " (не більш як 25)."
+      : (run.exit ? "Нейтральність " + m.neutral + ", медіацію перервано." : (m.neutral < 60 ? "Нейтральність " + m.neutral + " нижча за 60. " : "") + (sum.gap > 25 ? "Довіра сторін розбіглась на " + sum.gap + " (дозволено 25)." : ""));
+    return '<div class="check-cards">' +
+      '<div class="check-card ' + (nOk ? "ok" : "no") + '"><div class="cc-ico">⚖️</div><div class="cc-body"><div class="cc-title">' + (nOk ? "✓ Нейтральність збережено" : "✕ Нейтральність втрачено") + '</div><div class="cc-text">' + why + '</div></div></div>' +
+      '<div class="check-card ' + dealCls + '"><div class="cc-ico">🤝</div><div class="cc-body"><div class="cc-title">' + dealIco + ' ' + dealTxt + '</div><div class="cc-text">Прогрес до вирішення: ' + m.progress + ' зі 100.</div></div></div></div>';
+  }
+
+  function trustBalanceHtml(sc, run, sum) {
+    var m = run.metrics;
+    return '<label class="field-label">Баланс довіри сторін</label><div class="balance-box">' +
+      '<div class="bal-row"><span class="bal-name">' + sc.parties.A.name + '</span><div class="bal-track"><div class="bal-fill a" style="width:' + m.trustA + '%"></div></div><span class="bal-num">' + m.trustA + '</span></div>' +
+      '<div class="bal-row"><span class="bal-name">' + sc.parties.B.name + '</span><div class="bal-track"><div class="bal-fill b" style="width:' + m.trustB + '%"></div></div><span class="bal-num">' + m.trustB + '</span></div>' +
+      '<div class="bal-note">Різниця довіри: <b>' + sum.gap + '</b> ' + (sum.gap <= 25 ? "(у межах норми)" : "(забагато: одна сторона відчула перекіс)") + '</div></div>';
+  }
+
+  function timelineHtml(run) {
+    return '<label class="field-label">Нейтральність по кроках</label><div class="timeline">' + run.history.map(function (h, i) {
+      var d = h.delta.neutral;
+      var cls = d > 0 ? "up" : d < 0 ? "down" : "same";
+      return '<div class="tl-item ' + cls + '"><div class="tl-ico">' + h.stepIcon + '</div><div class="tl-d">' + (d > 0 ? "+" + d : d < 0 ? "−" + Math.abs(d) : "0") + '</div><div class="tl-lab">' + (i + 1) + '</div></div>';
+    }).join("") + '</div>';
+  }
+
+  function styleBarsHtml(sum) {
+    var total = sum.total || 1;
+    return '<div class="style-bars">' + STYLE_ORDER.map(function (k) {
+      var st = STYLES[k], c = sum.counts[k], pct = Math.round(c / total * 100);
+      return '<div class="sb-row ' + (k === sum.dominant && c > 0 ? "dom" : "") + '"><div class="sb-lab">' + st.icon + ' ' + st.name + '</div>' +
+        '<div class="sb-track"><div class="sb-fill ' + st.cls + '" style="width:' + pct + '%"></div></div><div class="sb-num">' + c + ' · ' + pct + '%</div></div>';
+    }).join("") + '</div>';
+  }
+  function profileHtml(sum) {
+    var dom = STYLES[sum.dominant];
+    return '<label class="field-label">Ваш профіль посередника</label><div class="tki-analysis">' + styleBarsHtml(sum) +
+      '<div class="dom-box ' + dom.cls + '" style="margin-top:12px;"><div class="dom-title">' + dom.icon + ' Домінує: ' + dom.name + ' (' + sum.counts[sum.dominant] + ' із ' + sum.total + ' кроків)</div>' +
+      '<p>' + dom.def + ' <b>Доречно:</b> ' + dom.when + ' <b>Ризик:</b> ' + dom.risk + '</p><p class="dom-advice">' + dom.advice + '</p></div>' +
+      '<div class="fit-row">Відмінних дій: <b>' + sum.kinds.best + ' із ' + sum.total + '</b> (' + sum.bestPct + '%)</div></div>';
+  }
+
+  // ---------- Підсумок медіації (угода сторін) ----------
+  function summaryData(sc, run, sum) {
+    var d = new Date();
+    var date = ("0" + d.getDate()).slice(-2) + "." + ("0" + (d.getMonth() + 1)).slice(-2) + "." + d.getFullYear();
+    var A = sc.parties.A, B = sc.parties.B, deal = sum.deal, result, terms, next, kind;
+    if (deal === "walkout") { result = walkoutText(sc, run) + " Згоди не досягнуто."; terms = sc.deals.none; next = sc.nextSteps.none; kind = "none"; }
+    else if (deal === "none") { result = "Домовленості не досягнуто."; terms = sc.deals.none; next = sc.nextSteps.none; kind = "none"; }
+    else if (deal === "weak") { result = "Досягнуто загальної домовленості без конкретних умов. Потрібне доопрацювання."; terms = sc.deals.weak; next = sc.nextSteps.weak; kind = "weak"; }
+    else { result = "Сторони дійшли згоди, яку напрацювали самостійно."; terms = sc.deals.full; next = sc.nextSteps.full; kind = "full"; }
+    var neutralText = sum.neutralKept ? "Нейтральність посередника збережено." : "Нейтральність посередника втрачено" + (sum.sides.length ? ": " + sum.sides.map(function (h) { return h.stepTitle; }).join(", ") + "." : ".");
+    return { date: date, subject: sc.title + " — " + sc.topic,
+      parties: [A.name + ", " + A.role, B.name + ", " + B.role],
+      mediator: state.studentName || "керівник/ця команди",
+      positions: [A.name + ": " + sc.positions.A, B.name + ": " + sc.positions.B],
+      learnedA: sum.learnedA.map(function (i) { return i.text; }), learnedB: sum.learnedB.map(function (i) { return i.text; }),
+      unknownA: sum.unknownA.map(function (i) { return i.text; }), unknownB: sum.unknownB.map(function (i) { return i.text; }),
+      steps: run.history.map(function (h, i) { return { n: i + 1, title: h.stepTitle, style: STYLES[h.style].name, line: h.proto }; }),
+      result: result, kind: kind, terms: terms, neutralText: neutralText, next: next };
+  }
+  function summaryText(sc, run, sum) {
+    var p = summaryData(sc, run, sum), A = sc.parties.A, B = sc.parties.B, L = [];
+    L.push("ПІДСУМОК МЕДІАЦІЇ"); L.push("Тема: " + p.subject); L.push("Дата: " + p.date);
+    L.push("Сторони:"); p.parties.forEach(function (x) { L.push("  — " + x); });
+    L.push("Посередник: " + p.mediator); L.push("");
+    L.push("1. ПОЗИЦІЇ СТОРІН"); p.positions.forEach(function (x) { L.push("  — " + x); }); L.push("");
+    L.push("2. ІНТЕРЕСИ СТОРІН");
+    L.push("  " + A.name + ":"); if (p.learnedA.length) p.learnedA.forEach(function (x) { L.push("    · " + x); }); else L.push("    · не з'ясовано");
+    if (p.unknownA.length) { L.push("    Не з'ясовано:"); p.unknownA.forEach(function (x) { L.push("    · " + x); }); }
+    L.push("  " + B.name + ":"); if (p.learnedB.length) p.learnedB.forEach(function (x) { L.push("    · " + x); }); else L.push("    · не з'ясовано");
+    if (p.unknownB.length) { L.push("    Не з'ясовано:"); p.unknownB.forEach(function (x) { L.push("    · " + x); }); }
+    L.push("");
+    L.push("3. ПРОЦЕС МЕДІАЦІЇ"); p.steps.forEach(function (s) { L.push("  " + s.n + ") " + s.title + " [" + s.style + "]: " + s.line); }); L.push("");
+    L.push("4. РЕЗУЛЬТАТ"); L.push("  " + p.result); L.push("  Умови:"); p.terms.forEach(function (x) { L.push("    · " + x); }); L.push("");
+    L.push("5. НЕЙТРАЛЬНІСТЬ ПОСЕРЕДНИКА"); L.push("  " + p.neutralText); L.push("");
+    L.push("6. НАСТУПНІ КРОКИ"); p.next.forEach(function (x) { L.push("  — " + x); }); L.push("");
+    L.push("7. ПІДПИСИ"); L.push("  " + A.name + ": ____________   " + B.name + ": ____________   Посередник: ____________");
+    return L.join("\n");
+  }
+  function summaryHtml(sc, run, sum) {
+    var p = summaryData(sc, run, sum), A = sc.parties.A, B = sc.parties.B;
+    function ul(a) { return '<ul>' + a.map(function (x) { return '<li>' + escHtml(x) + '</li>'; }).join("") + '</ul>'; }
+    return '<div class="proto-doc">' +
+      '<div class="pd-head"><div class="pd-title">ПІДСУМОК МЕДІАЦІЇ</div><div class="pd-sub">' + escHtml(p.subject) + ' · ' + p.date + '</div></div>' +
+      '<div class="pd-sec"><b>Сторони</b>' + ul(p.parties) + '<div>Посередник: ' + escHtml(p.mediator) + '</div></div>' +
+      '<div class="pd-sec"><b>1. Позиції сторін</b>' + ul(p.positions) + '</div>' +
+      '<div class="pd-sec"><b>2. Інтереси сторін</b>' +
+        '<div class="pd-label">' + escHtml(A.name) + '</div>' + (p.learnedA.length ? ul(p.learnedA) : '<ul><li>не з’ясовано</li></ul>') + (p.unknownA.length ? '<div class="pd-label warn">Не з’ясовано</div>' + ul(p.unknownA) : '') +
+        '<div class="pd-label">' + escHtml(B.name) + '</div>' + (p.learnedB.length ? ul(p.learnedB) : '<ul><li>не з’ясовано</li></ul>') + (p.unknownB.length ? '<div class="pd-label warn">Не з’ясовано</div>' + ul(p.unknownB) : '') + '</div>' +
+      '<div class="pd-sec"><b>3. Процес медіації</b><ol>' + p.steps.map(function (s) { return '<li><b>' + escHtml(s.title) + '</b> <span class="pd-style">' + escHtml(s.style) + '</span>: ' + escHtml(s.line) + '</li>'; }).join("") + '</ol></div>' +
+      '<div class="pd-sec"><b>4. Результат</b><p class="pd-res ' + p.kind + '">' + escHtml(p.result) + '</p><div class="pd-label">Умови</div>' + ul(p.terms) + '</div>' +
+      '<div class="pd-sec"><b>5. Нейтральність посередника</b><div>' + escHtml(p.neutralText) + '</div></div>' +
+      '<div class="pd-sec"><b>6. Наступні кроки</b>' + ul(p.next) + '</div>' +
+      '<div class="pd-sec pd-sign"><b>7. Підписи</b><div>' + escHtml(A.name) + ': ____________ &nbsp; ' + escHtml(B.name) + ': ____________ &nbsp; Посередник: ____________</div></div></div>';
+  }
+
+  function historyHtml(run, sc) {
+    return run.history.map(function (h, i) {
+      return '<div class="step-card ' + KIND_META[h.kind].cls + '">' +
+        '<div class="sc-head"><span class="sc-n">' + (i + 1) + '</span><b>' + h.stepIcon + ' ' + h.stepTitle + '</b><span class="sc-mood">⚖️ ' + (h.delta.neutral > 0 ? "+" : "") + (h.delta.neutral < 0 ? "−" + Math.abs(h.delta.neutral) : h.delta.neutral) + '</span></div>' +
+        '<div class="kind-row"><span class="kind-badge ' + KIND_META[h.kind].cls + '">' + KIND_META[h.kind].label + '</span> ' + styleChip(h.style) + '</div>' +
+        '<div class="sc-line"><b>' + escHtml(h.tactic) + '.</b> «' + escHtml(h.text) + '»</div>' +
+        feedbackTilesHtml(h) +
+        '<p class="sc-why">' + escHtml(h.why) + '</p>' +
+        '<div class="sc-reply">' + sc.parties.A.name + ': ' + (h.replyA || "мовчить") + '<br>' + sc.parties.B.name + ': ' + (h.replyB || "мовчить") + '</div>' +
+        (h.kind === "best" ? "" : '<div class="sc-best"><b>Відмінною була б така дія: ' + STYLES[h.bestStyle].icon + ' ' + STYLES[h.bestStyle].name + ' — ' + escHtml(h.bestTactic) + '.</b> «' + escHtml(h.bestText) + '» ' + escHtml(h.bestWhy) + '</div>') +
+        '</div>';
+    }).join("");
+  }
+  function interestsHtml(sc, run) {
+    return ["A", "B"].map(function (p) {
+      return '<div class="pd-label" style="margin:8px 0 4px;">' + escHtml(sc.parties[p].name) + '</div><div class="int-list">' + sc.interests[p].map(function (i) {
+        var ok = !!run.learned[p][i.id];
+        return '<div class="int-item ' + (ok ? "ok" : "no") + '"><span class="int-mark">' + (ok ? "✓" : "✕") + '</span><div><b>' + (ok ? "З'ясовано" : "Не з'ясовано") + '</b><br>' + escHtml(i.text) + '</div></div>';
+      }).join("") + '</div>';
+    }).join("");
+  }
+
+  function renderVerdict() {
+    var sc = currentScenario(), run = state.run, sum = summarize(sc, run);
+    var v = VERDICTS[sum.level];
+    var vText = sum.level === "walkout" ? walkoutText(sc, run) : v.text;
+    var saveNote = "";
+    if (state.saveStatus === "saving") saveNote = "Зберігаємо результат…";
+    else if (state.saveStatus === "saved") saveNote = "Результат збережено.";
+    else if (state.saveStatus === "failed") saveNote = "Результат сформовано, але не вдалося зберегти для викладача.";
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<p class="kicker" style="text-align:center;">' + (state.studentName ? escHtml(state.studentName) + " · " : "") + sc.emoji + ' ' + sc.title + '</p>' +
+      '<div class="verdict-card ' + sum.level + '"><div class="v-label">Результат медіації</div><div class="v-title">' + v.label + '</div><p>' + vText + '</p>' +
+        '<div class="v-score"><span>' + sum.score + '</span> / 100 · відмінних дій: ' + sum.kinds.best + ' · нейтральних: ' + sum.kinds.neutral + ' · непідходящих: ' + sum.kinds.bad + '</div></div>' +
+      checkCardsHtml(sc, run, sum) +
+      personsRow(sc, run.moods) +
+      metricsHtml(sc, run, null) +
+      '<label class="field-label">Динаміка показників</label><div class="chart-box">' + chartSvg(sc, run.series) + '</div>' +
+      trustBalanceHtml(sc, run, sum) +
+      timelineHtml(run) +
+      profileHtml(sum) +
+      '<div class="next-box"><div class="nb-title">Що далі?</div>' +
+        '<p>Спробуйте ще раз: варіанти дій розташовані по-іншому, а сторони можуть відреагувати інакше. Або оберіть інший конфлікт. Підсумок медіації для звіту нижче.</p>' +
+        '<div class="result-actions">' +
+          '<button class="btn btn-primary" id="retry-btn">Пройти ще раз</button>' +
+          '<button class="btn btn-secondary" id="other-btn">Інший конфлікт</button>' +
+          '<button class="btn btn-secondary" id="copy-sum-btn">Скопіювати підсумок</button>' +
+        '</div></div>' +
+      '<details class="deep"><summary>Підсумок медіації (готовий для звіту)</summary><div class="deep-body">' +
+        summaryHtml(sc, run, sum) +
+        '<div class="result-actions"><button class="btn btn-secondary" id="copy-sum-btn2">Скопіювати підсумок</button><button class="btn btn-secondary" id="download-btn">Завантажити .txt</button></div>' +
+      '</div></details>' +
+      '<details class="deep"><summary>Показати детальний розбір ситуації</summary><div class="deep-body">' +
+        '<p class="deep-lead">Тут ви побачите, які дії були б відмінними на кожному кроці, і приклади реплік. Якщо хочете пройти гру без підказок, пропустіть цей розділ і запустіть її ще раз.</p>' +
+        '<label class="field-label">Розбір ваших дій по кроках</label>' + historyHtml(run, sc) +
+        '<label class="field-label">Інтереси сторін</label>' + interestsHtml(sc, run) +
+        '<div class="note-box"><b>Чому сторони реагували саме так.</b> ' + sc.partyNote + '</div>' +
+      '</div></details>' +
+      (saveNote ? '<p class="save-note">' + saveNote + '</p>' : "") +
+      '<textarea id="copy-fallback-area" style="display:none;margin-top:12px;width:100%;min-height:140px;padding:10px;border-radius:10px;border:1.5px solid var(--line);font-size:11.5px;color:var(--muted);background:var(--surface);" readonly>' + escHtml(summaryText(sc, run, sum)) + '</textarea>' +
+      '<button class="teacher-link" id="teacher-link">Перегляд результатів групи (для викладача)</button>' +
+      '</div></div>'
+    );
+    card.querySelector("#retry-btn").addEventListener("click", function () { startScenario(state.scenarioId); });
+    card.querySelector("#other-btn").addEventListener("click", function () { state.screen = "intro"; render(); });
+    function copyS(e) { copyToClipboard(summaryText(sc, run, sum), e.currentTarget, "Скопіювати підсумок"); }
+    card.querySelector("#copy-sum-btn").addEventListener("click", copyS);
+    card.querySelector("#copy-sum-btn2").addEventListener("click", copyS);
+    card.querySelector("#download-btn").addEventListener("click", function () { downloadText("mediation-" + sc.id + ".txt", summaryText(sc, run, sum)); });
+    card.querySelector("#teacher-link").addEventListener("click", function () { state.screen = "teacher"; render(); loadTeacherRows(); });
+    return card;
+  }
+
+  // ---------- Експорт, збереження, викладач ----------
+  function downloadText(name, text) {
+    var blob = new Blob(["\uFEFF" + text], { type: "text/plain;charset=utf-8;" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a"); a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  }
+  function copyToClipboard(text, btn, label) {
+    function ok() { btn.textContent = "Скопійовано ✓"; setTimeout(function () { btn.textContent = label; }, 1800); }
+    function fail() { var ta = document.getElementById("copy-fallback-area"); if (ta) { ta.style.display = "block"; ta.focus(); ta.select(); } }
+    if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(ok).catch(fail); }
+    else {
+      try {
+        var temp = document.createElement("textarea"); temp.value = text; temp.style.position = "fixed"; temp.style.opacity = "0";
+        document.body.appendChild(temp); temp.focus(); temp.select();
+        var success = document.execCommand("copy"); document.body.removeChild(temp);
+        if (success) ok(); else fail();
+      } catch (e) { fail(); }
+    }
+  }
+
+  function saveResultToStorage() {
+    if (!window.storage) return;
+    var sc = currentScenario(), run = state.run, sum = summarize(sc, run), v = VERDICTS[sum.level];
+    state.saveStatus = "saving";
+    var key = STORAGE_PREFIX + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
+    var payload = {
+      name: state.studentName || "Анонім", scenarioId: sc.id, scenarioTitle: sc.title,
+      neutral: run.metrics.neutral, progress: run.metrics.progress, trustA: run.metrics.trustA, trustB: run.metrics.trustB,
+      score: sum.score, level: sum.level, verdict: v.label, deal: sum.deal, neutralKept: sum.neutralKept, gap: sum.gap,
+      styles: sum.counts, dominant: sum.dominant, kinds: sum.kinds, bestPct: sum.bestPct,
+      path: run.history.map(function (h) { return { stepId: h.stepId, optionId: h.optionId, style: h.style, kind: h.kind }; }),
+      timestamp: Date.now()
+    };
+    window.storage.set(key, JSON.stringify(payload), true).then(function (r) {
+      state.saveStatus = r ? "saved" : "failed"; render();
+    }).catch(function () { state.saveStatus = "failed"; render(); });
+  }
+
+  function loadTeacherRows() {
+    state.teacherLoading = true; render();
+    if (!window.storage) { state.teacherRows = []; state.teacherLoading = false; render(); return; }
+    window.storage.list(STORAGE_PREFIX, true).then(function (listRes) {
+      var keys = (listRes && listRes.keys) || [];
+      if (keys.length === 0) { state.teacherRows = []; state.teacherLoading = false; render(); return; }
+      var promises = keys.map(function (k) {
+        return window.storage.get(k, true).then(function (r) { try { return JSON.parse(r.value); } catch (e) { return null; } }).catch(function () { return null; });
+      });
+      Promise.all(promises).then(function (rows) {
+        rows = rows.filter(Boolean).sort(function (a, b) { return b.timestamp - a.timestamp; });
+        state.teacherRows = rows; state.teacherLoading = false; render();
+      });
+    }).catch(function () { state.teacherRows = []; state.teacherLoading = false; render(); });
+  }
+
+  function csvEscape(t) { return '"' + String(t).replace(/"/g, '""') + '"'; }
+  function downloadCsv() {
+    var rows = state.teacherRows || [];
+    var header = ["Ім'я", "Конфлікт", "Нейтральність", "Прогрес", "Довіра A", "Довіра B", "Різниця довіри", "Бал", "Результат", "Згода", "Нейтральність збережено"]
+      .concat(STYLE_ORDER.map(function (k) { return STYLES[k].name; }))
+      .concat(["Домінуючий стиль", "Відмінних", "Нейтральних", "Непідходящих", "Дата"]);
+    var lines = [header.map(csvEscape).join(";")];
+    rows.forEach(function (r) {
+      var st = r.styles || {}, k = r.kinds || {};
+      lines.push([csvEscape(r.name), csvEscape(r.scenarioTitle), r.neutral, r.progress, r.trustA, r.trustB, r.gap, r.score, csvEscape(r.verdict), csvEscape(r.deal), r.neutralKept ? "так" : "ні"]
+        .concat(STYLE_ORDER.map(function (s) { return st[s] || 0; }))
+        .concat([csvEscape(r.dominant && STYLES[r.dominant] ? STYLES[r.dominant].name : ""), k.best || 0, k.neutral || 0, k.bad || 0, csvEscape(new Date(r.timestamp).toLocaleString("uk-UA"))]).join(";"));
+    });
+    downloadText("conflict-mediator-results.csv", lines.join("\n"));
+  }
+
+  function teacherStatsHtml(rows) {
+    var out = "";
+    SCENARIOS.forEach(function (sc) {
+      var rs = rows.filter(function (r) { return r.scenarioId === sc.id; });
+      if (rs.length === 0) return;
+      var n = rs.length;
+      function avg(f) { return Math.round(rs.reduce(function (s, r) { return s + (r[f] || 0); }, 0) / n); }
+      function pct(f) { return Math.round(rs.filter(f).length / n * 100) + "%"; }
+      var levels = { great: 0, partial: 0, fail: 0, walkout: 0 };
+      rs.forEach(function (r) { if (levels.hasOwnProperty(r.level)) levels[r.level] += 1; });
+      var styleAvg = STYLE_ORDER.map(function (k) {
+        var tot = 0, cnt = 0;
+        rs.forEach(function (r) { var s = r.styles || {}; var all = STYLE_ORDER.reduce(function (a, x) { return a + (s[x] || 0); }, 0); if (all) { tot += (s[k] || 0) / all; cnt += 1; } });
+        return '<td>' + (cnt ? Math.round(tot / cnt * 100) : 0) + '%</td>';
+      }).join("");
+      var stepStats = {};
+      rs.forEach(function (r) { (r.path || []).forEach(function (p) {
+        if (p.stepId === "repair") return;
+        var s = stepStats[p.stepId] = stepStats[p.stepId] || { n: 0, best: 0, neutral: 0, bad: 0, styles: {} };
+        s.n += 1; s[p.kind] += 1; s.styles[p.style] = (s.styles[p.style] || 0) + 1;
+      }); });
+      var stepRows = sc.steps.filter(function (st) { return stepStats[st.id]; }).map(function (st) {
+        var s = stepStats[st.id], top = null;
+        Object.keys(s.styles).forEach(function (k) { if (!top || s.styles[k] > s.styles[top]) top = k; });
+        return '<tr><td>' + st.icon + ' ' + st.title + '</td><td>' + Math.round(s.best / s.n * 100) + '%</td><td>' + Math.round(s.neutral / s.n * 100) + '%</td><td>' + Math.round(s.bad / s.n * 100) + '%</td><td>' + (top ? STYLES[top].icon + ' ' + STYLES[top].name : "—") + '</td></tr>';
+      }).join("");
+      out += '<label class="field-label" style="margin-top:22px;">' + sc.emoji + ' ' + sc.title + ' · ' + n + ' проходжень</label>' +
+        '<div class="table-scroll"><table class="results-table"><thead><tr><th>Нейтральність</th><th>Прогрес</th><th>Довіра ' + sc.parties.A.name + '</th><th>Довіра ' + sc.parties.B.name + '</th><th>Бал</th></tr></thead><tbody><tr><td>' + avg("neutral") + '</td><td>' + avg("progress") + '</td><td>' + avg("trustA") + '</td><td>' + avg("trustB") + '</td><td>' + avg("score") + '</td></tr></tbody></table></div>' +
+        '<div class="note-box" style="margin-top:10px;">Нейтральність збережено: ' + pct(function (r) { return r.neutralKept; }) + '. Згода досягнута (повна чи часткова): ' + pct(function (r) { return r.deal === "full" || r.deal === "weak"; }) + '. Результати: згода й нейтральність — ' + levels.great + ', згода з застереженнями — ' + levels.partial + ', згоди немає — ' + levels.fail + ', медіацію перервано — ' + levels.walkout + '.</div>' +
+        '<div class="table-scroll"><table class="results-table"><thead><tr>' + STYLE_ORDER.map(function (k) { return '<th>' + STYLES[k].icon + '</th>'; }).join("") + '</tr></thead><tbody><tr>' + styleAvg + '</tr></tbody></table></div>' +
+        '<div class="table-scroll"><table class="results-table"><thead><tr><th>Крок</th><th>Відмінна</th><th>Нейтральна</th><th>Непідходяща</th><th>Найчастіша поведінка</th></tr></thead><tbody>' + stepRows + '</tbody></table></div>';
+    });
+    return out;
+  }
+
+  function renderTeacher() {
+    var rows = state.teacherRows;
+    var bodyHtml;
+    if (state.teacherLoading) bodyHtml = '<p class="empty-note">Завантаження результатів…</p>';
+    else if (!rows || rows.length === 0) bodyHtml = '<p class="empty-note">Поки що ніхто не пройшов гру за цим посиланням.</p>';
+    else {
+      var trs = rows.map(function (r) {
+        return '<tr><td>' + escHtml(r.name) + '</td><td>' + escHtml(r.scenarioTitle || "") + '</td><td>' + r.score + '</td><td>' + escHtml(r.verdict || "") + '</td><td>' + (r.neutralKept ? "✓" : "✕") + '</td><td>' + new Date(r.timestamp).toLocaleString("uk-UA") + '</td></tr>';
+      }).join("");
+      bodyHtml = '<div class="table-scroll"><table class="results-table"><thead><tr><th>Студент</th><th>Конфлікт</th><th>Бал</th><th>Результат</th><th>Нейтральність</th><th>Дата</th></tr></thead><tbody>' + trs + '</tbody></table></div>' + teacherStatsHtml(rows);
+    }
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<div class="teacher-header"><h1 class="title serif" style="margin:0;font-size:22px;">Результати групи</h1><button class="icon-btn" id="refresh-btn">Оновити</button></div>' +
+      bodyHtml +
+      '<div class="result-actions"><button class="btn btn-secondary" id="csv-btn"' + ((!rows || rows.length === 0) ? " disabled" : "") + '>Завантажити CSV</button><button class="btn btn-secondary" id="back-btn">← Назад</button></div>' +
+      '</div></div>'
+    );
+    card.querySelector("#refresh-btn").addEventListener("click", loadTeacherRows);
+    card.querySelector("#back-btn").addEventListener("click", function () { state.screen = state.run && state.run.history.length && state.nextNode === "END" ? "verdict" : "intro"; render(); });
+    var csvBtn = card.querySelector("#csv-btn");
+    if (csvBtn && rows && rows.length > 0) csvBtn.addEventListener("click", downloadCsv);
+    return card;
+  }
+
+  function render() {
+    app.innerHTML = "";
+    var view;
+    if (state.screen === "intro") view = renderIntro();
+    else if (state.screen === "talk") view = renderTalk();
+    else if (state.screen === "reaction") view = renderReaction();
+    else if (state.screen === "verdict") view = renderVerdict();
+    else view = renderTeacher();
+    app.appendChild(view);
+    window.scrollTo(0, 0);
+  }
+
+  render();
+
+})();
+</script>
+</body>
+</html>
