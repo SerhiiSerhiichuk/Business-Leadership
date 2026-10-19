@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Збери план змін: вісім кроків Коттера</title>
+<style>
+  :root {
+    --ink: #1E2761; --ink-soft: #384080; --surface: #F3F6FC; --card: #FFFFFF;
+    --gold: #C9962C; --gold-soft: #F3E4C6; --muted: #5B6685; --line: #DDE4F5;
+    --red: #B3492F; --green: #2E7D6B;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; min-height: 100%; background: var(--surface);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+  }
+  .serif { font-family: Cambria, Georgia, "Times New Roman", serif; }
+  #app { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 32px 18px; }
+  .stage-wrap { width: 100%; max-width: 660px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 36px 34px; box-shadow: 0 18px 40px -24px rgba(30,39,97,0.35); }
+  @media (max-width: 480px) { .card { padding: 24px 18px; } }
+
+  .kicker { font-size: 13px; color: var(--muted); margin: 0 0 10px; }
+  h1.title { font-size: 26px; line-height: 1.25; margin: 0 0 14px; font-weight: 700; }
+  p.lead { font-size: 15px; line-height: 1.6; color: var(--muted); margin: 0 0 22px; }
+  label.field-label { display: block; font-size: 13px; color: var(--ink-soft); margin-bottom: 6px; font-weight: 600; }
+  input.text-input {
+    width: 100%; padding: 12px 14px; border-radius: 10px; border: 1.5px solid var(--line);
+    font-size: 15px; color: var(--ink); background: var(--surface); margin-bottom: 20px;
+  }
+  input.text-input:focus { outline: none; border-color: var(--gold); }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 13px 24px; border-radius: 10px; border: none; font-size: 14.5px; font-weight: 600;
+    cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .btn-primary { background: var(--ink); color: #fff; width: 100%; }
+  .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 10px 20px -12px rgba(30,39,97,0.6); }
+  .btn-secondary { background: var(--surface); color: var(--ink); border: 1.5px solid var(--line); }
+  .note-box { margin: 0 0 20px; padding: 12px 14px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+
+  /* DISC primer */
+  .primer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+  @media (max-width: 480px) { .primer-grid { grid-template-columns: 1fr; } }
+  .primer-item { display: flex; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); align-items: flex-start; }
+  .primer-letter { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; color: #fff; flex-shrink: 0; }
+  .primer-letter.D { background: var(--red); } .primer-letter.I { background: var(--gold); } .primer-letter.S { background: var(--green); } .primer-letter.C { background: var(--ink); }
+  .primer-text { font-size: 11.5px; line-height: 1.4; color: var(--muted); }
+  .primer-text b { color: var(--ink); }
+
+  /* Quiz */
+  .progress-track { height: 5px; background: var(--line); border-radius: 4px; overflow: hidden; margin-bottom: 22px; }
+  .progress-fill { height: 100%; background: var(--gold); border-radius: 4px; transition: width 0.4s ease; }
+  .step-count { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .cand-name-big { font-size: 20px; font-weight: 700; margin-bottom: 14px; }
+  .desc-box { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; margin-bottom: 22px; }
+  .desc-box p { font-size: 14px; line-height: 1.65; margin: 0; color: var(--ink-soft); }
+  .disc-choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 480px) { .disc-choice-grid { grid-template-columns: 1fr; } }
+  .disc-choice-btn {
+    display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 12px;
+    border: 1.5px solid var(--line); background: #fff; cursor: pointer; transition: all 0.15s ease; text-align: left;
+  }
+  .disc-choice-btn:hover { border-color: var(--gold); background: var(--gold-soft); }
+  .disc-choice-btn .dc-badge { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; color: #fff; flex-shrink: 0; }
+  .disc-choice-btn .dc-badge.D { background: var(--red); } .disc-choice-btn .dc-badge.I { background: var(--gold); } .disc-choice-btn .dc-badge.S { background: var(--green); } .disc-choice-btn .dc-badge.C { background: var(--ink); }
+  .disc-choice-btn .dc-title { font-weight: 700; font-size: 13.5px; }
+  .disc-choice-btn .dc-sub { font-size: 11px; color: var(--muted); }
+
+  /* Consequence */
+  .consequence-box { border-radius: 14px; padding: 18px 20px; margin-bottom: 20px; color: #fff; }
+  .consequence-box.correct { background: var(--green); }
+  .consequence-box.incorrect { background: var(--red); }
+  .consequence-box .cq-label { font-size: 11px; font-weight: 700; margin-bottom: 8px; letter-spacing: 0.3px; opacity: 0.85; }
+  .consequence-box p { font-size: 13.5px; line-height: 1.55; margin: 0; }
+  .consequence-box .cq-your { font-size: 12px; margin-bottom: 8px; opacity: 0.9; }
+
+  /* Results */
+  table.results-recap { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-bottom: 20px; }
+  table.results-recap th { text-align: left; font-size: 11px; color: var(--muted); font-weight: 600; padding: 7px 6px; border-bottom: 2px solid var(--line); }
+  table.results-recap td { padding: 8px 6px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  .mini-badge { width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 11px; color: #fff; }
+  .mini-badge.D { background: var(--red); } .mini-badge.I { background: var(--gold); } .mini-badge.S { background: var(--green); } .mini-badge.C { background: var(--ink); }
+  .result-icon { font-weight: 800; }
+  .result-icon.ok { color: var(--green); } .result-icon.no { color: var(--red); }
+
+  .tier-card { margin-top: 4px; padding: 20px 22px; border-radius: 14px; background: var(--ink); color: #fff; margin-bottom: 20px; }
+  .tier-card .t-label { font-size: 11px; color: var(--gold-soft); font-weight: 700; margin-bottom: 8px; letter-spacing: 0.3px; }
+  .tier-card .t-title { font-size: 19px; font-weight: 700; margin-bottom: 8px; }
+  .tier-card p { font-size: 13.5px; line-height: 1.55; color: #DCE1F5; margin: 0; }
+  .score-big { text-align: center; margin-bottom: 4px; }
+  .score-big .num { font-size: 40px; font-weight: 800; color: var(--ink); }
+  .score-big .den { font-size: 16px; color: var(--muted); }
+
+  .save-note { font-size: 12.5px; color: var(--muted); margin-top: 14px; text-align: center; }
+  .result-actions { display: flex; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
+  .result-actions .btn { flex: 1; min-width: 140px; }
+  .teacher-link { display: block; text-align: center; margin-top: 20px; font-size: 12.5px; color: var(--muted); text-decoration: underline; cursor: pointer; background: none; border: none; }
+
+  .teacher-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+  table.results-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.results-table th { text-align: left; font-size: 10.5px; color: var(--muted); font-weight: 600; padding: 7px 6px; border-bottom: 2px solid var(--line); }
+  table.results-table td { padding: 8px 6px; border-bottom: 1px solid var(--line); }
+  .tag { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; background: var(--gold-soft); color: #7A5A16; }
+  .empty-note { text-align: center; color: var(--muted); font-size: 13.5px; padding: 30px 0; }
+  .icon-btn { background: none; border: 1.5px solid var(--line); border-radius: 8px; padding: 7px 13px; font-size: 12.5px; color: var(--ink); cursor: pointer; }
+  .icon-btn:hover { border-color: var(--gold); }
+  .table-scroll { overflow-x: auto; }
+
+
+
+  .fb-hint { font-size: 12px; color: var(--muted); font-style: italic; margin: 4px 0 0; }
+  .next-box { margin: 20px 0 14px; padding: 16px 18px; border-radius: 14px; background: var(--gold-soft); border: 1px solid #E5CE9B; }
+  .next-box .nb-title { font-size: 15px; font-weight: 800; margin-bottom: 4px; }
+  .next-box p { font-size: 13px; line-height: 1.55; color: var(--ink-soft); margin: 0 0 12px; }
+  .next-box .result-actions { margin-top: 0; }
+  .deep { margin: 6px 0 18px; border: 1.5px solid var(--line); border-radius: 14px; background: #fff; }
+  .deep > summary { cursor: pointer; font-weight: 700; font-size: 14px; padding: 14px 18px; color: var(--ink); list-style: none; }
+  .deep > summary::-webkit-details-marker { display: none; }
+  .deep > summary::before { content: "▸ "; color: var(--gold); }
+  .deep[open] > summary::before { content: "▾ "; }
+  .deep-body { padding: 0 16px 16px; }
+  .deep-lead { font-size: 12.5px; color: var(--muted); line-height: 1.55; margin: 0 0 14px; }
+
+  /* ---------- Stepper & roadmap ---------- */
+  .stepper { display: flex; align-items: center; margin-bottom: 14px; }
+  .st-item { display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 40px; }
+  .st-ico { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; border: 2px solid var(--line); background: var(--surface); filter: grayscale(1); opacity: 0.55; }
+  .st-lab { font-size: 10px; font-weight: 700; color: var(--muted); }
+  .st-item.done .st-ico { filter: none; opacity: 1; background: #DCEFE9; border-color: #6FB8A2; }
+  .st-item.cur .st-ico { filter: none; opacity: 1; background: var(--gold-soft); border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,150,44,0.25); }
+  .st-item.cur .st-lab { color: var(--ink); }
+  .st-line { flex: 1; height: 2px; background: var(--line); margin: 0 2px 14px; min-width: 6px; }
+  .roadmap { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 18px; }
+  @media (max-width: 560px) { .roadmap { grid-template-columns: 1fr; } }
+  .rm-item { display: flex; gap: 10px; align-items: center; padding: 9px 11px; border-radius: 10px; border: 1.5px solid var(--line); background: #fff; }
+  .rm-ico { width: 36px; height: 36px; border-radius: 50%; background: var(--surface); border: 2px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+  .rm-name { font-weight: 700; font-size: 12.5px; } .rm-desc { font-size: 11.5px; color: var(--muted); line-height: 1.4; }
+
+  /* ---------- SBI-I icons ---------- */
+  .el-S { --ic-bg: #E6EAF8; --ic-bd: #7C8BC9; } .el-B { --ic-bg: #FBF1D6; --ic-bd: #D7B25A; } .el-I { --ic-bg: #DCEFE9; --ic-bd: #6FB8A2; }
+  .el-N { --ic-bg: #EADFF5; --ic-bd: #A98BD1; } .el-frame { --ic-bg: #E3F0FA; --ic-bd: #78AEDB; } .el-E { --ic-bg: #FBE3EA; --ic-bd: #E08BA4; }
+  .el-Q { --ic-bg: #E0F2F1; --ic-bd: #5FB5AE; } .el-A { --ic-bg: #E7F3D9; --ic-bd: #8DBB5A; } .el-F { --ic-bg: #EEE9DD; --ic-bd: #B6A472; }
+  .lv-bad { --ic-bg: #F6DCD4; --ic-bd: #D9826A; } .lv-soft { --ic-bg: #FBEBD6; --ic-bd: #E2A867; }
+  .el-list { display: grid; gap: 8px; margin-bottom: 18px; }
+  .el-card { display: flex; gap: 14px; padding: 12px 14px; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; }
+  .el-ico, .t-ico, .mp-ico, .r-ico, .fi-ico { background: var(--ic-bg); border: 2px solid var(--ic-bd); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .el-ico { width: 46px; height: 46px; font-size: 22px; }
+  .el-name { font-weight: 800; font-size: 13.5px; margin-bottom: 3px; }
+  .el-def { font-size: 12.5px; line-height: 1.5; color: var(--ink-soft); }
+  .el-ex { font-size: 12px; line-height: 1.5; color: var(--muted); font-style: italic; margin-top: 4px; }
+  .flaw-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-bottom: 16px; }
+  @media (max-width: 560px) { .flaw-grid { grid-template-columns: 1fr 1fr; } }
+  .flaw-item { display: flex; align-items: center; gap: 8px; font-size: 11.5px; font-weight: 600; padding: 6px 9px; border-radius: 10px; border: 1.5px solid; }
+  .flaw-item.bad { background: #FCF1EE; border-color: #E8B5A4; color: #7A2E1A; } .flaw-item.soft { background: #FEF6EA; border-color: #EBC995; color: #6B4A12; }
+  .fi-ico { width: 26px; height: 26px; font-size: 14px; border-width: 1.5px; }
+  .flaw-item.bad .fi-ico { --ic-bg: #F6DCD4; --ic-bd: #D9826A; } .flaw-item.soft .fi-ico { --ic-bg: #FBEBD6; --ic-bd: #E2A867; }
+
+  .tiles-title { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 0.2px; margin: 12px 0 6px; }
+  .tile { display: flex; gap: 10px; align-items: center; padding: 9px 11px; border-radius: 10px; border: 1.5px solid var(--line); background: #fff; margin-bottom: 6px; }
+  .t-ico { width: 36px; height: 36px; font-size: 17px; }
+  .t-body { flex: 1; min-width: 0; }
+  .t-name { font-size: 12.5px; font-weight: 700; }
+  .t-what { font-size: 11.5px; color: var(--muted); line-height: 1.4; }
+  .t-mark { font-weight: 800; font-size: 16px; padding-left: 6px; }
+  .tile.present { border-color: #8FC4B3; background: #F2FAF7; } .tile.present .t-mark { color: var(--green); }
+  .tile.missing { border-style: dashed; background: #FAFAFB; } .tile.missing .t-ico { filter: grayscale(1); opacity: 0.5; } .tile.missing .t-name { color: var(--muted); } .tile.missing .t-mark { color: var(--red); }
+  .tile.soft { border-color: #E2A867; background: #FEF6EA; } .tile.soft .t-mark { color: #A8741A; }
+  .tile.flaw { border-color: #D9826A; background: #FCF1EE; } .tile.flaw .t-mark { color: var(--red); }
+
+  .remind { margin-bottom: 14px; font-size: 12.5px; }
+  .remind summary { cursor: pointer; font-weight: 700; color: var(--muted); }
+  .remind-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .remind-item { display: inline-flex; align-items: center; gap: 7px; padding: 4px 11px 4px 5px; border-radius: 20px; border: 1.5px solid var(--ic-bd); background: var(--ic-bg); font-weight: 700; font-size: 12px; }
+  .r-ico { width: 24px; height: 24px; font-size: 13px; background: #fff; border-width: 1.5px; }
+
+  .mp-row { display: flex; gap: 12px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.12); }
+  .mp-row:last-child { border-bottom: none; }
+  .mp-ico { width: 34px; height: 34px; font-size: 16px; }
+  .mp-text { font-size: 13.5px; line-height: 1.6; color: #DCE1F5; }
+  .mp-tag { display: block; font-size: 10.5px; font-weight: 700; color: var(--gold-soft); letter-spacing: 0.3px; margin-bottom: 2px; }
+
+  /* ---------- SBI game ---------- */
+  .primer-letter.sbi-S { background: var(--ink); } .primer-letter.sbi-B { background: var(--gold); } .primer-letter.sbi-I { background: var(--green); }
+  .sbi-grid { grid-template-columns: 1fr 1fr 1fr; }
+  @media (max-width: 560px) { .sbi-grid { grid-template-columns: 1fr; } }
+
+  .scenario-list { display: grid; gap: 10px; margin-bottom: 8px; }
+  .scenario-card { display: flex; gap: 14px; align-items: center; text-align: left; padding: 14px 16px; border-radius: 14px; border: 1.5px solid var(--line); background: #fff; cursor: pointer; transition: all 0.15s ease; }
+  .scenario-card:hover { border-color: var(--gold); background: var(--gold-soft); transform: translateY(-1px); }
+  .sc-emoji { width: 46px; height: 46px; border-radius: 50%; background: var(--surface); border: 1.5px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+  .sc-title { font-weight: 700; font-size: 14.5px; color: var(--ink); }
+  .sc-sub { font-size: 12px; color: var(--muted); margin: 2px 0 6px; line-height: 1.4; }
+  .sc-meta { font-size: 11.5px; color: var(--ink-soft); display: flex; align-items: center; gap: 6px; }
+
+  .person { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+  .avatar { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; color: #fff; flex-shrink: 0; }
+  .avatar.D { background: var(--red); } .avatar.I { background: var(--gold); } .avatar.S { background: var(--green); } .avatar.C { background: var(--ink); }
+  .p-info { flex: 1; min-width: 120px; }
+  .p-name { font-weight: 700; font-size: 15px; }
+  .p-sub { font-size: 11.5px; color: var(--muted); }
+  .mood-chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px 5px 8px; border-radius: 20px; font-size: 12px; font-weight: 700; border: 1.5px solid; }
+  .mood-emoji { font-size: 15px; }
+  .mood-chip.neutral { background: #EEF1FA; border-color: #C9D2EE; color: #3B4577; }
+  .mood-chip.open { background: #DCEFE9; border-color: #8FC4B3; color: #1F5245; }
+  .mood-chip.defensive { background: #F9E3C9; border-color: #E2A867; color: #7A4A0F; }
+  .mood-chip.withdrawn { background: #F6DCD4; border-color: #D9826A; color: #7A2E1A; }
+  .mood-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+  .mood-arrow { color: var(--muted); font-weight: 700; }
+
+  .metrics { display: grid; gap: 9px; margin-bottom: 16px; }
+  .m-head { display: flex; justify-content: space-between; align-items: center; font-size: 12px; margin-bottom: 4px; }
+  .m-name { color: var(--ink-soft); font-weight: 600; }
+  .m-val { font-weight: 800; color: var(--ink); display: inline-flex; align-items: center; gap: 6px; }
+  .m-delta { font-size: 11px; font-weight: 800; padding: 1px 7px; border-radius: 10px; }
+  .m-delta.up { background: #DCEFE9; color: #1F5245; } .m-delta.down { background: #F6DCD4; color: #7A2E1A; }
+  .m-track { height: 8px; background: var(--line); border-radius: 6px; overflow: hidden; }
+  .m-fill { height: 100%; border-radius: 6px; transition: width 0.5s ease; }
+
+  .setup-box { margin-bottom: 14px; padding: 12px 14px; border-radius: 10px; background: var(--gold-soft); border: 1px solid #E5CE9B; font-size: 12.5px; line-height: 1.55; color: #5C4510; }
+  .bubble { padding: 12px 15px; border-radius: 14px; font-size: 13.5px; line-height: 1.55; margin-bottom: 10px; max-width: 94%; }
+  .bubble .b-who { font-size: 11px; font-weight: 700; margin-bottom: 3px; opacity: 0.75; }
+  .bubble.emp { background: var(--surface); border: 1px solid var(--line); border-top-left-radius: 4px; color: var(--ink); }
+  .bubble.emp.open { background: #E7F4EF; border-color: #8FC4B3; }
+  .bubble.emp.defensive { background: #FBEBD6; border-color: #E2A867; }
+  .bubble.emp.withdrawn { background: #F8E4DE; border-color: #D9826A; }
+  .bubble.mgr { background: var(--ink); color: #fff; margin-left: auto; border-top-right-radius: 4px; }
+  .mood-note { font-size: 12px; color: var(--muted); margin: -2px 0 12px; font-style: italic; }
+  .retry-note { font-size: 12px; color: #7A4A0F; background: #F9E3C9; border-radius: 8px; padding: 7px 11px; margin-bottom: 10px; }
+  .ctx-box { margin-bottom: 18px; padding: 10px 14px; border-left: 4px solid var(--gold); background: var(--surface); border-radius: 0 10px 10px 0; font-size: 13px; line-height: 1.5; color: var(--ink-soft); }
+
+  .reply-list { display: grid; gap: 10px; }
+  .reply-btn { display: flex; gap: 12px; align-items: flex-start; text-align: left; padding: 13px 15px; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; cursor: pointer; transition: all 0.15s ease; font-size: 13.5px; line-height: 1.5; color: var(--ink); }
+  .reply-btn:hover { border-color: var(--gold); background: var(--gold-soft); }
+  .reply-num { width: 24px; height: 24px; border-radius: 50%; background: var(--surface); border: 1.5px solid var(--line); font-weight: 800; font-size: 11.5px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .reply-text { flex: 1; }
+
+  .verdict-card { border-radius: 16px; padding: 20px 22px; color: #fff; margin-bottom: 18px; }
+  .verdict-card.great { background: var(--green); } .verdict-card.partial { background: #A8741A; } .verdict-card.fail { background: var(--red); }
+  .verdict-card .v-label { font-size: 11px; font-weight: 700; letter-spacing: 0.3px; opacity: 0.85; margin-bottom: 6px; }
+  .verdict-card .v-title { font-size: 21px; font-weight: 800; margin-bottom: 8px; }
+  .verdict-card p { font-size: 13.5px; line-height: 1.55; margin: 0 0 10px; }
+  .verdict-card .v-score { font-size: 12.5px; opacity: 0.95; } .verdict-card .v-score span { font-size: 22px; font-weight: 800; }
+  .end-mood { margin-top: 4px; }
+  .chart-box { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px; margin-bottom: 18px; }
+  .chart-legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 11px; color: var(--muted); margin-top: 6px; }
+  .chart-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+
+  .sbi-row { display: flex; gap: 12px; padding: 11px 13px; border-radius: 10px; border: 1px solid var(--line); margin-bottom: 8px; background: #fff; }
+  .sbi-row.ok { border-left: 4px solid var(--green); } .sbi-row.no { border-left: 4px solid var(--red); background: #FBF1EE; }
+  .sbi-title { font-weight: 700; font-size: 13px; margin-bottom: 3px; }
+  .sbi-quote { font-size: 12px; color: var(--ink-soft); line-height: 1.5; }
+  .sbi-hint { font-size: 12px; color: #7A2E1A; line-height: 1.5; }
+
+  .tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .tag-chip { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+  .tag-chip.good { background: #DCEFE9; color: #1F5245; } .tag-chip.bad { background: #F6DCD4; color: #7A2E1A; }
+  .step-card { border: 1px solid var(--line); border-left: 4px solid var(--red); border-radius: 12px; padding: 13px 15px; margin-bottom: 12px; background: #fff; }
+  .step-card.best { border-left-color: var(--green); }
+  .step-card.neutral { border-left-color: var(--gold); }
+  .fb-live { border: 1px solid var(--line); border-left: 4px solid var(--gold); border-radius: 12px; padding: 13px 15px; margin-bottom: 16px; background: #fff; }
+  .fb-live.best { border-left-color: var(--green); } .fb-live.bad { border-left-color: var(--red); }
+  .fb-live-title { font-size: 11px; font-weight: 700; letter-spacing: 0.3px; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; }
+  .kind-row { margin-bottom: 8px; }
+  .kind-badge { display: inline-block; font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 20px; }
+  .kind-badge.best { background: #DCEFE9; color: #1F5245; } .kind-badge.neutral { background: #FBF1D6; color: #6B5314; } .kind-badge.bad { background: #F6DCD4; color: #7A2E1A; }
+  .verdict-card .v-reason { background: rgba(255,255,255,0.18); border-radius: 8px; padding: 8px 11px; font-size: 12.5px !important; }
+  .verdict-card .v-kinds { margin-top: 8px; font-size: 12px; opacity: 0.92; }
+
+  .sc-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; margin-bottom: 8px; }
+  .sc-n { width: 22px; height: 22px; border-radius: 50%; background: var(--ink); color: #fff; font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
+  .sc-mood { margin-left: auto; font-size: 11.5px; color: var(--muted); }
+  .sc-line { font-size: 13px; line-height: 1.55; color: var(--ink); background: var(--surface); border-radius: 8px; padding: 9px 12px; }
+  .sc-why { font-size: 12.5px; line-height: 1.55; color: var(--ink-soft); margin: 4px 0 8px; }
+  .sc-reply { font-size: 12px; line-height: 1.5; color: var(--muted); font-style: italic; }
+  .sc-best { margin-top: 8px; font-size: 12.5px; line-height: 1.55; color: #1F5245; background: #EEF8F4; border-radius: 8px; padding: 8px 12px; }
+  .model-box { margin: 18px 0; padding: 16px 18px; border-radius: 12px; background: var(--ink); color: #fff; }
+  .model-box .mb-title { font-size: 11px; font-weight: 700; color: var(--gold-soft); letter-spacing: 0.3px; margin-bottom: 8px; }
+  .model-box p { font-size: 13.5px; line-height: 1.6; color: #DCE1F5; margin: 0; }
+  .review-ok { margin-bottom: 18px; padding: 12px 14px; border-radius: 10px; background: #DCEFE9; color: #1F5245; font-size: 13px; }
+  .insight-box { margin-bottom: 18px; padding: 14px 16px; border-radius: 12px; background: var(--gold-soft); border: 1px solid #E5CE9B; }
+  .insight-box .ib-title { font-size: 11px; font-weight: 700; letter-spacing: 0.3px; color: #7A5A16; margin-bottom: 6px; }
+
+
+  /* ---------- Negotiation game ---------- */
+  .st-comp { --ic-bg: #F6DCD4; --ic-bd: #D9826A; } .st-coll { --ic-bg: #DCEFE9; --ic-bd: #6FB8A2; } .st-comp2 { --ic-bg: #FBF1D6; --ic-bd: #D7B25A; }
+  .st-avoid { --ic-bg: #E6EAF8; --ic-bd: #7C8BC9; } .st-accom { --ic-bg: #EADFF5; --ic-bd: #A98BD1; }
+  .tki-list { display: grid; gap: 8px; margin-bottom: 16px; }
+  .tki-card { display: flex; gap: 14px; padding: 11px 14px; border-radius: 12px; border: 1.5px solid var(--ic-bd); background: var(--ic-bg); }
+  .tki-ico { width: 44px; height: 44px; border-radius: 50%; background: #fff; border: 2px solid var(--ic-bd); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+  .tki-name { font-weight: 800; font-size: 13.5px; margin-bottom: 2px; }
+  .tki-def { font-size: 12.5px; line-height: 1.45; color: var(--ink-soft); }
+  .tki-when { font-size: 11.5px; line-height: 1.45; color: var(--muted); margin-top: 3px; }
+  .style-tile { display: flex; gap: 10px; align-items: center; padding: 9px 12px; border-radius: 10px; border: 1.5px solid var(--ic-bd); background: var(--ic-bg); margin-bottom: 8px; }
+  .stt-ico { width: 38px; height: 38px; border-radius: 50%; background: #fff; border: 2px solid var(--ic-bd); display: flex; align-items: center; justify-content: center; font-size: 19px; flex-shrink: 0; }
+  .stt-name { font-weight: 800; font-size: 13px; } .stt-def { font-size: 11.5px; color: var(--ink-soft); line-height: 1.4; }
+  .style-chip { display: inline-block; font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 20px; background: var(--ic-bg); border: 1.5px solid var(--ic-bd); margin-left: 6px; }
+  .remind-item.st-comp, .remind-item.st-coll, .remind-item.st-comp2, .remind-item.st-avoid, .remind-item.st-accom { border-color: var(--ic-bd); background: var(--ic-bg); }
+  .reply-body { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+  .reply-tactic { font-size: 10.5px; font-weight: 800; letter-spacing: 0.3px; text-transform: uppercase; color: #A8741A; }
+  .stepper .st-lab { font-size: 9px; text-align: center; max-width: 54px; line-height: 1.15; }
+  .st-item { min-width: 34px; }
+  .brief-box { margin-bottom: 14px; padding: 12px 14px; border-radius: 10px; background: #fff; border: 1.5px solid var(--line); }
+  .bb-title { font-size: 12px; font-weight: 800; margin-bottom: 8px; }
+  .bb-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  @media (max-width: 560px) { .bb-grid { grid-template-columns: 1fr; } }
+  .bb-item { font-size: 12px; line-height: 1.5; color: var(--ink-soft); background: var(--surface); border-radius: 8px; padding: 8px 10px; }
+  .bb-item span { display: block; font-size: 10.5px; font-weight: 700; color: var(--muted); letter-spacing: 0.2px; text-transform: uppercase; margin-bottom: 2px; }
+  .walkout-box { margin-bottom: 14px; padding: 10px 14px; border-radius: 10px; background: #F6DCD4; color: #7A2E1A; font-size: 13px; font-weight: 600; }
+  .factor-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .factor { font-size: 10.5px; font-weight: 700; padding: 2px 9px; border-radius: 20px; background: var(--surface); border: 1px solid var(--line); color: var(--ink-soft); }
+  .factor.high { background: #FBEFD0; border-color: #E5CE9B; } .factor.low { background: #EEF1FA; }
+  .tki-analysis { margin-bottom: 18px; }
+  .ta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; margin-bottom: 12px; }
+  @media (max-width: 640px) { .ta-grid { grid-template-columns: 1fr; } }
+  .style-bars { display: grid; gap: 8px; }
+  .sb-row { display: grid; grid-template-columns: 112px 1fr 56px; gap: 8px; align-items: center; font-size: 12px; }
+  .sb-row.dom .sb-lab { font-weight: 800; }
+  .sb-track { height: 10px; background: var(--line); border-radius: 6px; overflow: hidden; }
+  .sb-fill { height: 100%; border-radius: 6px; background: var(--ic-bd); }
+  .sb-num { font-size: 11px; color: var(--muted); text-align: right; }
+  .dom-box { padding: 12px 15px; border-radius: 12px; border: 1.5px solid var(--ic-bd); background: var(--ic-bg); margin-bottom: 10px; }
+  .dom-title { font-weight: 800; font-size: 14px; margin-bottom: 4px; }
+  .dom-box p { font-size: 12.5px; line-height: 1.55; color: var(--ink-soft); margin: 0 0 6px; }
+  .dom-advice { font-style: italic; }
+  .fit-row { font-size: 12.5px; padding: 9px 13px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); }
+  .verdict-card.fail { background: #7A5A16; } .verdict-card.walkout { background: var(--red); }
+  .v-split { margin-top: 8px; font-size: 12.5px; opacity: 0.95; }
+  .int-list { display: grid; gap: 8px; margin-bottom: 14px; }
+  .int-item { display: flex; gap: 10px; padding: 9px 12px; border-radius: 10px; border: 1.5px solid var(--line); background: #fff; font-size: 12.5px; line-height: 1.45; }
+  .int-item.ok { border-color: #8FC4B3; background: #F2FAF7; } .int-item.no { border-style: dashed; background: #FAFAFB; }
+  .int-mark { font-weight: 800; font-size: 15px; } .int-item.ok .int-mark { color: var(--green); } .int-item.no .int-mark { color: var(--red); }
+  .proto-doc { background: #fff; border: 1.5px solid var(--line); border-radius: 12px; padding: 18px 20px; margin-bottom: 12px; font-size: 12.5px; line-height: 1.55; color: var(--ink-soft); }
+  .pd-head { text-align: center; border-bottom: 2px solid var(--ink); padding-bottom: 10px; margin-bottom: 12px; }
+  .pd-title { font-weight: 800; font-size: 16px; letter-spacing: 1px; color: var(--ink); } .pd-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .pd-sec { margin-bottom: 12px; } .pd-sec b { color: var(--ink); }
+  .pd-sec ul, .pd-sec ol { margin: 4px 0 6px; padding-left: 20px; } .pd-sec li { margin-bottom: 3px; }
+  .pd-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.2px; margin-top: 6px; } .pd-label.warn { color: #A8741A; }
+  .pd-style { font-size: 11px; font-weight: 700; color: #A8741A; }
+  .pd-res { font-weight: 700; margin: 4px 0; } .pd-res.full { color: #1F5245; } .pd-res.weak { color: #8A5A10; } .pd-res.none { color: #7A2E1A; }
+  .pd-sign { margin-top: 16px; padding-top: 10px; border-top: 1px dashed var(--line); }
+
+
+  /* ---------- Mediator game ---------- */
+  .persons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  @media (max-width: 560px) { .persons { grid-template-columns: 1fr; } }
+  .party-card { display: flex; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; }
+  .pc-info { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+  .party-card .avatar { width: 42px; height: 42px; font-size: 17px; }
+  .party-card .mood-chip { align-self: flex-start; font-size: 11px; padding: 3px 9px 3px 6px; }
+  .metrics4 { grid-template-columns: 1fr 1fr; gap: 10px 14px; }
+  @media (max-width: 560px) { .metrics4 { grid-template-columns: 1fr; } }
+  .dual { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px; }
+  @media (max-width: 560px) { .dual { grid-template-columns: 1fr; } }
+  .dual .bubble { max-width: 100%; margin-bottom: 0; }
+  .dual-moods { align-items: flex-start; }
+  .mc-col { display: flex; flex-direction: column; gap: 4px; margin-right: 10px; }
+  .mc-name { font-size: 10.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.2px; }
+  .check-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  @media (max-width: 560px) { .check-cards { grid-template-columns: 1fr; } }
+  .check-card { display: flex; gap: 12px; padding: 12px 14px; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; }
+  .check-card.ok { border-color: #8FC4B3; background: #F2FAF7; } .check-card.mid { border-color: #E2A867; background: #FEF6EA; } .check-card.no { border-color: #D9826A; background: #FCF1EE; }
+  .cc-ico { font-size: 24px; } .cc-title { font-weight: 800; font-size: 13.5px; margin-bottom: 3px; } .cc-text { font-size: 12px; line-height: 1.5; color: var(--ink-soft); }
+  .balance-box { padding: 12px 14px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); margin-bottom: 16px; }
+  .bal-row { display: grid; grid-template-columns: 70px 1fr 34px; gap: 8px; align-items: center; margin-bottom: 8px; font-size: 12.5px; }
+  .bal-track { height: 10px; background: var(--line); border-radius: 6px; overflow: hidden; }
+  .bal-fill { height: 100%; border-radius: 6px; } .bal-fill.a { background: #2E7D6B; } .bal-fill.b { background: #7B5EA7; }
+  .bal-num { text-align: right; font-weight: 700; font-size: 12px; }
+  .bal-note { font-size: 12px; color: var(--ink-soft); }
+  .timeline { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .tl-item { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 10px; border-radius: 10px; border: 1.5px solid var(--line); background: #fff; min-width: 46px; }
+  .tl-item.up { background: #DCEFE9; border-color: #8FC4B3; } .tl-item.down { background: #F6DCD4; border-color: #D9826A; }
+  .tl-ico { font-size: 17px; } .tl-d { font-weight: 800; font-size: 12.5px; } .tl-lab { font-size: 10px; color: var(--muted); }
+  .verdict-card.partial { background: #A8741A; }
+  .pd-res.none { color: #7A2E1A; }
+
+
+  /* ---------- Kotter puzzle ---------- */
+  .how-box { margin-bottom: 16px; padding: 12px 14px; border-radius: 10px; background: var(--gold-soft); border: 1px solid #E5CE9B; font-size: 12.5px; line-height: 1.55; color: #5C4510; }
+  .pool { display: grid; gap: 8px; margin-bottom: 16px; }
+  .puz-card { display: flex; gap: 10px; align-items: flex-start; text-align: left; padding: 11px 14px; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; cursor: pointer; font-size: 13px; line-height: 1.45; color: var(--ink); transition: all 0.15s ease; }
+  .puz-card:hover { border-color: var(--gold); background: var(--gold-soft); }
+  .pc-add { width: 22px; height: 22px; border-radius: 50%; background: var(--surface); border: 1.5px solid var(--line); display: flex; align-items: center; justify-content: center; font-weight: 800; flex-shrink: 0; margin-top: 1px; }
+  .pool-empty { font-size: 12.5px; color: var(--muted); padding: 10px 12px; border: 1.5px dashed var(--line); border-radius: 10px; }
+  .slots { display: grid; gap: 8px; margin-bottom: 16px; }
+  .slot { display: flex; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; font-size: 13px; line-height: 1.45; }
+  .slot.empty { border-style: dashed; background: #FAFAFB; color: var(--muted); }
+  .slot-n { width: 26px; height: 26px; border-radius: 50%; background: var(--ink); color: #fff; font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .slot.empty .slot-n { background: var(--line); color: var(--muted); }
+  .slot-ph { font-size: 12px; font-style: italic; }
+  .slot-text { flex: 1; }
+  .slot.locked { background: #CFEBDF; border: 2px solid #2E7D6B; box-shadow: 0 0 0 3px rgba(46,125,107,0.2); font-weight: 600; color: #123F33; }
+  .slot.locked .slot-n { background: var(--green); }
+  .slot.wrong { background: #FCF1EE; border: 2px solid #D9826A; }
+  .slot-lock { font-size: 13px; font-weight: 800; color: var(--green); white-space: nowrap; }
+  .slot-ctl { display: flex; gap: 4px; }
+  .ctl { width: 30px; height: 30px; border-radius: 8px; border: 1.5px solid var(--line); background: #fff; cursor: pointer; font-size: 12px; font-weight: 700; color: var(--ink-soft); }
+  .ctl:hover { border-color: var(--gold); background: var(--gold-soft); } .ctl.x:hover { border-color: var(--red); background: #F6DCD4; }
+  .check-score { font-size: 13px; margin-bottom: 4px; } .check-score span { font-size: 24px; font-weight: 800; color: var(--ink); }
+  .vio-list { display: grid; gap: 8px; margin: 6px 0 8px; }
+  .vio-item { display: flex; gap: 10px; padding: 10px 12px; border-radius: 10px; border: 1.5px solid #E2A867; background: #FEF6EA; }
+  .vio-ico { font-size: 18px; } .vio-text { font-size: 12.5px; line-height: 1.5; color: var(--ink); }
+  .vio-hits { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .vio-chip { font-size: 10.5px; font-weight: 700; padding: 2px 9px; border-radius: 20px; background: #F6DCD4; color: #7A2E1A; }
+  .vio-ok { padding: 10px 12px; border-radius: 10px; background: #DCEFE9; color: #1F5245; font-size: 12.5px; }
+  .hint-panel { margin-bottom: 14px; padding: 12px 14px; border-radius: 12px; background: #fff; border: 1.5px solid var(--gold); }
+  .hp-title { font-size: 12.5px; font-weight: 800; margin-bottom: 8px; }
+  .hp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  @media (max-width: 560px) { .hp-grid { grid-template-columns: 1fr; } }
+  .hp-item { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; padding: 6px 9px; border-radius: 10px; background: var(--ic-bg); border: 1.5px solid var(--ic-bd); }
+  .hp-ico { font-size: 15px; }
+  .att-list { display: grid; gap: 6px; margin-bottom: 16px; }
+  .att-item { display: grid; grid-template-columns: 74px 1fr 40px; gap: 8px; align-items: center; font-size: 12px; }
+  .att-bar { height: 10px; background: var(--line); border-radius: 6px; overflow: hidden; } .att-bar span { display: block; height: 100%; background: var(--gold); border-radius: 6px; }
+  .att-v { text-align: right; font-weight: 700; }
+  .stars { font-size: 30px; letter-spacing: 4px; } .star.on { color: #FFE08A; } .star.off { color: rgba(255,255,255,0.35); }
+  .v-stars { margin-top: 8px; }
+  .ord-card { display: flex; gap: 12px; padding: 12px 14px; border-radius: 12px; border: 1.5px solid var(--ic-bd); background: var(--ic-bg); margin-bottom: 10px; }
+  .ord-ico { width: 44px; height: 44px; border-radius: 50%; background: #fff; border: 2px solid var(--ic-bd); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+  .ord-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 4px; }
+  .ord-n { width: 22px; height: 22px; border-radius: 50%; background: var(--ink); color: #fff; font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
+  .ord-ok { font-size: 11px; font-weight: 700; color: #1F5245; } .ord-no { font-size: 11px; font-weight: 700; color: #7A2E1A; }
+  .ord-card-text { font-size: 12.5px; line-height: 1.5; color: var(--ink-soft); font-style: italic; margin-bottom: 4px; }
+  .ord-why { font-size: 12.5px; line-height: 1.5; color: var(--ink-soft); margin: 0; }
+  .skip-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  @media (max-width: 560px) { .skip-grid { grid-template-columns: 1fr; } }
+  .skip-btn { display: flex; align-items: center; gap: 8px; text-align: left; padding: 8px 10px; border-radius: 10px; border: 1.5px solid var(--ic-bd); background: var(--ic-bg); cursor: pointer; font-size: 12px; font-weight: 700; color: var(--ink); }
+  .skip-btn.sel { box-shadow: 0 0 0 3px rgba(201,150,44,0.35); }
+  .sk-ico { font-size: 16px; }
+  .skip-out { padding: 12px 14px; border-radius: 10px; background: #FBEFEB; border-left: 4px solid var(--red); font-size: 12.5px; line-height: 1.55; color: var(--ink-soft); }
+  .mini-step { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; margin: 2px; }
+  .mini-step.ok { background: #DCEFE9; color: #1F5245; } .mini-step.no { background: #F6DCD4; color: #7A2E1A; }
+  .slot-stepname { display: block; margin-top: 3px; font-size: 11.5px; font-weight: 700; color: #1F5245; }
+  .slot.locked.fresh { animation: lockpop 0.6s ease; }
+  @keyframes lockpop { 0% { transform: scale(0.97); } 60% { transform: scale(1.02); } 100% { transform: scale(1); } }
+  .slot-ico { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; background: var(--surface); border: 1.5px solid var(--line); filter: grayscale(1); opacity: 0.4; }
+  .slot-ico.fresh { animation: slotpop 0.7s ease; }
+  @keyframes slotpop { 0% { transform: scale(0.7); } 60% { transform: scale(1.35); } 100% { transform: scale(1); } }
+  .slot-ico.on { filter: none; opacity: 1; background: var(--ic-bg); border-color: var(--ic-bd); }
+  @media (max-width: 480px) { .slot-ico { width: 26px; height: 26px; font-size: 13px; } }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+(function () {
+  "use strict";
+  // ---------- Дані ----------
+  var STEPS = [
+    { n: 1, name: "Створити терміновість", icon: "⏰", cls: "el-E",
+      why: "Люди змінюються, коли відчувають, що залишити все як є небезпечніше, ніж змінюватися. Без цього зміни відкладають «на потім»." },
+    { n: 2, name: "Зібрати коаліцію лідерів змін", icon: "👥", cls: "el-B",
+      why: "Одна людина не здатна змінити організацію. Потрібна група впливових людей, які вірять у зміни й тягнуть їх разом." },
+    { n: 3, name: "Розробити бачення й стратегію", icon: "🔭", cls: "el-S",
+      why: "Бачення відповідає на питання «куди ми йдемо і навіщо», а стратегія показує, як туди дістатися." },
+    { n: 4, name: "Донести бачення", icon: "📣", cls: "el-N",
+      why: "Бачення працює, лише коли його розуміють і підтримують. Його треба повторювати різними каналами й слухати побоювання людей." },
+    { n: 5, name: "Дати людям змогу діяти", icon: "🔓", cls: "el-Q",
+      why: "Навіть переконані люди не діятимуть, якщо їм заважають процеси, правила чи брак навичок. Бар'єри треба прибрати, а людей навчити." },
+    { n: 6, name: "Забезпечити швидкі перемоги", icon: "🏆", cls: "el-A",
+      why: "Видимі результати за кілька місяців підтверджують, що зусилля недаремні, і мотивують сумнівних приєднатися." },
+    { n: 7, name: "Закріпити результат і йти далі", icon: "📈", cls: "el-F",
+      why: "Перші перемоги не означають, що зміни завершені. Їх треба масштабувати, використовуючи уроки пілота, і запускати нові покращення." },
+    { n: 8, name: "Укорінити зміни в культурі", icon: "🌳", cls: "el-I",
+      why: "Зміни тримаються, коли стають «так у нас заведено»: закріплені в KPI, процедурах, навчанні новачків і прикладі лідерів." }
+  ];
+  var QUESTIONS = ["Чому не можна жити, як раніше?", "Хто потягне це разом зі мною?", "Куди ми йдемо і яким шляхом?", "Як зробити, щоб усі це зрозуміли?", "Що заважає людям діяти?", "Які є докази, що це працює?", "Як поширити й не втратити темп?", "Як зробити, щоб не відкотилося назад?"];
+  STEPS.forEach(function (st, i) { st.q = QUESTIONS[i]; });
+  var INDICATORS = [
+    { key: "understand", label: "Розуміння, навіщо зміни", icon: "💡", color: "#C9962C" },
+    { key: "buyin", label: "Прийняття командою", icon: "🤝", color: "#1E2761" },
+    { key: "sustain", label: "Стійкість змін", icon: "🌱", color: "#2E7D6B" }
+  ];
+  // Яким показникам шкодить порушення послідовності (пара: «що має бути раніше» - «що пішло раніше за час»)
+  var RULES = {
+    "1-2": ["understand"], "1-3": ["understand"], "1-5": ["understand", "buyin"], "2-3": ["buyin"],
+    "3-4": ["understand"], "3-5": ["understand"], "4-5": ["buyin"], "5-6": ["buyin"],
+    "6-7": ["buyin"], "6-8": ["sustain"], "7-8": ["sustain", "buyin"]
+  };
+  var RULE_ORDER = ["1-5", "1-2", "1-3", "2-3", "3-4", "3-5", "4-5", "5-6", "6-7", "6-8", "7-8"];
+  var MAX_ATTEMPTS = 3;
+
+  var CASES = [
+  // ======================= 1. CRM =======================
+  {
+    id: "crm", emoji: "📇", title: "Впровадження CRM", company: "«ТехноТрейд» · 120 працівників",
+    preview: "Компанія втрачає угоди через розрізнені таблиці й хоче ввести єдину CRM-систему.",
+    brief: "У компанії «ТехноТрейд» кожен менеджер веде клієнтів у власній таблиці: дані дублюються, угоди губляться, а керівники не бачать повної картини. Директор вирішив запровадити єдину CRM-систему в усіх відділах. Ви ведете проєкт змін. Складіть план у правильному порядку: від чого залежить, чи приймуть люди нову систему?",
+    cards: [
+      { step: 1, t: ["Підготувати для власників розрахунок: скільки клієнтів і грошей компанія втрачає щокварталу через розрізнені таблиці", "Зібрати приклади угод, що зірвалися через загублені контакти, і винести цифри втрат на нараду директорів"] },
+      { step: 2, t: ["Домовитися, щоб за проєкт відповідали не лише айтишники, а й ті, до чиєї думки прислухаються в продажах і сервісі", "Запросити до керівної групи авторитетних людей із продажів, маркетингу, сервісу й ІТ, готових віддати проєкту свій час"] },
+      { step: 3, t: ["Узгодити, що компанія виграє від спільної бази клієнтів за рік-два, і накреслити дорожню карту запуску", "Сформулювати, яким буде щоденна робота з клієнтами за єдиної бази, і визначити етапи, терміни та відповідальних"] },
+      { step: 4, t: ["Пояснювати колегам на нарадах і в листах, чому компанія переходить на спільну базу, і з'ясовувати, чого вони побоюються", "Проговорювати зі співробітниками в різних форматах, куди рухається компанія, і відповідати на їхні сумніви й питання"] },
+      { step: 5, t: ["Прибрати те, що заважає працювати по-новому: дублювання в старих файлах, нестачу навичок у менеджерів", "Скасувати паралельне ведення таблиць і провести для кожного відділу практичні заняття з роботи в системі"] },
+      { step: 6, t: ["Обрати один відділ, довести його до помітного результату за кілька місяців і оприлюднити цифри", "Запустити систему в одному підрозділі й зафіксувати, що угоди там перестали губитися, а звіти будуються за хвилини"] },
+      { step: 7, t: ["Поширити CRM на всі підрозділи, виправивши слабкі місця, і почати вдосконалювати систему далі", "Розгорнути систему в усій компанії, враховуючи, що виявилося невдалим у відділі, де її випробували, і планувати нові можливості"] },
+      { step: 8, t: ["Зробити роботу в CRM звичною нормою: оцінювати менеджерів за якістю даних і показувати систему новачкам з першого тижня", "Прописати користування системою в посадових інструкціях і преміюванні, щоб вона працювала незалежно від зміни керівників"] }
+    ],
+    skip: [
+      "Без терміновості CRM сприймають як примху ІТ: пріоритети не змінюються, а проєкт відкладають «до кращих часів».",
+      "Без коаліції проєкт тягне сам ІТ-відділ: керівники продажів не підтримують і не дають людей, а рішення ухвалюються повільно.",
+      "Без бачення кожен відділ налаштовує CRM під себе, і система розпадається на острови замість «єдиного вікна клієнта».",
+      "Без комунікації чутки заповнюють порожнечу: люди бояться контролю за своїми контактами й саботують введення даних.",
+      "Без навчання й прибраних старих таблиць люди не вміють працювати в CRM або ведуть дані двічі, тому система швидко застаріває.",
+      "Без швидких перемог скептики беруть гору: через пів року ніхто не бачить користі, а фінансування ставлять під сумнів.",
+      "Без розширення пілот лишається островом: решта відділів працює по-старому, і дані компанії далі розрізнені.",
+      "Без закріплення люди повертаються до таблиць, щойно спадає увага керівництва, і за рік CRM лишається формальністю."
+    ],
+    rules: {
+      "1-2": "Коаліцію зібрали до терміновості: лідери не бачать, навіщо витрачати час на CRM, тож коаліція працює формально.",
+      "1-3": "Бачення розробили до терміновості: воно не спирається на відчутну проблему, і його сприймають як абстракцію.",
+      "1-5": "Навчання провели до створення терміновості: люди не розуміють, навіщо воно потрібне, і лише відбувають години.",
+      "2-3": "Бачення створила одна людина без коаліції: ключові лідери його не підтримують, бо не брали участі.",
+      "3-4": "Комунікація пішла до бачення: людям нічого розповісти, крім «буде нова система», тож виникають чутки й тривога.",
+      "3-5": "Навчання відбулося до бачення: люди вчаться кнопок, але не розуміють, до чого це веде.",
+      "4-5": "Навчання передує комунікації: люди йдуть на нього з побоюванням і опором, бо ніхто не пояснив, що зміниться.",
+      "5-6": "Пілот запустили без навчання й прибраних старих процесів: результати слабкі, і «перемога» нікого не переконує.",
+      "6-7": "Систему розширили до перших результатів: решта відділів опирається, бо на пілоті нічого не підтверджено.",
+      "6-8": "KPI запровадили до перших результатів: показники сприймаються як покарання, а не як наслідок успіху.",
+      "7-8": "Систему закріпили в KPI, поки вона ще не працює скрізь: люди отримують штрафи за те, чого їх не встигли навчити."
+    }
+  },
+  // ======================= 2. ГІБРИДНИЙ ФОРМАТ =======================
+  {
+    id: "hybrid", emoji: "🏠", title: "Перехід на гібридний формат", company: "«Логіка» · 200 працівників",
+    preview: "ІТ-компанія втрачає сильних кандидатів через жорсткий офісний графік.",
+    brief: "ІТ-компанія «Логіка» працює лише з офісу, і щомісяця вона втрачає сильних працівників, яким пропонують гнучкий графік. Керівництво вирішило перейти на гібридний формат. Ви очолюєте проєкт змін. Складіть план у правильному порядку: що має передувати правилам і навчанню?",
+    cards: [
+      { step: 1, t: ["Показати керівництву, скільки сильних фахівців щороку йде до компаній із гнучким графіком і скільки це коштує", "Підготувати для директорів порівняння: відтік 12% і його вартість проти ринку, де гнучкий графік уже норма"] },
+      { step: 2, t: ["Зібрати робочу групу з авторитетних керівників відділів, HR, ІТ і представників команд, які вірять у формат", "Залучити до проєкту тих, чия думка важить для колективів, а не лише HR-відділ"] },
+      { step: 3, t: ["Визначити, за яким принципом компанія вирішуватиме, де працювати, і розписати правила та етапи переходу", "Сформулювати ідею «працюємо там, де найефективніше» і скласти правила та план переходу"] },
+      { step: 4, t: ["Розповідати працівникам у різних форматах, куди рухається компанія, і вислуховувати їхні запитання та страхи", "Регулярно пояснювати командам причини переходу й що він означатиме для кожного, збираючи їхні сумніви"] },
+      { step: 5, t: ["Оновити політики й обладнання та навчити керівників ефективно вести команди, яких немає поруч", "Забезпечити сервіси для спільної роботи й навчити керівників оцінювати людей за результатом, а не за присутність"] },
+      { step: 6, t: ["Запровадити формат у двох відділах і показати, як змінилися продуктивність і настрій команд", "Дати двом відділам кілька місяців працювати за новими правилами й порівняти їхні показники з тими, що були до змін"] },
+      { step: 7, t: ["Розповсюдити формат на всі відділи, виправивши правила, що не спрацювали, і шукати нові покращення", "Охопити гібридним форматом усю компанію, доопрацювавши правила там, де вони виявилися незручними"] },
+      { step: 8, t: ["Зробити формат частиною політик, оцінки керівників і введення нових працівників у роботу", "Закласти гібридну роботу в положення компанії та критерії преміювання керівників, щоб формат пережив кадрові зміни"] }
+    ],
+    skip: [
+      "Без терміновості перехід здається забаганкою HR: плинність триває, а керівники відкладають зміни, бо «й так працює».",
+      "Без коаліції рішення ухвалює HR сам: керівники відділів не підтримують формат і на практиці вимагають усіх в офіс.",
+      "Без бачення гібридний формат перетворюється на хаос правил: кожен відділ вигадує свої дні в офісі, і люди почуваються нерівними.",
+      "Без комунікації люди не знають, що саме зміниться, і вибудовують найгірші сценарії: контроль, скорочення, втрата бонусів.",
+      "Без нових інструментів і навчання керівників команди на відстані втрачають зв'язок, і продуктивність падає, а не зростає.",
+      "Без швидких перемог скептики кажуть, що «у віддаленому форматі ніхто не працює», і повернення в офіс стає питанням часу.",
+      "Без розширення формат лишається привілеєм двох відділів, а решта відчуває несправедливість і шукає роботу деінде.",
+      "Без закріплення при першій кризі керівники повертають вимогу «всі в офіс», і формат зникає так само швидко, як з'явився."
+    ],
+    rules: {
+      "1-2": "Коаліцію зібрали до терміновості: керівники не бачать проблеми з плинністю, тож не готові витрачати на зміни свій час.",
+      "1-3": "Бачення розробили до терміновості: воно не спирається на реальну проблему, і його сприймають як моду на гнучкість.",
+      "1-5": "Керівників навчали до створення терміновості: вони не розуміють, навіщо їм потрібні нові навички, і ставляться до цього як до формальності.",
+      "2-3": "Правила гібриду написав HR сам: керівники відділів не брали участі й не вважають їх своїми.",
+      "3-4": "Комунікація пішла до бачення: людям нічого розповісти, крім «ми щось змінюємо», тож з'являються чутки про скорочення.",
+      "3-5": "Інструменти й навчання з'явилися до бачення: люди не розуміють, до якого формату готуються.",
+      "4-5": "Навчання керівників передує комунікації: вони йдуть на нього з тривогою, бо працівники ще не знають, що зміниться.",
+      "5-6": "Пілот запустили без навчання керівників і готових інструментів: команди не справляються, і результати розчаровують.",
+      "6-7": "Формат поширили до перших результатів: решта відділів опирається, бо ніхто не бачив, що він працює.",
+      "6-8": "Формат закріпили в політиках до перших результатів: правила сприймаються як нав'язані, а не як перевірені практикою.",
+      "7-8": "Політики закріпили, поки формат ще не працює скрізь: частина відділів змушена порушувати правила, яких не встигла засвоїти."
+    }
+  },
+  // ======================= 3. БЕРЕЖЛИВЕ ВИРОБНИЦТВО =======================
+  {
+    id: "lean", emoji: "🏭", title: "Бережливе виробництво", company: "«Метал-Про» · 350 працівників",
+    preview: "Завод втрачає гроші на браку й простоях і хоче впровадити підхід Lean.",
+    brief: "На заводі «Метал-Про» брак і простої з'їдають значну частку виручки, а замовники переходять до конкурентів. Керівництво вирішило впровадити бережливе виробництво (Lean). Ви очолюєте проєкт змін. Складіть план у правильному порядку: з чого починати, коли людям не подобаються зміни на лінії?",
+    cards: [
+      { step: 1, t: ["Викласти керівництву, скільки виручки з'їдають брак і простої та скільки замовників пішло до конкурентів", "Показати директорам підрахунок: втрати від браку й простоїв сягають 8% виручки"] },
+      { step: 2, t: ["Зібрати навколо проєкту директора виробництва, авторитетних майстрів, фахівців із якості й фінансистів", "Запросити до керівної групи людей, яких слухають у цехах, і тих, хто контролює гроші та якість"] },
+      { step: 3, t: ["Окреслити, яким має стати завод без втрат часу й матеріалів, і розписати етапи впровадження", "Визначити образ заводу, де немає зайвих операцій і очікувань, і скласти поетапний маршрут до нього"] },
+      { step: 4, t: ["Пояснювати колективу на зборах у цехах, куди рухається завод, і відповідати на питання про зарплату й робочі місця", "Регулярно розповідати робітникам, навіщо ці зміни, і чесно відповідати на їхні тривоги"] },
+      { step: 5, t: ["Навчити майстрів практичних методів і скасувати правила, через які ідеї вдосконалення ніхто не підхоплює", "Дати майстрам інструменти для покращень і прибрати вимоги, що карають за відхилення від старої інструкції"] },
+      { step: 6, t: ["Запровадити нові методи на одній лінії й показати, що там зменшилися брак, простої та скарги замовників", "Протягом кількох місяців працювати за новим підходом на одній лінії й оприлюднити виміряні покращення"] },
+      { step: 7, t: ["Запровадити підхід на всіх лініях заводу, виправивши слабкі місця, і запускати нові покращення", "Поширити методи на весь завод, враховуючи труднощі, що виникли на лінії, де їх випробували, і шукати нові можливості"] },
+      { step: 8, t: ["Прописати методи в нормативах, системі премій і програмі навчання нових працівників на всіх лініях", "Прив'язати премії й оцінку майстрів до нових практик, щоб завод не повернувся до старого після зміни керівництва"] }
+    ],
+    skip: [
+      "Без терміновості Lean сприймають як чергову ініціативу «з кабінету»: працівники чекають, поки «це минеться».",
+      "Без коаліції майстри й начальники змін не підтримують проєкт, і розпорядження директора розбиваються об мовчазний опір лінії.",
+      "Без бачення Lean зводиться до набору розрізнених інструментів: кожен цех робить своє, і ефект не накопичується.",
+      "Без комунікації люди вважають, що Lean означає скорочення, і приховують проблеми замість того, щоб їх вирішувати.",
+      "Без навчання й зняття заборон ніхто не вміє й не наважується пропонувати покращення, тому ідеї зупиняються на рівні майстра.",
+      "Без швидких перемог скептики кажуть, що «у нас це не працює», і через кілька місяців ентузіазм зникає.",
+      "Без розширення пілотна лінія лишається показовою, а завод в цілому далі втрачає гроші на браку й простоях.",
+      "Без закріплення при зміні керівництва чи піку замовлень цехи повертаються до старих практик, і Lean лишається лозунгом."
+    ],
+    rules: {
+      "1-2": "Коаліцію сформували до терміновості: майстри не бачать причини міняти звичну роботу, тож підтримують проєкт формально.",
+      "1-3": "Бачення розробили до терміновості: воно не спирається на цифри втрат, і працівники сприймають його як гасло.",
+      "1-5": "Майстрів навчили до створення терміновості: вони не розуміють, навіщо їм ці методи, і ставляться до навчання як до втраченого часу.",
+      "2-3": "Бачення написала одна група без коаліції: майстри й начальники змін його не підтримують, бо не брали участі.",
+      "3-4": "Комунікація пішла до бачення: людям нічого сказати, крім «будемо вдосконалювати», тож з'являються чутки про скорочення.",
+      "3-5": "Навчання провели до бачення: майстри вчать інструменти, але не розуміють, яку мету вони обслуговують.",
+      "4-5": "Навчання передує комунікації: люди йдуть на нього з побоюванням, бо ніхто не пояснив, як зміни вплинуть на зарплату.",
+      "5-6": "Пілот запустили без навчання майстрів і знятих заборон: покращення не з'являються, і результат розчаровує.",
+      "6-7": "Підхід поширили до перших результатів: інші лінії опираються, бо на пілоті нічого ще не підтверджено.",
+      "6-8": "Премії прив'язали до Lean до перших результатів: показники сприймаються як покарання за те, що ще не працює.",
+      "7-8": "Нормативи закріпили, поки підхід ще не працює на всіх лініях: люди втрачають премії за те, чого їх не встигли навчити."
+    }
+  },
+  // ======================= 4. УНІВЕРСИТЕТ =======================
+  {
+    id: "uni", emoji: "🎓", title: "Нова модель оцінювання в університеті", company: "Факультет менеджменту · 40 викладачів, 900 студентів",
+    preview: "Факультет хоче замінити частину іспитів проєктними роботами.",
+    brief: "На факультеті студенти зубрять до іспиту й швидко забувають матеріал, а роботодавці скаржаться, що випускники не вміють працювати в команді. Деканат вирішив замінити частину іспитів проєктним оцінюванням. Ви очолюєте робочу групу змін. Складіть план у правильному порядку: що має передувати новим правилам і підготовці викладачів?",
+    cards: [
+      { step: 1, t: ["Показати деканату дані: випускники не вміють працювати в команді, а роботодавці скаржаться й скорочують набір", "Зібрати відгуки роботодавців і результати опитувань про забуті знання та представити їх на вченій раді"] },
+      { step: 2, t: ["Залучити авторитетних професорів, завідувачів кафедр, представників студентів і роботодавців, які підтримують ідею", "Зібрати робочу групу з тих, до чиєї думки прислухаються викладачі, і тих, хто визначає навчальний план"] },
+      { step: 3, t: ["Визначити, яких умінь має набувати випускник, і розписати, як проєкти замінять частину іспитів і коли це станеться", "Описати, яким буде навчання з проєктним оцінюванням, і скласти план поступового переходу за дисциплінами"] },
+      { step: 4, t: ["Пояснювати викладачам і студентам на зборах і в розсилках, навіщо потрібна нова модель, і вислуховувати їхні сумніви", "Регулярно говорити з колективом факультету про причини й напрям змін та відповідати на запитання про навантаження"] },
+      { step: 5, t: ["Навчити викладачів складати проєктні завдання й оцінювати їх та змінити положення, що вимагають лише письмових іспитів", "Дати викладачам методичні матеріали й скасувати норму, за якою залікова оцінка виставляється тільки за іспит"] },
+      { step: 6, t: ["Запровадити проєктне оцінювання на двох курсах і показати, що студенти краще розуміють матеріал і працюють у команді", "Випробувати нову модель у кількох дисциплінах і оприлюднити результати: відвідуваність, якість робіт, відгуки студентів"] },
+      { step: 7, t: ["Поширити модель на всі дисципліни факультету, виправивши слабкі місця, і розвивати її далі", "Запровадити проєктне оцінювання на всьому факультеті, усунувши недоліки, що виявилися на практиці, і запропонувати нові формати"] },
+      { step: 8, t: ["Закласти проєктне оцінювання в положення про освітній процес, вимоги до викладачів і адаптацію нових співробітників", "Прописати нову модель у навчальних планах, критеріях конкурсу на посаду й програмі введення новачків, щоб вона діяла незалежно від керівництва"] }
+    ],
+    skip: [
+      "Без терміновості нова модель здається примхою деканату: викладачі відкладають зміни, бо «й так усе працює».",
+      "Без коаліції рішення ухвалює деканат сам: кафедри його не підтримують і на практиці лишають іспити.",
+      "Без бачення кожна кафедра трактує проєктне оцінювання по-своєму, і студенти не розуміють вимог.",
+      "Без комунікації викладачі бояться додаткового навантаження й контролю, а чутки підривають довіру до змін.",
+      "Без навчання й зміни положень викладачі не вміють оцінювати проєкти, а правила вимагають лише іспитів.",
+      "Без швидких перемог скептики кажуть, що «зубріння працювало краще», і підтримка згасає.",
+      "Без розширення модель лишається експериментом на кількох курсах, а решта студентів вчиться по-старому.",
+      "Без закріплення після зміни декана факультет повертається до іспитів, і модель лишається епізодом."
+    ],
+    rules: {
+      "1-2": "Коаліцію зібрали до терміновості: професори не бачать проблеми, тож підтримують формально.",
+      "1-3": "Бачення розробили до терміновості: воно не спирається на реальну проблему й сприймається як мода.",
+      "1-5": "Викладачів навчали до терміновості: вони не розуміють, навіщо їм нові методи, і ставляться до занять як до формальності.",
+      "2-3": "Модель описав сам деканат без коаліції: кафедри її не підтримують, бо не брали участі.",
+      "3-4": "Комунікація пішла до бачення: викладачам нічого пояснити, крім «ми щось змінюємо», тож виникають чутки.",
+      "3-5": "Навчання відбулося до бачення: викладачі вчаться складати завдання, але не розуміють, яку мету вони обслуговують.",
+      "4-5": "Навчання передує комунікації: викладачі йдуть на нього з тривогою, бо ніхто не пояснив, що зміниться.",
+      "5-6": "Пілот запустили без навчання й змінених положень: проєкти оцінюють хаотично, і результат розчаровує.",
+      "6-7": "Модель розширили до перших результатів: інші кафедри опираються, бо ніхто не бачив, що вона працює.",
+      "6-8": "Положення закріпили до перших результатів: нові правила сприймаються як нав'язані, а не перевірені практикою.",
+      "7-8": "Положення закріпили, поки модель не працює скрізь: частина кафедр змушена порушувати правила, яких не встигла засвоїти."
+    }
+  }
+  ];
+
+  // ---------- Ядро гри ----------
+  function el(html) { var t = document.createElement("template"); t.innerHTML = html.trim(); return t.content.firstElementChild; }
+  function escHtml(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  function shuffle(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; }
+    return a;
+  }
+  function caseById(id) { return CASES.filter(function (c) { return c.id === id; })[0]; }
+  function stepOf(n) { return STEPS[n - 1]; }
+
+  var STORAGE_PREFIX = "kotter-puzzle:";
+  var app = document.getElementById("app");
+  var state = {
+    screen: "intro", studentName: "", caseId: null,
+    slots: [], locked: [], pool: [], attempts: [], hints: 0, hintShown: false, lastCheck: null, finished: false,
+    orderMemory: {}, newLocked: [], hintLevel: 0, hintQ: null, hintN: null, vmem: {}, saveStatus: "idle", teacherRows: null, teacherLoading: false
+  };
+  function currentCase() { return caseById(state.caseId); }
+
+  // Випадковий початковий порядок карток, що відрізняється від попереднього проходження цього кейсу
+  function arrangePool(ids, prev) {
+    var order = shuffle(ids);
+    if (!prev) return order;
+    for (var tries = 0; tries < 80; tries++) {
+      var clash = order.some(function (id, i) { return prev[i] === id; });
+      if (!clash) return order;
+      order = shuffle(ids);
+    }
+    return prev.slice(1).concat(prev[0]);
+  }
+
+  function startCase(id) {
+    var c = caseById(id);
+    state.caseId = id;
+    var vm = state.vmem[id] || (state.vmem[id] = []);
+    c.cards.forEach(function (k, i) {
+      var n = k.t.length, prev = vm[i];
+      var pick = prev === undefined ? Math.floor(Math.random() * n) : (prev + 1) % n;
+      vm[i] = pick; k.title = k.t[pick];
+    });
+    var ids = c.cards.map(function (x, i) { return i; });
+    var order = arrangePool(ids, state.orderMemory[id]);
+    state.orderMemory[id] = order.slice();
+    state.pool = order;
+    state.slots = c.cards.map(function () { return null; });
+    state.locked = c.cards.map(function () { return false; });
+    state.attempts = []; state.hints = 0; state.hintShown = false; state.hintLevel = 0; state.lastCheck = null; state.finished = false; state.saveStatus = "idle";
+    state.screen = "play"; render();
+  }
+
+  // ---------- Перевірка ----------
+  function violationsOf(c, order) {
+    // order: масив індексів карток по слотах; позиція картки = індекс слота + 1
+    var posByStep = {};
+    order.forEach(function (ci, slot) { posByStep[c.cards[ci].step] = slot + 1; });
+    var found = [];
+    RULE_ORDER.forEach(function (key) {
+      var pre = parseInt(key.split("-")[0], 10), dep = parseInt(key.split("-")[1], 10);
+      if (posByStep[dep] < posByStep[pre]) found.push({ key: key, pre: pre, dep: dep, text: c.rules[key], hits: RULES[key] });
+    });
+    return found;
+  }
+  function indicatorsOf(found) {
+    var v = { understand: 100, buyin: 100, sustain: 100 };
+    found.forEach(function (f) { f.hits.forEach(function (h) { v[h] = Math.max(10, v[h] - 14); }); });
+    return v;
+  }
+  function correctCount(c, order) { return order.filter(function (ci, slot) { return c.cards[ci].step === slot + 1; }).length; }
+
+  function allPlaced() { return state.slots.every(function (x) { return x !== null; }); }
+
+  function checkOrder() {
+    var c = currentCase();
+    var order = state.slots.slice();
+    var correct = correctCount(c, order);
+    var found = violationsOf(c, order);
+    var firstOrder = order.map(function (ci) { return c.cards[ci].step; });
+    state.justChecked = true;
+    state.attempts.push({ correct: correct, order: order, steps: firstOrder, violations: found });
+    state.lastCheck = { correct: correct, violations: found, attempt: state.attempts.length };
+    // блокуємо правильні позиції
+    state.newLocked = [];
+    order.forEach(function (ci, slot) { if (c.cards[ci].step === slot + 1) { if (!state.locked[slot]) state.newLocked.push(slot); state.locked[slot] = true; } });
+    var solved = correct === c.cards.length;
+    if (solved || state.attempts.length >= MAX_ATTEMPTS) { state.finished = true; }
+    render();
+  }
+
+  function stars() {
+    var c = currentCase();
+    var last = state.attempts[state.attempts.length - 1];
+    var solved = last && last.correct === c.cards.length;
+    if (!solved) return 0;
+    var base = state.attempts.length === 1 ? 3 : state.attempts.length === 2 ? 2 : 1;
+    return Math.max(0, base - Math.min(2, state.hints));
+  }
+
+  // ---------- Взаємодія з пазлом ----------
+  function placeCard(ci) {
+    var idx = state.slots.indexOf(null);
+    var free = -1;
+    for (var i = 0; i < state.slots.length; i++) { if (state.slots[i] === null && !state.locked[i]) { free = i; break; } }
+    if (free === -1) return;
+    state.slots[free] = ci; state.pool = state.pool.filter(function (x) { return x !== ci; });
+    state.lastCheck = state.finished ? state.lastCheck : null;
+    render();
+  }
+  function removeCard(slot) {
+    if (state.locked[slot] || state.slots[slot] === null) return;
+    state.pool.push(state.slots[slot]); state.slots[slot] = null; render();
+  }
+  function moveCard(slot, dir) {
+    var to = slot + dir;
+    if (to < 0 || to >= state.slots.length) return;
+    if (state.locked[slot] || state.locked[to]) return;
+    var t = state.slots[slot]; state.slots[slot] = state.slots[to]; state.slots[to] = t; render();
+  }
+  function resetUnlocked() {
+    for (var i = 0; i < state.slots.length; i++) {
+      if (!state.locked[i] && state.slots[i] !== null) { state.pool.push(state.slots[i]); state.slots[i] = null; }
+    }
+    render();
+  }
+
+  // ---------- Екрани ----------
+  function renderIntro() {
+    var cases = CASES.map(function (c) {
+      return '<button class="scenario-card" data-id="' + c.id + '"><div class="sc-emoji">' + c.emoji + '</div><div class="sc-body"><div class="sc-title">' + c.title + '</div><div class="sc-sub">' + c.preview + '</div><div class="sc-meta">' + c.company + '</div></div></button>';
+    }).join("");
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<p class="kicker">Практичне заняття · Бізнес-лідерство</p>' +
+      '<h1 class="title serif">Збери план змін: вісім кроків Коттера</h1>' +
+      '<p class="lead">Вам дають кейс про впровадження змін і вісім карток-дій, перемішаних між собою. Складіть їх у правильному порядку за моделлю управління змінами Джона Коттера. Після кожної перевірки гра покаже, що стається, коли крок пропущено чи переставлено: до яких наслідків для розуміння, прийняття й стійкості змін це призводить.</p>' +
+      '<div class="how-box"><b>Як грати.</b> Торкайтеся карток, щоб викласти їх у плані, а стрілками ▲▼ змінюйте порядок. У вас до ' + MAX_ATTEMPTS + ' перевірок. Після кожної перевірки правильно розставлені картки блокуються, а для решти ви побачите, до чого призводить помилка в порядку. Правильний порядок гра покаже в кінці, а за потреби можна взяти до двох підказок (спершу питання кроків, потім їхні назви), кожна знижує оцінку.</div>' +
+      '<label class="field-label">Ваше ім’я (необов’язково)</label>' +
+      '<input class="text-input" id="name-input" type="text" placeholder="Наприклад, Анна К." value="' + escHtml(state.studentName) + '" />' +
+      '<label class="field-label">Оберіть кейс</label>' +
+      '<div class="scenario-list">' + cases + '</div>' +
+      '<button class="teacher-link" id="teacher-link">Перегляд результатів групи (для викладача)</button>' +
+      '</div></div>'
+    );
+    var input = card.querySelector("#name-input");
+    input.addEventListener("input", function () { state.studentName = input.value.trim(); });
+    card.querySelectorAll(".scenario-card").forEach(function (b) {
+      b.addEventListener("click", function () { state.studentName = input.value.trim(); startCase(b.getAttribute("data-id")); });
+    });
+    card.querySelector("#teacher-link").addEventListener("click", function () { state.screen = "teacher"; render(); loadTeacherRows(); });
+    return card;
+  }
+
+  function violationsHtml(found) {
+    if (!found.length) return '<div class="vio-ok">Порушень послідовності не виявлено: кожен крок спирається на попередні.</div>';
+    return '<div class="vio-list">' + found.map(function (f) {
+      return '<div class="vio-item"><div class="vio-ico">⚠️</div><div class="vio-body"><div class="vio-text">' + escHtml(f.text) + '</div><div class="vio-hits">' +
+        f.hits.map(function (h) { var ind = INDICATORS.filter(function (x) { return x.key === h; })[0]; return '<span class="vio-chip">' + ind.icon + ' ' + ind.label + ' ↓</span>'; }).join("") + '</div></div></div>';
+    }).join("") + '</div>';
+  }
+
+  function indicatorsHtml(vals) {
+    return '<div class="metrics">' + INDICATORS.map(function (ind) {
+      var v = vals[ind.key];
+      return '<div class="metric"><div class="m-head"><span class="m-name">' + ind.icon + ' ' + ind.label + '</span><span class="m-val">' + v + '</span></div><div class="m-track"><div class="m-fill" style="width:' + v + '%;background:' + ind.color + '"></div></div></div>';
+    }).join("") + '</div>';
+  }
+
+  function hintGrid(list, textOf) {
+    return '<div class="hp-grid">' + list.map(function (st) { return '<div class="hp-item ' + st.cls + '"><span class="hp-ico">' + st.icon + '</span>' + textOf(st) + '</div>'; }).join("") + '</div>';
+  }
+  function hintHtml() {
+    if (!state.hintLevel) return "";
+    var h = '<div class="hint-panel"><div class="hp-title">💡 Підказка 1: питання, на які відповідає кожен крок (у випадковому порядку)</div>' + hintGrid(state.hintQ, function (st) { return st.q; });
+    if (state.hintLevel >= 2) h += '<div class="hp-title" style="margin-top:14px;">💡 Підказка 2: назви кроків Коттера (у випадковому порядку)</div>' + hintGrid(state.hintN, function (st) { return st.name; });
+    return h + '</div>';
+  }
+
+  function slotIco(i, on) { var st = STEPS[i]; var fresh = on && state.justChecked && state.newLocked.indexOf(i) !== -1; return '<span class="slot-ico ' + st.cls + (on ? ' on' : '') + (fresh ? ' fresh' : '') + '">' + st.icon + '</span>'; }
+
+  function renderPlay() {
+    var c = currentCase();
+    var n = c.cards.length;
+    var attemptNo = state.attempts.length;
+    var poolHtml = state.pool.map(function (ci) {
+      return '<button class="puz-card" data-ci="' + ci + '"><span class="pc-add">＋</span><span class="pc-text">' + escHtml(c.cards[ci].title) + '</span></button>';
+    }).join("") || '<div class="pool-empty">Усі картки викладено. Перевірте порядок або змініть його стрілками.</div>';
+    var slotsHtml = state.slots.map(function (ci, i) {
+      var locked = state.locked[i];
+      var info = state.lastCheck && ci !== null && !locked && state.attempts.length ? "wrong" : "";
+      if (ci === null) return '<div class="slot empty"><span class="slot-n">' + (i + 1) + '</span>' + slotIco(i, false) + '<span class="slot-ph">Вільний слот</span></div>';
+      return '<div class="slot filled ' + (locked ? "locked" + (state.justChecked && state.newLocked.indexOf(i) !== -1 ? " fresh" : "") : info) + '"><span class="slot-n">' + (i + 1) + '</span>' + slotIco(i, locked) + '<span class="slot-text">' + escHtml(c.cards[ci].title) + (locked ? '<span class="slot-stepname">' + stepOf(i + 1).icon + ' ' + stepOf(i + 1).name + '</span>' : '') + '</span>' +
+        (locked ? '<span class="slot-lock" title="Правильно">✓ Вірно 🔒</span>' :
+          '<span class="slot-ctl"><button class="ctl" data-act="up" data-slot="' + i + '" aria-label="Вище">▲</button><button class="ctl" data-act="down" data-slot="' + i + '" aria-label="Нижче">▼</button><button class="ctl x" data-act="rm" data-slot="' + i + '" aria-label="Забрати">✕</button></span>') +
+        '</div>';
+    }).join("");
+    var lc = state.lastCheck;
+    var fbHtml = "";
+    if (lc) {
+      fbHtml = '<div class="fb-live ' + (lc.correct === n ? "best" : lc.correct >= 5 ? "neutral" : "bad") + '">' +
+        '<div class="fb-live-title">Перевірка ' + lc.attempt + ' із ' + MAX_ATTEMPTS + '</div>' +
+        '<div class="check-score"><span>' + lc.correct + '</span> із ' + n + ' карток на своїх місцях</div>' +
+        '<div class="tiles-title">Що станеться в цьому плані</div>' + violationsHtml(lc.violations) +
+        (state.finished ? "" : '<p class="fb-hint">Зеленим підсвічено картки, які стоять на своїх місцях: їх заблоковано. Червоні стоять не там: перекладіть їх і перевірте ще раз. Правильний порядок ви побачите наприкінці.</p>') + '</div>';
+    }
+    var canCheck = allPlaced() && !state.finished;
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<p class="step-count">' + c.emoji + ' ' + c.title + ' · Спроба ' + Math.min(attemptNo + 1, MAX_ATTEMPTS) + ' із ' + MAX_ATTEMPTS + (state.hints ? ' · підказка використана' : '') + '</p>' +
+      '<div class="setup-box"><b>Кейс.</b> ' + c.brief + '</div>' +
+      hintHtml() +
+      '<label class="field-label">Ваш план змін: від першого кроку до восьмого</label>' +
+      '<div class="slots">' + slotsHtml + '</div>' +
+      (state.finished ? "" : '<label class="field-label">Картки дій (торкніться, щоб покласти в план)</label><div class="pool">' + poolHtml + '</div>') +
+      fbHtml +
+      (state.finished ? '<button class="btn btn-primary" id="done-btn">Переглянути результат →</button>' :
+        '<div class="result-actions">' +
+          '<button class="btn btn-primary" id="check-btn"' + (canCheck ? "" : " disabled") + '>Перевірити порядок</button>' +
+          '<button class="btn btn-secondary" id="reset-btn">Прибрати нерозставлені</button>' +
+          (state.hintLevel >= 2 ? "" : '<button class="btn btn-secondary" id="hint-btn">' + (state.hintLevel === 0 ? 'Підказка 1: питання кроків' : 'Підказка 2: назви кроків') + '</button>') +
+        '</div>') +
+      '<button class="teacher-link" id="back-link">← До вибору кейсу</button>' +
+      '</div></div>'
+    );
+    card.querySelectorAll(".puz-card").forEach(function (b) { b.addEventListener("click", function () { placeCard(parseInt(b.getAttribute("data-ci"), 10)); }); });
+    card.querySelectorAll(".ctl").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var slot = parseInt(b.getAttribute("data-slot"), 10), act = b.getAttribute("data-act");
+        if (act === "up") moveCard(slot, -1); else if (act === "down") moveCard(slot, 1); else removeCard(slot);
+      });
+    });
+    var chk = card.querySelector("#check-btn"); if (chk) chk.addEventListener("click", function () { if (allPlaced()) checkOrder(); });
+    var rst = card.querySelector("#reset-btn"); if (rst) rst.addEventListener("click", resetUnlocked);
+    var hb = card.querySelector("#hint-btn"); if (hb) hb.addEventListener("click", function () { state.hintLevel += 1; state.hintShown = true; state.hints += 1; if (state.hintLevel === 1) state.hintQ = shuffle(STEPS); else state.hintN = shuffle(STEPS); render(); });
+    var dn = card.querySelector("#done-btn"); if (dn) dn.addEventListener("click", function () { state.screen = "result"; render(); saveResultToStorage(); });
+    card.querySelector("#back-link").addEventListener("click", function () { state.screen = "intro"; render(); });
+    return card;
+  }
+
+  function starsHtml(n) { var s = ""; for (var i = 0; i < 3; i++) s += '<span class="star ' + (i < n ? "on" : "off") + '">★</span>'; return '<span class="stars">' + s + '</span>'; }
+
+  function renderResult() {
+    var c = currentCase();
+    var last = state.attempts[state.attempts.length - 1];
+    var solved = last.correct === c.cards.length;
+    var st = stars();
+    var finalViol = last.violations;
+    var sim = indicatorsOf(finalViol);
+    var title = solved ? (st === 3 ? "Ідеально: вірний порядок з першої спроби" : "План складено правильно") : "План ще не повністю правильний";
+    var text = solved ? "Ви правильно розставили всі вісім кроків за " + state.attempts.length + " " + (state.attempts.length === 1 ? "перевірку" : state.attempts.length < 5 ? "перевірки" : "перевірок") + (state.hints ? ", скориставшись підказкою." : ".")
+      : "Після " + state.attempts.length + " перевірок на своїх місцях " + last.correct + " із " + c.cards.length + " карток. Правильний порядок і причини помилок нижче.";
+    var saveNote = "";
+    if (state.saveStatus === "saving") saveNote = "Зберігаємо результат…";
+    else if (state.saveStatus === "saved") saveNote = "Результат збережено.";
+    else if (state.saveStatus === "failed") saveNote = "Результат сформовано, але не вдалося зберегти для викладача.";
+    var progress = state.attempts.map(function (a, i) {
+      return '<div class="att-item"><span class="att-n">Спроба ' + (i + 1) + '</span><span class="att-bar"><span style="width:' + Math.round(a.correct / c.cards.length * 100) + '%"></span></span><span class="att-v">' + a.correct + '/' + c.cards.length + '</span></div>';
+    }).join("");
+
+    // правильний порядок
+    var correctHtml = c.cards.slice().sort(function (a, b) { return a.step - b.step; }).map(function (card) {
+      var s = stepOf(card.step);
+      var mine = last.steps.indexOf(card.step) + 1;
+      return '<div class="ord-card ' + s.cls + '"><div class="ord-ico">' + s.icon + '</div><div class="ord-body"><div class="ord-head"><span class="ord-n">' + card.step + '</span><b>' + s.name + '</b>' + (mine === card.step ? '<span class="ord-ok">✓ ваша позиція</span>' : '<span class="ord-no">ваша позиція: ' + mine + '</span>') + '</div>' +
+        '<div class="ord-card-text">«' + escHtml(card.title) + '»</div><p class="ord-why">' + s.why + '</p></div></div>';
+    }).join("");
+    var skipBtns = STEPS.map(function (s) { return '<button class="skip-btn ' + s.cls + '" data-n="' + s.n + '"><span class="sk-ico">' + s.icon + '</span><span>' + s.n + '. ' + s.name + '</span></button>'; }).join("");
+    var attemptsHtml = state.attempts.map(function (a, i) {
+      return '<div class="step-card ' + (a.correct === c.cards.length ? "best" : a.correct >= 5 ? "neutral" : "bad") + '"><div class="sc-head"><span class="sc-n">' + (i + 1) + '</span><b>Спроба ' + (i + 1) + ': ' + a.correct + ' із ' + c.cards.length + '</b></div>' +
+        '<div class="sc-line">' + a.steps.map(function (n, slot) { return '<span class="mini-step ' + (n === slot + 1 ? "ok" : "no") + '">' + (slot + 1) + '→' + stepOf(n).icon + '</span>'; }).join(" ") + '</div>' +
+        violationsHtml(a.violations) + '</div>';
+    }).join("");
+
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<p class="kicker" style="text-align:center;">' + (state.studentName ? escHtml(state.studentName) + " · " : "") + c.emoji + ' ' + c.title + '</p>' +
+      '<div class="verdict-card ' + (solved ? (st >= 2 ? "great" : "partial") : "fail") + '"><div class="v-label">Результат</div><div class="v-title">' + title + '</div><p>' + text + '</p>' +
+        '<div class="v-stars">' + starsHtml(st) + '</div></div>' +
+      '<label class="field-label">Прогрес по спробах</label><div class="att-list">' + progress + '</div>' +
+      '<label class="field-label">Наслідки вашого фінального порядку</label>' + indicatorsHtml(sim) +
+      (finalViol.length ? '<p class="deep-lead" style="margin-top:6px;">У вашому порядку є ' + finalViol.length + ' порушень послідовності, детальніше нижче.</p>' : '<p class="deep-lead" style="margin-top:6px;">Порушень послідовності немає: усі три показники на максимумі.</p>') +
+      '<div class="next-box"><div class="nb-title">Що далі?</div><p>Спробуйте ще раз: картки будуть розкладені в іншому порядку. Або оберіть інший кейс і перевірте, чи працює логіка Коттера в іншій ситуації.</p>' +
+        '<div class="result-actions"><button class="btn btn-primary" id="retry-btn">Пройти ще раз</button><button class="btn btn-secondary" id="other-btn">Інший кейс</button><button class="btn btn-secondary" id="copy-btn">Скопіювати результат</button></div></div>' +
+      '<details class="deep"><summary>Правильний порядок і чому саме так</summary><div class="deep-body">' +
+        '<p class="deep-lead">Якщо хочете пройти гру без підказок, пропустіть цей розділ і запустіть її ще раз.</p>' + correctHtml + '</div></details>' +
+      '<details class="deep"><summary>Експеримент: що буде, якщо пропустити крок</summary><div class="deep-body">' +
+        '<p class="deep-lead">Оберіть крок, і ви побачите, що станеться в цьому кейсі, якщо його не зробити.</p><div class="skip-grid">' + skipBtns + '</div><div class="skip-out" id="skip-out">Оберіть крок вище.</div></div></details>' +
+      '<details class="deep"><summary>Ваші спроби та наслідки помилок</summary><div class="deep-body">' + attemptsHtml + '</div></details>' +
+      (saveNote ? '<p class="save-note">' + saveNote + '</p>' : "") +
+      '<textarea id="copy-fallback-area" style="display:none;margin-top:12px;width:100%;min-height:120px;padding:10px;border-radius:10px;border:1.5px solid var(--line);font-size:11.5px;color:var(--muted);background:var(--surface);" readonly>' + escHtml(resultText()) + '</textarea>' +
+      '<button class="teacher-link" id="teacher-link">Перегляд результатів групи (для викладача)</button>' +
+      '</div></div>'
+    );
+    card.querySelector("#retry-btn").addEventListener("click", function () { startCase(state.caseId); });
+    card.querySelector("#other-btn").addEventListener("click", function () { state.screen = "intro"; render(); });
+    card.querySelector("#copy-btn").addEventListener("click", function (e) { copyToClipboard(resultText(), e.currentTarget, "Скопіювати результат"); });
+    card.querySelector("#teacher-link").addEventListener("click", function () { state.screen = "teacher"; render(); loadTeacherRows(); });
+    card.querySelectorAll(".skip-btn").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var n = parseInt(b.getAttribute("data-n"), 10);
+        card.querySelectorAll(".skip-btn").forEach(function (x) { x.classList.remove("sel"); });
+        b.classList.add("sel");
+        var s = stepOf(n);
+        card.querySelector("#skip-out").innerHTML = '<b>' + s.icon + ' Якщо пропустити «' + s.name + '»:</b> ' + escHtml(c.skip[n - 1]);
+      });
+    });
+    return card;
+  }
+
+  function resultText() {
+    var c = currentCase(), last = state.attempts[state.attempts.length - 1], L = [];
+    L.push("Збери план змін (Коттер): " + c.title);
+    if (state.studentName) L.push("Студент: " + state.studentName);
+    L.push("Спроб: " + state.attempts.length + " · правильних позицій: " + last.correct + " із " + c.cards.length + " · підказка: " + (state.hints ? "так" : "ні") + " · зірок: " + stars());
+    L.push("");
+    L.push("Ваш порядок:");
+    last.steps.forEach(function (n, slot) { L.push("  " + (slot + 1) + ". " + stepOf(n).name + (n === slot + 1 ? "" : "  (мало бути " + n + ")")); });
+    if (last.violations.length) { L.push(""); L.push("Порушення послідовності:"); last.violations.forEach(function (v) { L.push("  — " + v.text); }); }
+    return L.join("\n");
+  }
+
+  // ---------- Збереження й експорт ----------
+  function downloadText(name, text) {
+    var blob = new Blob(["\uFEFF" + text], { type: "text/plain;charset=utf-8;" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a"); a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  }
+  function copyToClipboard(text, btn, label) {
+    function ok() { btn.textContent = "Скопійовано ✓"; setTimeout(function () { btn.textContent = label; }, 1800); }
+    function fail() { var ta = document.getElementById("copy-fallback-area"); if (ta) { ta.style.display = "block"; ta.focus(); ta.select(); } }
+    if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(ok).catch(fail); }
+    else {
+      try {
+        var temp = document.createElement("textarea"); temp.value = text; temp.style.position = "fixed"; temp.style.opacity = "0";
+        document.body.appendChild(temp); temp.focus(); temp.select();
+        var success = document.execCommand("copy"); document.body.removeChild(temp);
+        if (success) ok(); else fail();
+      } catch (e) { fail(); }
+    }
+  }
+
+  function saveResultToStorage() {
+    if (!window.storage) return;
+    var c = currentCase(), first = state.attempts[0], last = state.attempts[state.attempts.length - 1];
+    state.saveStatus = "saving";
+    var key = STORAGE_PREFIX + Date.now() + "-" + Math.random().toString(36).slice(2, 8);
+    var payload = {
+      name: state.studentName || "Анонім", caseId: c.id, caseTitle: c.title,
+      attempts: state.attempts.length, solved: last.correct === c.cards.length, stars: stars(), hints: state.hints,
+      firstCorrect: first.correct, finalCorrect: last.correct,
+      firstSteps: first.steps, firstViolations: first.violations.map(function (v) { return v.key; }),
+      timestamp: Date.now()
+    };
+    window.storage.set(key, JSON.stringify(payload), true).then(function (r) {
+      state.saveStatus = r ? "saved" : "failed"; render();
+    }).catch(function () { state.saveStatus = "failed"; render(); });
+  }
+
+  function loadTeacherRows() {
+    state.teacherLoading = true; render();
+    if (!window.storage) { state.teacherRows = []; state.teacherLoading = false; render(); return; }
+    window.storage.list(STORAGE_PREFIX, true).then(function (listRes) {
+      var keys = (listRes && listRes.keys) || [];
+      if (keys.length === 0) { state.teacherRows = []; state.teacherLoading = false; render(); return; }
+      var promises = keys.map(function (k) {
+        return window.storage.get(k, true).then(function (r) { try { return JSON.parse(r.value); } catch (e) { return null; } }).catch(function () { return null; });
+      });
+      Promise.all(promises).then(function (rows) {
+        rows = rows.filter(Boolean).sort(function (a, b) { return b.timestamp - a.timestamp; });
+        state.teacherRows = rows; state.teacherLoading = false; render();
+      });
+    }).catch(function () { state.teacherRows = []; state.teacherLoading = false; render(); });
+  }
+
+  function csvEscape(t) { return '"' + String(t).replace(/"/g, '""') + '"'; }
+  function downloadCsv() {
+    var rows = state.teacherRows || [];
+    var header = ["Ім'я", "Кейс", "Спроб", "Розв'язано", "Зірок", "Підказок", "Правильних з першої спроби", "Правильних у фіналі", "Порядок першої спроби (номери кроків)", "Порушення першої спроби", "Дата"];
+    var lines = [header.map(csvEscape).join(";")];
+    rows.forEach(function (r) {
+      lines.push([csvEscape(r.name), csvEscape(r.caseTitle), r.attempts, r.solved ? "так" : "ні", r.stars, r.hints, r.firstCorrect, r.finalCorrect,
+        csvEscape((r.firstSteps || []).join("-")), csvEscape((r.firstViolations || []).join(", ")), csvEscape(new Date(r.timestamp).toLocaleString("uk-UA"))].join(";"));
+    });
+    downloadText("kotter-puzzle-results.csv", lines.join("\n"));
+  }
+
+  function teacherStatsHtml(rows) {
+    var out = "";
+    CASES.forEach(function (c) {
+      var rs = rows.filter(function (r) { return r.caseId === c.id; });
+      if (rs.length === 0) return;
+      var n = rs.length;
+      var firstTry = rs.filter(function (r) { return r.attempts === 1 && r.solved; }).length;
+      var solved = rs.filter(function (r) { return r.solved; }).length;
+      var avgAtt = (rs.reduce(function (s, r) { return s + r.attempts; }, 0) / n).toFixed(1);
+      var avgStars = (rs.reduce(function (s, r) { return s + r.stars; }, 0) / n).toFixed(1);
+      var hintPct = Math.round(rs.filter(function (r) { return r.hints > 0; }).length / n * 100);
+      // складність кроків: середнє відхилення позиції в першій спробі
+      var stepErr = STEPS.map(function (st) { return { st: st, sum: 0, cnt: 0 }; });
+      var vio = {};
+      rs.forEach(function (r) {
+        (r.firstSteps || []).forEach(function (stepN, slot) { var e = stepErr[stepN - 1]; e.sum += Math.abs(stepN - (slot + 1)); e.cnt += 1; });
+        (r.firstViolations || []).forEach(function (k) { vio[k] = (vio[k] || 0) + 1; });
+      });
+      var stepRows = stepErr.slice().sort(function (a, b) { return (b.sum / (b.cnt || 1)) - (a.sum / (a.cnt || 1)); }).map(function (e) {
+        return '<tr><td>' + e.st.icon + ' ' + e.st.n + '. ' + e.st.name + '</td><td>' + (e.cnt ? (e.sum / e.cnt).toFixed(1) : "—") + '</td></tr>';
+      }).join("");
+      var vioKeys = Object.keys(vio).sort(function (a, b) { return vio[b] - vio[a]; }).slice(0, 5);
+      var vioRows = vioKeys.map(function (k) {
+        var p = k.split("-");
+        return '<tr><td>' + stepOf(+p[1]).icon + ' ' + stepOf(+p[1]).name + ' раніше за ' + stepOf(+p[0]).icon + ' ' + stepOf(+p[0]).name + '</td><td>' + Math.round(vio[k] / n * 100) + '%</td></tr>';
+      }).join("");
+      out += '<label class="field-label" style="margin-top:22px;">' + c.emoji + ' ' + c.title + ' · ' + n + ' проходжень</label>' +
+        '<div class="table-scroll"><table class="results-table"><thead><tr><th>З першої спроби</th><th>Розв\'язали</th><th>Середньо спроб</th><th>Середньо зірок</th><th>Брали підказку</th></tr></thead><tbody><tr><td>' + Math.round(firstTry / n * 100) + '%</td><td>' + Math.round(solved / n * 100) + '%</td><td>' + avgAtt + '</td><td>' + avgStars + '</td><td>' + hintPct + '%</td></tr></tbody></table></div>' +
+        '<div class="table-scroll"><table class="results-table"><thead><tr><th>Крок (від найскладнішого)</th><th>Середня похибка позиції в 1-й спробі</th></tr></thead><tbody>' + stepRows + '</tbody></table></div>' +
+        (vioRows ? '<div class="table-scroll"><table class="results-table"><thead><tr><th>Найчастіша помилка послідовності (1-ша спроба)</th><th>Частка студентів</th></tr></thead><tbody>' + vioRows + '</tbody></table></div>' : '');
+    });
+    return out;
+  }
+
+  function renderTeacher() {
+    var rows = state.teacherRows;
+    var bodyHtml;
+    if (state.teacherLoading) bodyHtml = '<p class="empty-note">Завантаження результатів…</p>';
+    else if (!rows || rows.length === 0) bodyHtml = '<p class="empty-note">Поки що ніхто не пройшов гру за цим посиланням.</p>';
+    else {
+      var trs = rows.map(function (r) {
+        return '<tr><td>' + escHtml(r.name) + '</td><td>' + escHtml(r.caseTitle || "") + '</td><td>' + r.attempts + '</td><td>' + (r.solved ? "✓" : "✕") + '</td><td>' + "★".repeat(r.stars || 0) + '</td><td>' + new Date(r.timestamp).toLocaleString("uk-UA") + '</td></tr>';
+      }).join("");
+      bodyHtml = '<div class="table-scroll"><table class="results-table"><thead><tr><th>Студент</th><th>Кейс</th><th>Спроб</th><th>Розв\'язано</th><th>Зірки</th><th>Дата</th></tr></thead><tbody>' + trs + '</tbody></table></div>' + teacherStatsHtml(rows);
+    }
+    var card = el(
+      '<div class="stage-wrap"><div class="card">' +
+      '<div class="teacher-header"><h1 class="title serif" style="margin:0;font-size:22px;">Результати групи</h1><button class="icon-btn" id="refresh-btn">Оновити</button></div>' +
+      bodyHtml +
+      '<div class="result-actions"><button class="btn btn-secondary" id="csv-btn"' + ((!rows || rows.length === 0) ? " disabled" : "") + '>Завантажити CSV</button><button class="btn btn-secondary" id="back-btn">← Назад</button></div>' +
+      '</div></div>'
+    );
+    card.querySelector("#refresh-btn").addEventListener("click", loadTeacherRows);
+    card.querySelector("#back-btn").addEventListener("click", function () { state.screen = state.finished && state.attempts.length ? "result" : "intro"; render(); });
+    var csvBtn = card.querySelector("#csv-btn");
+    if (csvBtn && rows && rows.length > 0) csvBtn.addEventListener("click", downloadCsv);
+    return card;
+  }
+
+  var lastScreen = null;
+  function render() {
+    var y = window.pageYOffset || 0;
+    app.innerHTML = "";
+    var view;
+    if (state.screen === "intro") view = renderIntro();
+    else if (state.screen === "play") view = renderPlay();
+    else if (state.screen === "result") view = renderResult();
+    else view = renderTeacher();
+    app.appendChild(view);
+    if (state.screen !== lastScreen) { window.scrollTo(0, 0); }
+    else if (state.justChecked) { window.scrollTo(0, 0); }
+    else { window.scrollTo(0, y); }
+    state.justChecked = false;
+    lastScreen = state.screen;
+  }
+
+  render();
+
+})();
+</script>
+</body>
+</html>
