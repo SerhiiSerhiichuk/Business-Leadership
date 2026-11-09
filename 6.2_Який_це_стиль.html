@@ -24,15 +24,54 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:7px 6px;b
 .cb{display:flex;gap:12px;align-items:center;text-align:left;width:100%;padding:13px 14px;margin-bottom:8px;border:1.5px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);font:inherit;font-size:15px;cursor:pointer}.cb .em{font-size:24px}.cb:hover:not(:disabled){border-color:var(--gold)}.cb:disabled{cursor:default}
 .cb.ok{border-color:var(--green);background:color-mix(in srgb,#2E7D6B 18%,var(--bg))}.cb.no{border-color:var(--red);background:color-mix(in srgb,#B3492F 18%,var(--bg))}.cb.dim{opacity:.62}
 .el{margin:0 0 8px;display:flex;gap:12px;align-items:flex-start}.el .n{font-size:24px}
+/* ---- яскраве оформлення стилів (як у 6.3) ---- */
+.st-CP{--ic-bd:#D9826A}.st-CL{--ic-bd:#6FB8A2}.st-CM{--ic-bd:#D7B25A}.st-AC{--ic-bd:#A98BD1}.st-AV{--ic-bd:#7C8BC9}
+.tint{--ic-bg:color-mix(in srgb,var(--ic-bd) 22%,var(--card))}
+.ico{width:44px;height:44px;border-radius:50%;background:var(--card);border:2px solid var(--ic-bd);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.tki{display:flex;gap:14px;align-items:center;padding:11px 14px;border-radius:12px;border:1.5px solid var(--ic-bd);background:var(--ic-bg);margin-bottom:8px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 11px 3px 4px;border-radius:20px;border:1.5px solid var(--ic-bd);background:var(--ic-bg);font-weight:800;font-size:12.5px;color:var(--ink);white-space:nowrap}
+.chip .ico{width:22px;height:22px;font-size:12px;border-width:1.5px}
+.cb.tint{border-color:var(--ic-bd);background:var(--ic-bg);transition:transform .15s,box-shadow .15s}
+.cb.tint:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 10px 18px -14px var(--ic-bd);border-color:var(--ic-bd)}
+.cb .ico{width:40px;height:40px;font-size:20px}
+.vd{border-radius:14px;padding:16px 18px;color:#fff;margin-bottom:14px}.vd.ok{background:var(--green)}.vd.no{background:var(--red)}
+.vd-t{font-weight:800;font-size:19px}.vd-l{font-size:12.5px;margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.vd-l .chip{box-shadow:0 0 0 2px rgba(255,255,255,.55)}
+/* ---- матриця Томаса-Кілманна: 4 комірки + Компроміс у центрі ---- */
+.tk{display:grid;grid-template-columns:24px 1fr;grid-template-rows:auto auto;column-gap:8px;row-gap:6px;margin-top:4px}
+.tk-y{grid-row:1;grid-column:1;writing-mode:vertical-rl;transform:rotate(180deg);text-align:center;font-size:12px;font-weight:700;color:var(--mut);letter-spacing:.3px}
+.tk-x{grid-row:2;grid-column:2;text-align:center;font-size:12px;font-weight:700;color:var(--mut);letter-spacing:.3px}
+.tk-grid{grid-row:1;grid-column:2;position:relative;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tk-grid .cb{margin:0;width:auto;min-height:128px;flex-direction:column;gap:6px;text-align:center;justify-content:center;font-size:14px;padding:12px 8px}
+.tk-grid .cb.tl,.tk-grid .cb.tr{justify-content:flex-start;padding-top:14px}
+.tk-grid .cb.bl,.tk-grid .cb.br{justify-content:flex-end;padding-bottom:14px}
+.tk-mid{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;display:flex!important;flex-direction:row!important;align-items:center;gap:8px!important;width:auto!important;min-height:0!important;padding:6px 16px 6px 6px!important;border-radius:40px!important;border-width:2.5px!important;box-shadow:0 0 0 5px var(--card)}
+.tk-mid:hover:not(:disabled){transform:translate(-50%,-52%)!important}
+.tk-mid .ico{width:38px;height:38px}
+@media(max-width:360px){.tk-grid .cb{font-size:13px}.tk-mid{padding-right:10px!important}}
+.tc{display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;font-size:14px;padding:12px 10px;border:1.5px solid var(--ic-bd);background:var(--ic-bg);border-radius:12px;color:var(--ink)}
+.tc small{font-size:11.5px;color:var(--mut);line-height:1.3}.tc small.q{font-style:italic;color:var(--ink)}
+.tc.tl,.tc.tr{justify-content:flex-start;padding:14px 10px 54px}.tc.bl,.tc.br{justify-content:flex-end;padding:54px 10px 14px}
+.tc.tk-mid:hover{transform:translate(-50%,-50%)!important}
+/* Компроміс у центрі вступної матриці: 2/3 ширини, закруглені краї */
+.tk-grid.tk-flow{row-gap:0}
+.tk-flow .tc.bl,.tk-flow .tc.br{margin-top:8px}
+.tk-flow .tc.tl,.tk-flow .tc.tr{grid-row:1;padding:14px 10px calc(var(--ov,34px) + 14px)}
+.tk-flow .tc.bl,.tk-flow .tc.br{grid-row:3;padding:calc(var(--ov,34px) + 14px) 10px 14px}
+.tc.tk-wide{position:relative;left:auto;top:auto;transform:none;grid-column:1/-1;grid-row:2;justify-self:center;width:65%;margin:calc(var(--ov,34px) * -1) 0;z-index:2;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;padding:12px 16px;border-radius:26px;border-width:2.5px;box-shadow:0 0 0 5px var(--card)}
+.tc.tk-wide:hover{transform:none!important}
+.tc.tk-wide .ico{width:40px;height:40px}
+.tc.tk-wide>div:last-child{display:flex;flex-direction:column;gap:3px;align-items:center;text-align:center}
+@media(max-width:420px){.tc.tk-wide{padding:10px 10px;gap:6px}.tc.tk-wide .ico{width:34px;height:34px;font-size:17px}}
 </style></head><body><div id="app"></div>
 <script>
 (function(){
 var ST=[
-{k:"CP",e:"🦈",l:"Суперництво",q:"«Зробімо так, як треба»",s:"Наполегливо відстоює власну позицію, не зважаючи на іншу сторону.",c:"наполегливість без готовності слухати: готові рішення, тиск, закриття обговорення",col:"#B3492F"},
-{k:"CL",e:"🦉",l:"Співпраця",q:"«Давайте з’ясуємо, що кому насправді потрібно»",s:"З’ясовує інтереси обох сторін і шукає рішення, що влаштовує всіх.",c:"запитання про справжні потреби та рішення, яке задовольняє обох повністю",col:"#2E7D6B"},
-{k:"CM",e:"🦊",l:"Компроміс",q:"«Зустрінемося посередині»",s:"Обидві сторони поступаються, щоб швидко знайти прийнятну середину.",c:"поділ різниці навпіл і часткову поступку обох без з’ясування причин",col:"#C9962C"},
-{k:"AC",e:"🧸",l:"Пристосування",q:"«Добре, нехай буде по-твоєму»",s:"Поступається, щоб зберегти мир або догодити іншій стороні.",c:"поступку власними інтересами заради спокою чи схвалення іншого",col:"#384080"},
-{k:"AV",e:"🐢",l:"Уникнення",q:"«Давай про це потім»",s:"Відходить від теми, відкладає розмову й не висловлює позиції.",c:"відхід від теми, відкладання без терміну та відсутність власної позиції",col:"#8891B5"}];
+{k:"CP",cls:"st-CP",e:"🦈",l:"Суперництво",q:"«Зробімо так, як треба»",s:"Наполегливо відстоює власну позицію, не зважаючи на іншу сторону.",c:"наполегливість без готовності слухати: готові рішення, тиск, закриття обговорення",col:"#D9826A"},
+{k:"CL",cls:"st-CL",e:"🦉",l:"Співпраця",q:"«Давайте з’ясуємо, що кому насправді потрібно»",s:"З’ясовує інтереси обох сторін і шукає рішення, що влаштовує всіх.",c:"запитання про справжні потреби та рішення, яке задовольняє обох повністю",col:"#6FB8A2"},
+{k:"CM",cls:"st-CM",e:"🦊",l:"Компроміс",q:"«Зустрінемося посередині»",s:"Обидві сторони поступаються, щоб швидко знайти прийнятну середину.",c:"поділ різниці навпіл і часткову поступку обох без з’ясування причин",col:"#D7B25A"},
+{k:"AC",cls:"st-AC",e:"🧸",l:"Пристосування",q:"«Добре, нехай буде по-твоєму»",s:"Поступається, щоб зберегти мир або догодити іншій стороні.",c:"поступку власними інтересами заради спокою чи схвалення іншого",col:"#A98BD1"},
+{k:"AV",cls:"st-AV",e:"🐢",l:"Уникнення",q:"«Давай про це потім»",s:"Відходить від теми, відкладає розмову й не висловлює позиції.",c:"відхід від теми, відкладання без терміну та відсутність власної позиції",col:"#7C8BC9"}];
 
 function Q(id,st,t,x){return{id:id,st:st,t:t,x:x}}
 var SC=[
@@ -68,7 +107,7 @@ Q("AC5","AC","На зборах критикують процес, який ве
 Q("AC6","AC","Двоє керівників не можуть вирішити, чий проєкт отримає розробників. Павло, якому вони теж потрібні, каже: «Беріть обох, я потім якось викручуся». Наступного дня він переносить свої зустрічі, щоб звільнити ресурс, хоча його власний термін від цього страждає.","Павло віддає ресурс, потрібний йому самому, щоб зняти чужу суперечку, а наслідки бере на себе. Шукайте жертву власними інтересами заради спокою інших, а не торг про взаємні умови.")
 ];
 function stOf(k){return ST.filter(function(s){return s.k===k})[0]}
-function lab(k){return stOf(k).e+" "+stOf(k).l}
+function lab(k){var e=stOf(k);return'<span class="chip tint '+e.cls+'"><span class="ico">'+e.e+'</span>'+e.l+'</span>'}
 function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
 function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
 function pickRound(){var list,tries=0;do{list=[];ST.forEach(function(s){shuffle(SC.filter(function(x){return x.st===s.k})).slice(0,2).forEach(function(x){list.push(x)})});list=shuffle(list);var ok=true;for(var i=1;i<list.length;i++)if(list[i].st===list[i-1].st)ok=false;tries++}while(!ok&&tries<500);
@@ -87,10 +126,17 @@ if(mx<2)return"Однакових плутанин немає: помилки р
 return(top.length>1?"Найчастіші плутанини (порівну): ":"Найчастіша плутанина: ")+top.slice(0,2).map(function(k){var p=k.split(">");return stOf(p[0]).l+" сприйнято як «"+stOf(p[1]).l+"» ("+mx+")"}).join("; ")+(top.length>2?" та інші":"")+"."}
 function bar(l,v,m,c){return'<div class="bar"><div class="bl"><span>'+l+'</span><span>'+v+'/'+m+'</span></div><div class="bt"><i style="width:'+(m?Math.round(v/m*100):0)+'%;background:'+c+'"></i></div></div>'}
 var ICON='<svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><rect x="4" y="22" width="32" height="8" rx="3" fill="#1E2761"/><circle cx="12" cy="13" r="5" fill="#1E2761"/><circle cx="28" cy="13" r="5" fill="#C9962C"/><path d="M17 8l2-3m2 3l-2-3" stroke="#C9962C" stroke-width="2" stroke-linecap="round" fill="none"/></svg>';
-function intro(){return'<div class="card"><p class="k">Практичне заняття 6 · Бізнес-лідерство · Конфлікти</p><h1 class="serif">Який це стиль?</h1><p class="mut">10 ситуацій на нараді. У кожній описано, що людина сказала й зробила в конфліктній ситуації. Ваше завдання: визначити, який зі стилів Томаса-Кілманна це ілюструє. Дивіться на поведінку, а не на тон чи ввічливість.</p><div class="box" style="margin:0 0 16px"><b>Пам’ятайте.</b> Жоден стиль не «поганий»: кожен доречний у своїй ситуації. Ми розпізнаємо поведінку, а не оцінюємо людину.</div><div style="margin:8px 0 18px">'+ST.map(function(e){return'<div class="box el" style="margin-top:0;margin-bottom:8px"><span class="n">'+e.e+'</span><div><b>'+e.l+'</b> <span class="mut sm"><i>'+e.q+'</i></span><div class="mut sm">'+e.s+'</div></div></div>'}).join("")+'</div><label class="sm" for="nm"><b>Ваше ім’я</b> <span class="mut">(необов’язково)</span></label><input id="nm" maxlength="40" placeholder="Наприклад, Олена К." value="'+esc(st.name)+'" style="margin:6px 0 18px"><button class="btn pri" data-a="start">Почати (10 ситуацій) →</button><button class="link" data-a="teacher">Перегляд результатів групи (для викладача)</button></div>'}
-function quiz(){var r=st.round[st.index];return'<div class="card"><div class="pg"><i style="width:'+Math.round(st.index/st.round.length*100)+'%"></i></div><p class="k">Ситуація '+(st.index+1)+' із '+st.round.length+'</p><p style="font-weight:700;margin:0 0 10px">Який стиль поведінки в конфлікті це ілюструє?</p><div class="quote">'+ICON+'<div>'+esc(r.s.t)+'</div></div>'+r.order.map(function(k){var e=stOf(k);return'<button class="cb" data-a="pick" data-k="'+k+'"><span class="em">'+e.e+'</span><span>'+e.l+'</span></button>'}).join("")+'</div>'}
+function introMatrix(){
+ function cell(k,pos){var e=stOf(k);return'<div class="tc tint '+e.cls+' '+pos+'"><div class="ico">'+e.e+'</div><b>'+e.l+'</b><small class="q">'+e.q+'</small><small>'+e.s+'</small></div>'}
+ var m=stOf("CM");
+ return'<div style="margin:8px 0 18px"><div class="tk"><div class="tk-y">Наполегливість →</div><div class="tk-grid tk-flow">'+cell("CP","tl")+cell("CL","tr")+'<div class="tc tint '+m.cls+' tk-wide"><div class="ico">'+m.e+'</div><div><b>'+m.l+'</b><small class="q">'+m.q+'</small><small>'+m.s+'</small></div></div>'+cell("AV","bl")+cell("AC","br")+'</div><div class="tk-x">Кооперативність →</div></div></div>'}
+function intro(){return'<div class="card"><p class="k">Практичне заняття 6 · Бізнес-лідерство · Конфлікти</p><h1 class="serif">Який це стиль?</h1><p class="mut">10 ситуацій на нараді. У кожній описано, що людина сказала й зробила в конфліктній ситуації. Ваше завдання: визначити, який зі стилів Томаса-Кілманна це ілюструє. Дивіться на поведінку, а не на тон чи ввічливість.</p><div class="box" style="margin:0 0 16px"><b>Пам’ятайте.</b> Жоден стиль не «поганий»: кожен доречний у своїй ситуації. Ми розпізнаємо поведінку, а не оцінюємо людину.</div>'+introMatrix()+'<label class="sm" for="nm"><b>Ваше ім’я</b> <span class="mut">(необов’язково)</span></label><input id="nm" maxlength="40" placeholder="Наприклад, Олена К." value="'+esc(st.name)+'" style="margin:6px 0 18px"><button class="btn pri" data-a="start">Почати (10 ситуацій) →</button><button class="link" data-a="teacher">Перегляд результатів групи (для викладача)</button></div>'}
+function quiz(){var r=st.round[st.index];return'<div class="card"><div class="pg"><i style="width:'+Math.round(st.index/st.round.length*100)+'%"></i></div><p class="k">Ситуація '+(st.index+1)+' із '+st.round.length+'</p><p style="font-weight:700;margin:0 0 10px">Який стиль поведінки в конфлікті це ілюструє?</p><div class="quote">'+ICON+'<div>'+esc(r.s.t)+'</div></div>'+matrix()+'</div>'}
+function matrix(){
+ function btn(k,pos){var e=stOf(k);return'<button class="cb tint '+e.cls+' '+pos+'" data-a="pick" data-k="'+k+'"><span class="ico">'+e.e+'</span><span><b>'+e.l+'</b></span></button>'}
+ return'<div class="tk"><div class="tk-y">Наполегливість →</div><div class="tk-grid">'+btn("CP","tl")+btn("CL","tr")+btn("AV","bl")+btn("AC","br")+btn("CM","tk-mid")+'</div><div class="tk-x">Кооперативність →</div></div>'}
 function feedback(){var a=st.ans[st.index],r=st.round[st.index],last=st.index>=st.round.length-1;
-return'<div class="card"><div class="pg"><i style="width:'+Math.round((st.index+1)/st.round.length*100)+'%"></i></div><p class="k">Ситуація '+(st.index+1)+' із '+st.round.length+'</p><div class="quote">'+ICON+'<div>'+esc(r.s.t)+'</div></div><div class="box" style="margin:0 0 18px;border-left:4px solid '+(a.ok?"#2E7D6B":"#B3492F")+'"><b>'+(a.ok?"✓ Правильно!":"✕ Неправильно")+'</b><div class="mut sm" style="margin:4px 0 8px">Ваша відповідь: '+lab(a.chosen)+(a.ok?"":" · Правильна: "+lab(a.correct))+'</div><div class="sm">'+esc(r.s.x)+'</div><div class="sm" style="margin-top:8px"><b>Девіз стилю:</b> <i>'+stOf(a.correct).q+'</i></div></div><button class="btn pri" data-a="next">'+(last?"Дивитися підсумок →":"Наступна ситуація →")+'</button></div>'}
+return'<div class="card"><div class="pg"><i style="width:'+Math.round((st.index+1)/st.round.length*100)+'%"></i></div><p class="k">Ситуація '+(st.index+1)+' із '+st.round.length+'</p><div class="quote">'+ICON+'<div>'+esc(r.s.t)+'</div></div><div class="vd '+(a.ok?"ok":"no")+'"><div class="vd-t">'+(a.ok?"✓ Правильно!":"✕ Неправильно")+'</div><div class="vd-l"><span>Ваша відповідь:</span>'+lab(a.chosen)+(a.ok?"":'<span>Правильна:</span>'+lab(a.correct))+'</div></div><div class="tki tint '+stOf(a.correct).cls+'" style="align-items:flex-start;margin-bottom:14px"><div class="ico">'+stOf(a.correct).e+'</div><div><div class="sm">'+esc(r.s.x)+'</div><div class="sm" style="margin-top:8px"><b>Девіз стилю:</b> <i>'+stOf(a.correct).q+'</i></div></div></div><button class="btn pri" data-a="next">'+(last?"Дивитися підсумок →":"Наступна ситуація →")+'</button></div>'}
 function report(){var n=score(),N=st.ans.length,v=verdict(n,st.ans),L=["«Який це стиль?» (Заняття 6)","Студент: "+(st.name||"—"),"Правильно: "+n+" з "+N];
 styleStats().forEach(function(x){L.push(x.s.l+": "+x.right+" з "+x.seen)});L.push("Підсумок: "+v[0]);var c=confusion();if(c)L.push(c);
 var miss=st.ans.map(function(a,i){return{a:a,i:i}}).filter(function(x){return!x.a.ok});
@@ -119,7 +165,10 @@ else{var n=t.length,avg=(t.reduce(function(s,r){return s+r.n},0)/n).toFixed(1);
 var hard=ST.map(function(e){var R=0,S1=0;t.forEach(function(r){var x=sty(r,e.k);if(x){R+=x[0];S1+=x[1]}});return bar(e.e+" "+e.l,R,S1,e.col)}).join("");
 b='<p class="sm"><b>Учасників:</b> '+n+' · середній результат: '+avg+' з 10</p><h2 style="margin-top:14px">Правильні відповіді за стилями (усі учасники)</h2>'+hard+'<div style="overflow-x:auto;margin-top:12px"><table><tr><th>Ім’я</th><th>Дата</th><th>Результат</th></tr>'+t.map(function(r){return'<tr><td>'+esc(r.name||"—")+'</td><td>'+esc(r.date||"")+'</td><td>'+r.n+'/10</td></tr>'}).join("")+'</table></div>'}
 return'<div class="ov"><div class="card"><h1 class="serif" style="font-size:22px">Результати групи</h1>'+b+(st.csvText?'<div class="box"><p class="sm">Завантаження недоступне. Скопіюйте CSV:</p><textarea rows="6" readonly>'+esc(st.csvText)+'</textarea></div>':"")+'<div class="row"><button class="btn" data-a="tcsv"'+(st.teacher&&st.teacher!=="load"&&st.teacher.length?"":" disabled")+'>Експорт CSV</button><button class="btn" data-a="trefresh">Оновити</button><button class="btn" data-a="tclose">Закрити</button></div></div></div>'}
-function render(){var m={intro:intro,quiz:quiz,feedback:feedback,results:results};app.innerHTML='<div class="st">'+m[st.screen]()+'</div>'+(st.teacherOpen?teacherHtml():"");if(!st.teacherOpen)window.scrollTo(0,0)}
+function render(){var m={intro:intro,quiz:quiz,feedback:feedback,results:results};app.innerHTML='<div class="st">'+m[st.screen]()+'</div>'+(st.teacherOpen?teacherHtml():"");fitTk();if(!st.teacherOpen)window.scrollTo(0,0)}
+// висота центрального блоку Компромісу визначає, наскільки він заходить на сусідні комірки
+function fitTk(){var g=document.querySelector(".tk-flow");if(!g)return;var m=g.querySelector(".tk-wide");if(!m)return;g.style.setProperty("--ov",Math.max(20,Math.round(m.offsetHeight/2))+"px")}
+window.addEventListener("resize",fitTk);
 function openTeacher(){st.teacherOpen=true;st.teacher="load";st.csvText="";render();loadAll(function(r){st.teacher=r;render()})}
 function choose(k){var r=st.round[st.index];st.ans.push({id:r.s.id,correct:r.s.st,chosen:k,ok:k===r.s.st});st.screen="feedback";render()}
 function copyReport(){var t=report();function fb(){st.manual=t;render();var x=document.getElementById("man");if(x&&x.select)x.select()}
@@ -135,7 +184,7 @@ else if(a==="teacher"||a==="trefresh")openTeacher();
 else if(a==="tcsv")downloadCsv();
 else if(a==="tclose"){st.teacherOpen=false;st.csvText="";render()}});
 document.addEventListener("keydown",function(e){if(st.teacherOpen||/INPUT|TEXTAREA/.test(e.target.tagName||""))return;
-if(st.screen==="quiz"&&/^[1-5]$/.test(e.key))choose(st.round[st.index].order[+e.key-1])});
+if(st.screen==="quiz"&&/^[1-5]$/.test(e.key))choose(ST[+e.key-1].k)});
 window.__tki={SC:SC,ST:ST,pickRound:pickRound,verdict:verdict,toCsv:toCsv,st:st};
 render();
 })();
