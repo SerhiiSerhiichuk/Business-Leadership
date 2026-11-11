@@ -232,6 +232,24 @@
   .ctx-box { margin-bottom: 18px; padding: 10px 14px; border-left: 4px solid var(--gold); background: var(--surface); border-radius: 0 10px 10px 0; font-size: 13px; line-height: 1.5; color: var(--ink-soft); }
 
   .reply-list { display: grid; gap: 10px; }
+  .remind-open .remind-title { font-weight: 700; color: var(--muted); }
+  .reply-card { display: flex; flex-direction: column; gap: 10px; padding: 13px 15px; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; font-size: 13.5px; line-height: 1.5; color: var(--ink); }
+  .reply-card .rc-top { display: flex; gap: 12px; align-items: flex-start; }
+  .sp-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding-top: 8px; border-top: 1px dashed var(--line); }
+  .sp-label { font-size: 11.5px; font-weight: 700; color: var(--muted); width: 100%; }
+  .sp-btn { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--ic-bd); background: #fff; font-size: 20px; line-height: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; position: relative; opacity: 0.55; filter: grayscale(0.65); transition: all 0.15s ease; }
+  .sp-btn:hover:not(:disabled) { opacity: 1; filter: none; background: var(--ic-bg); transform: translateY(-1px); }
+  .sp-btn.sel { opacity: 1; filter: none; background: var(--ic-bg); box-shadow: 0 0 0 3px var(--ic-bd); }
+  .sp-btn:disabled { cursor: default; }
+  .sp-btn:disabled:not(.ok):not(.no) { opacity: 0.45; }
+  .sp-btn.ok { opacity: 1; filter: none; border-color: var(--green); background: #DCEFE9; box-shadow: 0 0 0 3px var(--green); }
+  .sp-btn.no { opacity: 1; filter: none; border-color: var(--red); background: #F6DCD4; box-shadow: 0 0 0 3px var(--red); }
+  .sp-btn .mk { position: absolute; right: -5px; top: -5px; width: 18px; height: 18px; border-radius: 50%; color: #fff; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+  .sp-btn .mk.ok { background: var(--green); } .sp-btn .mk.no { background: var(--red); }
+  .sp-verdict { font-size: 12px; line-height: 1.45; width: 100%; }
+  .sp-verdict.ok { color: #1F5245; } .sp-verdict.no { color: #7A2E1A; }
+  .pick-btn { align-self: flex-start; }
+  .step-hint { font-size: 12.5px; line-height: 1.5; color: var(--ink-soft); background: var(--gold-soft); border-radius: 10px; padding: 9px 12px; margin-bottom: 10px; }
   .reply-btn { display: flex; gap: 12px; align-items: flex-start; text-align: left; padding: 13px 15px; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; cursor: pointer; transition: all 0.15s ease; font-size: 13.5px; line-height: 1.5; color: var(--ink); }
   .reply-btn:hover { border-color: var(--gold); background: var(--gold-soft); }
   .reply-num { width: 24px; height: 24px; border-radius: 50%; background: var(--surface); border: 1.5px solid var(--line); font-weight: 800; font-size: 11.5px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
@@ -288,6 +306,18 @@
   .st-comp { --ic-bg: #F6DCD4; --ic-bd: #D9826A; } .st-coll { --ic-bg: #DCEFE9; --ic-bd: #6FB8A2; } .st-comp2 { --ic-bg: #FBF1D6; --ic-bd: #D7B25A; }
   .st-avoid { --ic-bg: #E6EAF8; --ic-bd: #7C8BC9; } .st-accom { --ic-bg: #EADFF5; --ic-bd: #A98BD1; }
   .tki-list { display: grid; gap: 8px; margin-bottom: 16px; }
+  /* матриця Томаса-Кілманна: 4 комірки + Компроміс у центрі (65% ширини) */
+  .tk { display: grid; grid-template-columns: 24px 1fr; grid-template-rows: auto auto; column-gap: 8px; row-gap: 6px; margin: 0 0 18px; }
+  .tk-y { grid-row: 1; grid-column: 1; writing-mode: vertical-rl; transform: rotate(180deg); text-align: center; font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: 0.3px; }
+  .tk-x { grid-row: 2; grid-column: 2; text-align: center; font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: 0.3px; }
+  .tk-grid { grid-row: 1; grid-column: 2; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; row-gap: 0; }
+  .tc { display: flex; flex-direction: column; align-items: center; gap: 5px; text-align: center; padding: 12px 10px; border: 1.5px solid var(--ic-bd); background: var(--ic-bg); border-radius: 12px; color: var(--ink); }
+  .tc .tki-ico { width: 40px; height: 40px; font-size: 20px; }
+  .tc .tki-name { margin: 0; }
+  .tc.tl, .tc.tr { grid-row: 1; padding: 14px 10px calc(var(--ov, 34px) + 14px); }
+  .tc.bl, .tc.br { grid-row: 3; margin-top: 8px; padding: calc(var(--ov, 34px) + 14px) 10px 14px; }
+  .tc.tk-wide { grid-column: 1 / -1; grid-row: 2; justify-self: center; width: 65%; margin: calc(var(--ov, 34px) * -1) 0; position: relative; z-index: 2; justify-content: center; border-width: 2.5px; border-radius: 26px; padding: 12px 16px; box-shadow: 0 0 0 5px var(--card); }
+  @media (max-width: 420px) { .tc.tk-wide { padding: 10px 10px; } .tc.tk-wide .tki-ico { width: 34px; height: 34px; font-size: 17px; } }
   .tki-card { display: flex; gap: 14px; padding: 11px 14px; border-radius: 12px; border: 1.5px solid var(--ic-bd); background: var(--ic-bg); }
   .tki-ico { width: 44px; height: 44px; border-radius: 50%; background: #fff; border: 2px solid var(--ic-bd); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
   .tki-name { font-weight: 800; font-size: 13.5px; margin-bottom: 2px; }
@@ -1055,6 +1085,7 @@
     var ids = node.options.map(function (x) { return x.id; });
     state.optionOrder = arrangeOptions(ids, state.prevOrders[key]);
     state.currOrders[key] = state.optionOrder.slice();
+    state.idPicks = {}; state.idDone = false;
   }
 
   // ---------- Компоненти ----------
@@ -1093,10 +1124,14 @@
 
   // ---------- Екрани ----------
   function renderIntro() {
-    var styleCards = STYLE_ORDER.map(function (k) {
+    function tcell(k, pos) {
       var st = STYLES[k];
-      return '<div class="tki-card ' + st.cls + '"><div class="tki-ico">' + st.icon + '</div><div class="tki-body"><div class="tki-name">' + st.name + '</div><div class="tki-def">' + st.def + '</div><div class="tki-when"><b>Доречно:</b> ' + st.when + '</div></div></div>';
-    }).join("");
+      return '<div class="tc ' + st.cls + ' ' + pos + '"><div class="tki-ico">' + st.icon + '</div><div class="tki-name">' + st.name + '</div><div class="tki-def">' + st.def + '</div><div class="tki-when"><b>Доречно:</b> ' + st.when + '</div></div>';
+    }
+    // Положення за моделлю: вертикаль — наполегливість, горизонталь — співпраця; Компроміс у центрі
+    var styleCards = '<div class="tk"><div class="tk-y">Наполегливість →</div><div class="tk-grid">' +
+      tcell("competing", "tl") + tcell("collaborating", "tr") + tcell("compromising", "tk-wide") + tcell("avoiding", "bl") + tcell("accommodating", "br") +
+      '</div><div class="tk-x">Співпраця →</div></div>';
     var cards = SCENARIOS.map(function (sc) {
       return '<button class="scenario-card" data-id="' + sc.id + '"><div class="sc-emoji">' + sc.emoji + '</div><div class="sc-body"><div class="sc-title">' + sc.title +
         '</div><div class="sc-sub">' + sc.preview + '</div><div class="sc-meta"><span class="mini-badge ' + sc.npc.disc + '">' + sc.npc.disc + '</span> ' + sc.npc.name + ' · ' + sc.npc.role + ' · бюджет ' + sc.pool.text + '</div></div></button>';
@@ -1109,7 +1144,7 @@
       '<label class="field-label">Ваше ім’я (необов’язково)</label>' +
       '<input class="text-input" id="name-input" type="text" placeholder="Наприклад, Анна К." value="' + escHtml(state.studentName) + '" />' +
       '<label class="field-label">Пʼять стилів поведінки в переговорах (Томас — Кілманн)</label>' +
-      '<div class="tki-list">' + styleCards + '</div>' +
+      styleCards +
       '<div class="note-box"><b>Жоден стиль не є універсально найкращим.</b> Вигравати допомагає вміння обирати стиль під ситуацію: важливість мети, важливість стосунків і тиск часу. На кожному кроці є три тактики: <span class="kind-badge best">Відмінна</span> найкраще підходить до ситуації, <span class="kind-badge neutral">Нейтральна</span> прийнятна, але не оптимальна, <span class="kind-badge bad">Непідходяща</span> шкодить результату чи стосункам.</div>' +
       '<label class="field-label">Оберіть переговори</label>' +
       '<div class="scenario-list">' + cards + '</div>' +
@@ -1142,11 +1177,9 @@
     var isRepair = run.stepId === "repair";
     var title = isRepair ? REPAIR_TITLE : node.title, icon = isRepair ? REPAIR_ICON : node.icon;
     var options = state.optionOrder.map(function (id) { return node.options.filter(function (x) { return x.id === id; })[0]; });
-    var opts = options.map(function (op, i) {
-      return '<button class="reply-btn" data-id="' + op.id + '"><span class="reply-num">' + String.fromCharCode(65 + i) + '</span><span class="reply-body"><span class="reply-tactic">' + escHtml(op.tactic) + '</span><span class="reply-text">' + escHtml(op.text) + '</span></span></button>';
-    }).join("");
-    var remind = '<details class="remind"><summary>Нагадування: стилі Томаса-Кілманна</summary><div class="remind-row">' +
-      STYLE_ORDER.map(function (k) { return '<div class="remind-item ' + STYLES[k].cls + '"><span class="r-ico">' + STYLES[k].icon + '</span><span>' + STYLES[k].name + '</span></div>'; }).join("") + '</div></details>';
+    // Нагадування постійно відкрите
+    var remind = '<div class="remind remind-open"><div class="remind-title">Нагадування: стилі Томаса-Кілманна</div><div class="remind-row">' +
+      STYLE_ORDER.map(function (k) { return '<div class="remind-item ' + STYLES[k].cls + '"><span class="r-ico">' + STYLES[k].icon + '</span><span>' + STYLES[k].name + '</span></div>'; }).join("") + '</div></div>';
     var card = el(
       '<div class="stage-wrap"><div class="card">' +
       stepperHtml(sc, run) +
@@ -1158,20 +1191,58 @@
       (first ? "" : '<div class="mood-note">' + moodNote(sc, run.mood) + '</div>') +
       '<div class="ctx-box">' + node.ctx + '</div>' +
       remind +
-      '<label class="field-label">Яку тактику ви оберете?</label>' +
-      '<div class="reply-list">' + opts + '</div>' +
+      '<div id="reply-zone"></div>' +
       '</div></div>'
     );
-    card.querySelectorAll(".reply-btn").forEach(function (b) {
-      b.addEventListener("click", function () {
-        var opt = node.options.filter(function (x) { return x.id === b.getAttribute("data-id"); })[0];
-        var prevMood = run.mood;
-        var next = applyChoice(sc, run, opt);
-        state.lastItem = run.history[run.history.length - 1];
-        state.lastItem.prevMood = prevMood; state.nextNode = next;
-        state.screen = "reaction"; render();
+    // Крок 1: визначити стиль кожної репліки; крок 2: обрати тактику. Оновлюємо лише зону відповідей, без перемальовування сторінки
+    function drawZone() {
+            var done = state.idDone;
+      var html = done
+        ? '<label class="field-label">Крок 2 із 2. Яку тактику ви оберете?</label>'
+        : '<div class="step-hint"><b>Крок 1 із 2.</b> Прочитайте кожну відповідь і оберіть під нею значок стилю, який, на вашу думку, вона втілює: одразу побачите, чи правильно (зелений) чи ні (червоний, а правильний стиль підсвітиться зеленим). Щойно визначите стиль для всіх трьох відповідей, відкриється вибір тактики.</div>';
+      html += '<div class="reply-list">' + options.map(function (op, i) {
+        var picked = state.idPicks[op.id];
+        var answered = !!picked, right = answered && picked === op.style;
+        var row = '<div class="sp-row">' + (answered ? '' : '<span class="sp-label">Який це стиль?</span>') +
+          STYLE_ORDER.map(function (k) {
+            var cls = "sp-btn " + STYLES[k].cls;
+            if (answered) {
+              if (k === picked) cls += right ? " ok" : " no";
+              else if (k === op.style) cls += " ok";   // правильну відповідь підсвічуємо зеленим
+            }
+            var mark = answered && k === picked ? '<span class="mk ' + (right ? "ok" : "no") + '">' + (right ? "✓" : "✕") + '</span>' : '';
+            return '<button class="' + cls + '" data-op="' + op.id + '" data-k="' + k + '" title="' + STYLES[k].name + '"' + (answered ? " disabled" : "") + '>' + STYLES[k].icon + mark + '</button>';
+          }).join("") +
+          (answered ? '<div class="sp-verdict ' + (right ? "ok" : "no") + '">' + (right
+            ? '✓ Так, це ' + STYLES[op.style].name + '.'
+            : '✕ Ви обрали «' + STYLES[picked].name + '», але ця відповідь — «' + STYLES[op.style].name + '».') + '</div>' : '') +
+          '</div>';
+        return '<div class="reply-card"><div class="rc-top"><span class="reply-num">' + String.fromCharCode(65 + i) + '</span><span class="reply-body"><span class="reply-tactic">' + escHtml(op.tactic) + '</span><span class="reply-text">' + escHtml(op.text) + '</span></span></div>' + row +
+          (done ? '<button class="btn btn-primary pick-btn" data-pick="' + op.id + '">Обрати цю тактику →</button>' : '') + '</div>';
+      }).join("") + '</div>' +
+        '';
+      zone.innerHTML = html;
+      zone.querySelectorAll(".sp-btn").forEach(function (b) {
+        b.addEventListener("click", function () {
+          if (state.idPicks[b.getAttribute("data-op")]) return;
+          state.idPicks[b.getAttribute("data-op")] = b.getAttribute("data-k");
+          if (options.every(function (op) { return state.idPicks[op.id]; })) state.idDone = true;  // усі три визначено: переходимо до вибору тактики
+          drawZone();
+        });
       });
-    });
+      zone.querySelectorAll(".pick-btn").forEach(function (b) {
+        b.addEventListener("click", function () {
+          var opt = node.options.filter(function (x) { return x.id === b.getAttribute("data-pick"); })[0];
+          var prevMood = run.mood;
+          var next = applyChoice(sc, run, opt);
+          state.lastItem = run.history[run.history.length - 1];
+          state.lastItem.prevMood = prevMood; state.nextNode = next;
+          state.screen = "reaction"; render();
+        });
+      });
+    }
+    var zone = card.querySelector("#reply-zone");
+    drawZone();
     return card;
   }
 
@@ -1568,8 +1639,16 @@
     else if (state.screen === "verdict") view = renderVerdict();
     else view = renderTeacher();
     app.appendChild(view);
+    fitTk();
     window.scrollTo(0, 0);
   }
+  // висота центрального блоку Компромісу визначає, наскільки він заходить на сусідні комірки
+  function fitTk() {
+    var g = document.querySelector(".tk-grid"); if (!g) return;
+    var m = g.querySelector(".tk-wide"); if (!m) return;
+    g.style.setProperty("--ov", Math.max(20, Math.round(m.offsetHeight / 2)) + "px");
+  }
+  window.addEventListener("resize", fitTk);
 
   render();
 
