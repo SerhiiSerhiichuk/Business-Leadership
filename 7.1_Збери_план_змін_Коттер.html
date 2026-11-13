@@ -397,7 +397,17 @@
   .slot-lock { font-size: 13px; font-weight: 800; color: var(--green); white-space: nowrap; }
   .slot-ctl { display: flex; gap: 4px; }
   .ctl { width: 30px; height: 30px; border-radius: 8px; border: 1.5px solid var(--line); background: #fff; cursor: pointer; font-size: 12px; font-weight: 700; color: var(--ink-soft); }
-  .ctl:hover { border-color: var(--gold); background: var(--gold-soft); } .ctl.x:hover { border-color: var(--red); background: #F6DCD4; }
+  .ctl:disabled { opacity: 0.3; cursor: default; }
+  .slot-ctl { align-items: center; }
+  .ctl.lockbtn.on { border-color: var(--gold); background: var(--gold-soft); }
+  .grip { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; font-size: 20px; color: var(--muted); cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
+  .slot.filled[data-free="1"] { cursor: grab; user-select: none; -webkit-user-select: none; }
+  .slot.filled.fixed { border-color: var(--gold); background: var(--gold-soft); }
+  .slot.dragging { opacity: 0.35; }
+  .slot.drop-target { outline: 2.5px dashed var(--gold); outline-offset: 2px; }
+  .drag-ghost { position: fixed !important; z-index: 1000; pointer-events: none; box-shadow: 0 16px 30px -12px rgba(30,39,97,0.5); transform: scale(1.02); margin: 0 !important; background: #fff; }
+  body.is-dragging, body.is-dragging * { cursor: grabbing !important; user-select: none; -webkit-user-select: none; }
+  .ctl:hover:not(:disabled) { border-color: var(--gold); background: var(--gold-soft); }
   .check-score { font-size: 13px; margin-bottom: 4px; } .check-score span { font-size: 24px; font-weight: 800; color: var(--ink); }
   .vio-list { display: grid; gap: 8px; margin: 6px 0 8px; }
   .vio-item { display: flex; gap: 10px; padding: 10px 12px; border-radius: 10px; border: 1.5px solid #E2A867; background: #FEF6EA; }
@@ -411,6 +421,9 @@
   @media (max-width: 560px) { .hp-grid { grid-template-columns: 1fr; } }
   .hp-item { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; padding: 6px 9px; border-radius: 10px; background: var(--ic-bg); border: 1.5px solid var(--ic-bd); }
   .hp-ico { font-size: 15px; }
+  .legend-panel { margin-bottom: 16px; padding: 12px 14px; border-radius: 12px; background: var(--surface); border: 1.5px solid var(--line); }
+  .legend-panel p { font-size: 12.5px; line-height: 1.5; color: var(--muted); margin: 0 0 10px; }
+  .hp-n { font-weight: 800; color: var(--ink-soft); min-width: 14px; }
   .att-list { display: grid; gap: 6px; margin-bottom: 16px; }
   .att-item { display: grid; grid-template-columns: 74px 1fr 40px; gap: 8px; align-items: center; font-size: 12px; }
   .att-bar { height: 10px; background: var(--line); border-radius: 6px; overflow: hidden; } .att-bar span { display: block; height: 100%; background: var(--gold); border-radius: 6px; }
@@ -435,7 +448,7 @@
   .slot-stepname { display: block; margin-top: 3px; font-size: 11.5px; font-weight: 700; color: #1F5245; }
   .slot.locked.fresh { animation: lockpop 0.6s ease; }
   @keyframes lockpop { 0% { transform: scale(0.97); } 60% { transform: scale(1.02); } 100% { transform: scale(1); } }
-  .slot-ico { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; background: var(--surface); border: 1.5px solid var(--line); filter: grayscale(1); opacity: 0.4; }
+  .slot-ico { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; background: var(--surface); border: 1.5px solid var(--line); filter: grayscale(0.5); opacity: 0.75; }
   .slot-ico.fresh { animation: slotpop 0.7s ease; }
   @keyframes slotpop { 0% { transform: scale(0.7); } 60% { transform: scale(1.35); } 100% { transform: scale(1); } }
   .slot-ico.on { filter: none; opacity: 1; background: var(--ic-bg); border-color: var(--ic-bd); }
@@ -659,7 +672,7 @@
   var app = document.getElementById("app");
   var state = {
     screen: "intro", studentName: "", caseId: null,
-    slots: [], locked: [], pool: [], attempts: [], hints: 0, hintShown: false, lastCheck: null, finished: false,
+    slots: [], locked: [], fixed: [], pool: [], attempts: [], hints: 0, hintShown: false, lastCheck: null, finished: false,
     orderMemory: {}, newLocked: [], hintLevel: 0, hintQ: null, hintN: null, vmem: {}, saveStatus: "idle", teacherRows: null, teacherLoading: false
   };
   function currentCase() { return caseById(state.caseId); }
@@ -676,6 +689,18 @@
     return prev.slice(1).concat(prev[0]);
   }
 
+  // Початковий порядок: усі картки вже в слотах, і жодна не на своєму місці
+  function arrangeWrong(c, ids, prev) {
+    function allWrong(o) { return o.every(function (ci, i) { return c.cards[ci].step !== i + 1; }); }
+    function noClash(o) { return !prev || o.every(function (ci, i) { return prev[i] !== ci; }); }
+    var o, t;
+    for (t = 0; t < 500; t++) { o = shuffle(ids); if (allWrong(o) && noClash(o)) return o; }
+    for (t = 0; t < 500; t++) { o = shuffle(ids); if (allWrong(o)) return o; }
+    var sorted = ids.slice().sort(function (a, b) { return c.cards[a].step - c.cards[b].step; });
+    var k = 1 + Math.floor(Math.random() * (sorted.length - 1));
+    return sorted.slice(k).concat(sorted.slice(0, k));
+  }
+
   function startCase(id) {
     var c = caseById(id);
     state.caseId = id;
@@ -686,11 +711,12 @@
       vm[i] = pick; k.title = k.t[pick];
     });
     var ids = c.cards.map(function (x, i) { return i; });
-    var order = arrangePool(ids, state.orderMemory[id]);
+    var order = arrangeWrong(c, ids, state.orderMemory[id]);
     state.orderMemory[id] = order.slice();
-    state.pool = order;
-    state.slots = c.cards.map(function () { return null; });
+    state.pool = [];
+    state.slots = order.slice();
     state.locked = c.cards.map(function () { return false; });
+    state.fixed = c.cards.map(function () { return false; });
     state.attempts = []; state.hints = 0; state.hintShown = false; state.hintLevel = 0; state.lastCheck = null; state.finished = false; state.saveStatus = "idle";
     state.screen = "play"; render();
   }
@@ -727,7 +753,7 @@
     state.lastCheck = { correct: correct, violations: found, attempt: state.attempts.length };
     // блокуємо правильні позиції
     state.newLocked = [];
-    order.forEach(function (ci, slot) { if (c.cards[ci].step === slot + 1) { if (!state.locked[slot]) state.newLocked.push(slot); state.locked[slot] = true; } });
+    order.forEach(function (ci, slot) { if (c.cards[ci].step === slot + 1) { if (!state.locked[slot]) state.newLocked.push(slot); state.locked[slot] = true; state.fixed[slot] = false; } });
     var solved = correct === c.cards.length;
     if (solved || state.attempts.length >= MAX_ATTEMPTS) { state.finished = true; }
     render();
@@ -756,11 +782,84 @@
     if (state.locked[slot] || state.slots[slot] === null) return;
     state.pool.push(state.slots[slot]); state.slots[slot] = null; render();
   }
-  function moveCard(slot, dir) {
-    var to = slot + dir;
-    if (to < 0 || to >= state.slots.length) return;
-    if (state.locked[slot] || state.locked[to]) return;
-    var t = state.slots[slot]; state.slots[slot] = state.slots[to]; state.slots[to] = t; render();
+  // Слот вільний для перетягування, якщо він не заблокований перевіркою і не зафіксований студентом
+  function isFree(i) { return !state.locked[i] && !state.fixed[i]; }
+  // Переносить картку з одного вільного слота в інший вільний слот. Заблоковані й зафіксовані картки лишаються на місці
+  function dragMove(from, to) {
+    var free = [];
+    for (var i = 0; i < state.slots.length; i++) { if (isFree(i)) free.push(i); }
+    var a = free.indexOf(from), b = free.indexOf(to);
+    if (a === -1 || b === -1 || a === b) return false;
+    var cards = free.map(function (i) { return state.slots[i]; });
+    var item = cards.splice(a, 1)[0];
+    cards.splice(b, 0, item);
+    free.forEach(function (slotIdx, k) { state.slots[slotIdx] = cards[k]; });
+    return true;
+  }
+  function toggleFix(slot) {
+    if (state.locked[slot] || state.slots[slot] === null) return;
+    state.fixed[slot] = !state.fixed[slot]; render();
+  }
+  // Перетягування мишею або пальцем: під час руху DOM не перебудовується, картка рухається як «привид»
+  function attachDrag(card) {
+    card.querySelectorAll('.slot[data-free="1"]').forEach(function (sl) {
+      sl.addEventListener("pointerdown", function (e) {
+        if (e.button !== undefined && e.button !== 0) return;
+        if (e.target.closest && e.target.closest(".ctl")) return;
+        if (e.pointerType !== "mouse" && !(e.target.closest && e.target.closest(".grip"))) return;
+        var from = parseInt(sl.getAttribute("data-slot"), 10);
+        var startX = e.clientX, startY = e.clientY, pid = e.pointerId;
+        var rect0 = sl.getBoundingClientRect(), offY = startY - rect0.top;
+        var dragging = false, ghost = null, target = from, lastY = startY, timer = null;
+        var freeEls = Array.prototype.slice.call(card.querySelectorAll('.slot[data-free="1"]'));
+        function pick(y) {
+          var best = null, bd = 1e9;
+          freeEls.forEach(function (x) { var r = x.getBoundingClientRect(), d = Math.abs((r.top + r.bottom) / 2 - y); if (d < bd) { bd = d; best = x; } });
+          return best;
+        }
+        function mark() {
+          var el2 = pick(lastY);
+          freeEls.forEach(function (x) { x.classList.remove("drop-target"); });
+          if (el2) { target = parseInt(el2.getAttribute("data-slot"), 10); if (target !== from) el2.classList.add("drop-target"); }
+        }
+        function onMove(ev) {
+          if (ev.pointerId !== pid) return;
+          if (!dragging) {
+            if (Math.abs(ev.clientX - startX) + Math.abs(ev.clientY - startY) < 6) return;
+            dragging = true;
+            ghost = sl.cloneNode(true); ghost.classList.add("drag-ghost");
+            ghost.style.width = rect0.width + "px"; ghost.style.left = rect0.left + "px";
+            document.body.appendChild(ghost); sl.classList.add("dragging"); document.body.classList.add("is-dragging");
+            timer = setInterval(function () {
+              if (lastY < 70) window.scrollBy(0, -14); else if (lastY > window.innerHeight - 70) window.scrollBy(0, 14);
+              mark();
+            }, 30);
+          }
+          ev.preventDefault();
+          lastY = ev.clientY;
+          ghost.style.top = (ev.clientY - offY) + "px";
+          mark();
+        }
+        function cleanup() {
+          document.removeEventListener("pointermove", onMove);
+          document.removeEventListener("pointerup", onUp);
+          document.removeEventListener("pointercancel", onCancel);
+          if (timer) clearInterval(timer);
+          if (ghost && ghost.parentNode) ghost.parentNode.removeChild(ghost);
+          document.body.classList.remove("is-dragging");
+        }
+        function onUp(ev) {
+          if (ev.pointerId !== pid) return;
+          cleanup();
+          if (dragging) dragMove(from, target);
+          if (dragging) render();
+        }
+        function onCancel(ev) { if (ev.pointerId !== pid) return; cleanup(); if (dragging) render(); }
+        document.addEventListener("pointermove", onMove, { passive: false });
+        document.addEventListener("pointerup", onUp);
+        document.addEventListener("pointercancel", onCancel);
+      });
+    });
   }
   function resetUnlocked() {
     for (var i = 0; i < state.slots.length; i++) {
@@ -778,8 +877,8 @@
       '<div class="stage-wrap"><div class="card">' +
       '<p class="kicker">Практичне заняття · Бізнес-лідерство</p>' +
       '<h1 class="title serif">Збери план змін: вісім кроків Коттера</h1>' +
-      '<p class="lead">Вам дають кейс про впровадження змін і вісім карток-дій, перемішаних між собою. Складіть їх у правильному порядку за моделлю управління змінами Джона Коттера. Після кожної перевірки гра покаже, що стається, коли крок пропущено чи переставлено: до яких наслідків для розуміння, прийняття й стійкості змін це призводить.</p>' +
-      '<div class="how-box"><b>Як грати.</b> Торкайтеся карток, щоб викласти їх у плані, а стрілками ▲▼ змінюйте порядок. У вас до ' + MAX_ATTEMPTS + ' перевірок. Після кожної перевірки правильно розставлені картки блокуються, а для решти ви побачите, до чого призводить помилка в порядку. Правильний порядок гра покаже в кінці, а за потреби можна взяти до двох підказок (спершу питання кроків, потім їхні назви), кожна знижує оцінку.</div>' +
+      '<p class="lead">Вам дають кейс про впровадження змін і вісім карток-дій. Усі вони вже лежать у плані, але жодна не на своєму місці. Розставте їх у правильному порядку за моделлю управління змінами Джона Коттера. Після кожної перевірки гра покаже, що стається, коли крок пропущено чи переставлено: до яких наслідків для розуміння, прийняття й стійкості змін це призводить.</p>' +
+      '<div class="how-box"><b>Як грати.</b> Усі картки вже в плані, але стоять неправильно. Перетягуйте картки мишею або пальцем (за значок ⠿), щоб змінити їх порядок. Замочком 🔓 можна зафіксувати картку, яка стоїть, на вашу думку, правильно: вона не зміниться, коли ви перетягуєте інші. У вас до ' + MAX_ATTEMPTS + ' перевірок. Після кожної перевірки правильно розставлені картки блокуються, а решту карток можна перетягувати лише між вільними слотами. Для решти ви побачите, до чого призводить помилка в порядку. Правильний порядок гра покаже в кінці, а за потреби можна взяти до двох підказок (спершу питання кроків, потім їхні назви), кожна знижує оцінку.</div>' +
       '<label class="field-label">Ваше ім’я (необов’язково)</label>' +
       '<input class="text-input" id="name-input" type="text" placeholder="Наприклад, Анна К." value="' + escHtml(state.studentName) + '" />' +
       '<label class="field-label">Оберіть кейс</label>' +
@@ -814,6 +913,11 @@
   function hintGrid(list, textOf) {
     return '<div class="hp-grid">' + list.map(function (st) { return '<div class="hp-item ' + st.cls + '"><span class="hp-ico">' + st.icon + '</span>' + textOf(st) + '</div>'; }).join("") + '</div>';
   }
+  function legendHtml() {
+    return '<div class="legend-panel"><div class="hp-title">🧭 Підказка: що означають іконки біля слотів</div>' +
+      '<p>Іконка біля кожного слоту показує, який крок Коттера має стояти на цьому місці. Підберіть до неї картку з відповідною дією і поставте її в цей слот.</p>' +
+      '<div class="hp-grid">' + STEPS.map(function (st) { return '<div class="hp-item ' + st.cls + '"><span class="hp-n">' + st.n + '</span><span class="hp-ico">' + st.icon + '</span>' + st.name + '</div>'; }).join("") + '</div></div>';
+  }
   function hintHtml() {
     if (!state.hintLevel) return "";
     var h = '<div class="hint-panel"><div class="hp-title">💡 Підказка 1: питання, на які відповідає кожен крок (у випадковому порядку)</div>' + hintGrid(state.hintQ, function (st) { return st.q; });
@@ -834,9 +938,9 @@
       var locked = state.locked[i];
       var info = state.lastCheck && ci !== null && !locked && state.attempts.length ? "wrong" : "";
       if (ci === null) return '<div class="slot empty"><span class="slot-n">' + (i + 1) + '</span>' + slotIco(i, false) + '<span class="slot-ph">Вільний слот</span></div>';
-      return '<div class="slot filled ' + (locked ? "locked" + (state.justChecked && state.newLocked.indexOf(i) !== -1 ? " fresh" : "") : info) + '"><span class="slot-n">' + (i + 1) + '</span>' + slotIco(i, locked) + '<span class="slot-text">' + escHtml(c.cards[ci].title) + (locked ? '<span class="slot-stepname">' + stepOf(i + 1).icon + ' ' + stepOf(i + 1).name + '</span>' : '') + '</span>' +
+      return '<div class="slot filled ' + (locked ? "locked" + (state.justChecked && state.newLocked.indexOf(i) !== -1 ? " fresh" : "") : info + (state.fixed[i] ? " fixed" : "")) + '" data-slot="' + i + '"' + (isFree(i) ? ' data-free="1"' : "") + '><span class="slot-n">' + (i + 1) + '</span>' + slotIco(i, locked) + '<span class="slot-text">' + escHtml(c.cards[ci].title) + (locked ? '<span class="slot-stepname">' + stepOf(i + 1).icon + ' ' + stepOf(i + 1).name + '</span>' : '') + '</span>' +
         (locked ? '<span class="slot-lock" title="Правильно">✓ Вірно 🔒</span>' :
-          '<span class="slot-ctl"><button class="ctl" data-act="up" data-slot="' + i + '" aria-label="Вище">▲</button><button class="ctl" data-act="down" data-slot="' + i + '" aria-label="Нижче">▼</button><button class="ctl x" data-act="rm" data-slot="' + i + '" aria-label="Забрати">✕</button></span>') +
+          '<span class="slot-ctl"><button class="ctl lockbtn' + (state.fixed[i] ? " on" : "") + '" data-act="fix" data-slot="' + i + '" aria-label="' + (state.fixed[i] ? "Зняти фіксацію" : "Зафіксувати") + '" title="' + (state.fixed[i] ? "Зняти фіксацію" : "Зафіксувати цей етап") + '">' + (state.fixed[i] ? "🔒" : "🔓") + '</button>' + (state.fixed[i] ? "" : '<span class="grip" title="Перетягніть">⠿</span>') + '</span>') +
         '</div>';
     }).join("");
     var lc = state.lastCheck;
@@ -853,15 +957,14 @@
       '<div class="stage-wrap"><div class="card">' +
       '<p class="step-count">' + c.emoji + ' ' + c.title + ' · Спроба ' + Math.min(attemptNo + 1, MAX_ATTEMPTS) + ' із ' + MAX_ATTEMPTS + (state.hints ? ' · підказка використана' : '') + '</p>' +
       '<div class="setup-box"><b>Кейс.</b> ' + c.brief + '</div>' +
+      legendHtml() +
       hintHtml() +
-      '<label class="field-label">Ваш план змін: від першого кроку до восьмого</label>' +
+      '<label class="field-label">Ваш план змін: від першого кроку до восьмого (перетягуйте картки, щоб змінити порядок)</label>' +
       '<div class="slots">' + slotsHtml + '</div>' +
-      (state.finished ? "" : '<label class="field-label">Картки дій (торкніться, щоб покласти в план)</label><div class="pool">' + poolHtml + '</div>') +
       fbHtml +
       (state.finished ? '<button class="btn btn-primary" id="done-btn">Переглянути результат →</button>' :
         '<div class="result-actions">' +
           '<button class="btn btn-primary" id="check-btn"' + (canCheck ? "" : " disabled") + '>Перевірити порядок</button>' +
-          '<button class="btn btn-secondary" id="reset-btn">Прибрати нерозставлені</button>' +
           (state.hintLevel >= 2 ? "" : '<button class="btn btn-secondary" id="hint-btn">' + (state.hintLevel === 0 ? 'Підказка 1: питання кроків' : 'Підказка 2: назви кроків') + '</button>') +
         '</div>') +
       '<button class="teacher-link" id="back-link">← До вибору кейсу</button>' +
@@ -869,13 +972,10 @@
     );
     card.querySelectorAll(".puz-card").forEach(function (b) { b.addEventListener("click", function () { placeCard(parseInt(b.getAttribute("data-ci"), 10)); }); });
     card.querySelectorAll(".ctl").forEach(function (b) {
-      b.addEventListener("click", function () {
-        var slot = parseInt(b.getAttribute("data-slot"), 10), act = b.getAttribute("data-act");
-        if (act === "up") moveCard(slot, -1); else if (act === "down") moveCard(slot, 1); else removeCard(slot);
-      });
+      b.addEventListener("click", function () { toggleFix(parseInt(b.getAttribute("data-slot"), 10)); });
     });
+    attachDrag(card);
     var chk = card.querySelector("#check-btn"); if (chk) chk.addEventListener("click", function () { if (allPlaced()) checkOrder(); });
-    var rst = card.querySelector("#reset-btn"); if (rst) rst.addEventListener("click", resetUnlocked);
     var hb = card.querySelector("#hint-btn"); if (hb) hb.addEventListener("click", function () { state.hintLevel += 1; state.hintShown = true; state.hints += 1; if (state.hintLevel === 1) state.hintQ = shuffle(STEPS); else state.hintN = shuffle(STEPS); render(); });
     var dn = card.querySelector("#done-btn"); if (dn) dn.addEventListener("click", function () { state.screen = "result"; render(); saveResultToStorage(); });
     card.querySelector("#back-link").addEventListener("click", function () { state.screen = "intro"; render(); });
